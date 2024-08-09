@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 04:53:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 16:55:57 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,35 +14,16 @@
 
 using std::size_t;
 
-// assume IPv4
-// assume only one port can exist on server at a time
-bool	ServerBlock::processListen( std::stringstream &stream ) {
-	std::string token;
-	while (stream >> token) {
-		std::size_t pos = token.find(':');
-		if (pos == std::string::npos)
-			return (false);
-		token[pos] = '\0';
-		addr	add;
-		if (inet_pton(AF_INET, token.c_str(), &add.sin_addr) != 1)
-			return (false);
-		token.erase(0, pos);
-		uint16_t	port = ft_stoi(token);
-		if (listen.find(port) != listen.end())
-			return (false);
-		listen[port] = add;
-		if (token[token.length() - 1] == ';')
-			break ;
-	}
-	return (true);
-}
-
 Parse::Parse( void ) : filename("default.conf") {}
 
 Parse::Parse( const char *config ) : filename(config) {}
 
 Parse::~Parse( void ) { }
 
+/**
+ * @brief	remove comments
+ * 			comments begins with # and end at `\n' char
+*/
 void	Parse::removeComments( void ) {
 	for (size_t pos = config_info.find('#'); pos != std::string::npos; pos = config_info.find('#'))
 	{
@@ -51,7 +32,10 @@ void	Parse::removeComments( void ) {
 	}
 }
 
-static int	checkLevel(int level, const std::string &ref ) {
+/**
+ * check the level of block the config
+*/
+static int	checkLevel( int level, const std::string &ref ) {
 	if (!level) {
 		if (ref == "server")
 			return (1);
@@ -80,7 +64,7 @@ void	Parse::processServer( const std::string &first,
 		break;
 
 	default:
-		error = unknown_option;
+		throw ParsingError(unknown_option);
 		break;
 	}
 }
@@ -90,6 +74,10 @@ void	Parse::processLocation( const std::string &first,
 	
 }
 
+/**
+ * @brief	tokenization process
+ * 			
+*/
 void	Parse::processContent( void ) {
 	std::stringstream	buffer(config_info);
 	std::string			token;
@@ -102,36 +90,38 @@ void	Parse::processContent( void ) {
 		if (token == "{")
 			bracket ++;
 		else if (token == "}")
+		{
 			bracket --;
+			level --;
+		}
 		level = checkLevel(level, token);
 		if (bracket == 1 && level == 1)
 			processServer(token, buffer, server);
 		else if (bracket == 2 && level == 2)
 			processLocation(token, buffer, loc);
-		if (error)
-			return ;
 	}
 	if (bracket > 0)
-		error = unclosed_bracket;
+		throw ParsingError(unclosed_bracket);
 }
 
-bool Parse::parseConfigFile( void ) {
+/**
+ * @brief	main entry function for parsing file
+ * 			check file and convert its content into a single string
+ * 			the comments part will be removed first
+ * 			then the content will pass into a stringstream to be tokenized and processed
+ * 			(filename is assumed to be set in construction)
+ * 
+ * @throws	ParsingError, basically all the options lulz
+ * 
+*/
+void Parse::parseConfigFile( void ) {
 	CheckFile	check(filename.c_str());
 	check.checking(F_OK | R_OK);
-	if (!(!check.getAccessbility() && check.getType() == file)) {
-		error = file_type;
-		return (false);
-	}
+	if (!(!check.getAccessbility() && check.getType() == file))
+		throw ParsingError(file_type);
 	config_info = check.getFileContent();
-	if (!config_info.length()) {
-		error = file_open;
-		return (false);
-	}
+	if (!config_info.length())
+		throw ParsingError(file_empty);
 	removeComments();
 	processContent();
-	if (error)
-		return (false);
-	return (true);
 }
-
-uint8_t	Parse::getError( void ) const { return (error); }

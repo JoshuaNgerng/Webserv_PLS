@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/07 14:55:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 15:19:41 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,12 +55,12 @@ void	Server::getNewConnection( void )
 	}
 }
 
-void	Server::receiveRequest( int client_fd, const ServerMethod &ref )
+void	Server::receiveRequest( int client_fd, const Parse &ref )
 {
 
 }
 
-void	Server::sentReponse( int client_fd, const ServerMethod &ref )
+void	Server::sentReponse( int client_fd, const Parse &ref )
 {
 
 }

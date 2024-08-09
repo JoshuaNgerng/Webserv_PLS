@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 18:28:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 02:43:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 12:14:06 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,5 +39,8 @@
 # ifndef NULL
 #  define N a
 # endif
+
+typedef struct pollfd pollfd_t;
+typedef struct sockaddr_in sockaddr_t;
 
 #endif

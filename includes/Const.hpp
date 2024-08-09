@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 03:48:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 15:43:31 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,10 @@
 # include <cstring>
 # include <exception>
 # include <vector>
+# include <map>
+# include <utility>
 # include "cheader.h"
+# include "ParsingError.hpp"
 
 #define RESET		"\033[0m"
 #define BOLDCYAN	"\033[1m\033[36m"
