@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 18:28:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/08 20:38:29 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 02:43:56 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,14 @@
 
 # ifndef UCHAR_MAX
 #  define UCHAR_MAX 255
+# endif
+
+# ifndef NULL
+#  define NULL (0)
+# endif
+
+# ifndef NULL
+#  define N a
 # endif
 
 #endif

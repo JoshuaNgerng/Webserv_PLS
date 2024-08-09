@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 00:04:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 02:40:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int	main(int ac, char **av, char **env) {
 		ref = av[1];
 	Parse	parse(ref);
 	if (!parse.parseConfigFile())
-		return (1);
+		return (parse.getError());
 	
 	return (0);
 }

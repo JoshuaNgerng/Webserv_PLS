@@ -6,12 +6,15 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/08 23:31:33 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 04:48:37 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CheckFile.hpp"
 #include <map>
+#include <utility>
+
+typedef struct sockaddr_in addr;
 
 enum parsing_error {
 	file_type = 0,
@@ -32,17 +35,17 @@ class ServerBlock
 		ServerBlock( void );
 		ServerBlock( const ServerBlock &src );
 		~ServerBlock( void );
+		bool	processListen( std::stringstream &stream );
 
-	private:
-		uint16_t						port;
-		in_addr_t						host;
-		std::string						server_name;
-		std::string						root;
-		uint64_t						client_max_body_size;
-		std::string						index;
-		bool							autoindex;
-		std::map<uint16_t, std::string>	error_page;
-		std::vector<Location>			location;
+		std::map<uint16_t, addr>			listen; // port, ip_addr
+		in_addr_t							host;
+		std::string							server_name;
+		std::string							root;
+		uint64_t							client_max_body_size;
+		std::string							index;
+		bool								autoindex;
+		std::map<uint16_t, std::string>		error_page;
+		std::vector<Location>				location;
 };
 
 class Parse
@@ -53,12 +56,15 @@ class Parse
 		~Parse( void );
 
 		bool	parseConfigFile( void );
+		uint8_t	getError( void ) const;
 
 	private:
 		void	removeComments( void );
 		void	processContent( void );
-		void	processServer( const std::string &first, std::stringstream &stream, ServerBlock &server );
-		void	processLocation( const std::string &first, std::stringstream &stream, Location &loc );
+		void	processServer( const std::string &first, 
+			std::stringstream &stream, ServerBlock &server );
+		void	processLocation( const std::string &first, 
+			std::stringstream &stream, Location &loc );
 		
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );
