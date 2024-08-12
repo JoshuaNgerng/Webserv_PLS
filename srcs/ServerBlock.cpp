@@ -6,14 +6,20 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 16:44:16 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/10 00:50:10 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerBlock.hpp"
 
-// assume IPv4
-// assume only one port can exist on server at a time
+ServerBlock::ServerBlock( void ) { }
+
+ServerBlock::ServerBlock( const ServerBlock &src ) { }
+
+ServerBlock::~ServerBlock( void ) { }
+
+ServerBlock&	ServerBlock::operator=( const ServerBlock &src ) { return (*this); }
+
 /**
  * @brief	iter through the token till `;' special char is found
  * 			there a few different possible entry
@@ -24,6 +30,7 @@
  * 
  * @attention	assume our subject only need us to handle ipv4 (ipv6 is a pain lulz)
  * 				if need to add ipv6 then need to edit this sht lulz
+ * 				assume https dont exist for now
  * 
  * @param	stream : the stringstream that from Parse class
  * 
@@ -56,4 +63,63 @@ void	ServerBlock::processListen( std::stringstream &stream ) {
 		if (token[token.length() - 1] == ';')
 			break ;
 	}
+}
+
+void	ServerBlock::processSingleToken( std::string &dst, std::stringstream &stream ) {
+	std::string	token;
+	bool		check = false;
+	while (stream >> token)
+	{
+		if (token == ";")
+			break ;
+		if (check)
+			break ; // `;' not detected?
+		if (token[token.length() - 1] == ';') {
+			dst = token.substr(0, token.length() - 1);
+			break ;
+		}
+		dst = token;
+		check = true;
+	}
+}
+
+// assume theres only one servername for now
+void	ServerBlock::processServerName( std::stringstream &stream ) {
+	std::string	token;
+	while (stream >> token)
+	{
+		if (token == ";")
+			break ;
+		if (token[token.length() - 1] == ';') {
+			server_name = token.substr(0, token.length() - 1);
+			break ;
+		}
+		server_name = token;
+	}
+}
+
+// assume only one root
+void	ServerBlock::processRoot( std::stringstream &stream ) {
+	std::string	token;
+	while (stream >> token)
+	{
+		if (token == ";")
+			break ;
+		if (token[token.length() - 1] == ';') {
+			root = token.substr(0, token.length() - 1);
+			break ;
+		}
+		root = token;
+	}
+}
+
+void	ServerBlock::reset( void ) {
+	listen.clear();
+	server_name.clear();
+	root.clear();
+	client_max_body_size = UINT64_MAX;
+	index.clear();
+	autoindex = false;
+	error_page.clear();
+	location.clear();
 }

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 16:55:57 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 02:38:59 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ Parse::~Parse( void ) { }
  * 			comments begins with # and end at `\n' char
 */
 void	Parse::removeComments( void ) {
-	for (size_t pos = config_info.find('#'); pos != std::string::npos; pos = config_info.find('#'))
+	for (size_t pos = config_info.find('#');
+		 pos != std::string::npos; pos = config_info.find('#'))
 	{
 		size_t pos_end = config_info.find('\n', pos);
 		config_info.erase(pos, pos_end - pos);
@@ -47,6 +48,17 @@ static int	checkLevel( int level, const std::string &ref ) {
 	return (level);
 }
 
+/**
+ * @brief	check keyword in the server block
+ * 			have a switch case to further process the tokens till `;' char
+ * 
+ * @param	first	token to check
+ * @param	stream	main stringstream from parent func
+ * @param	server	ServerBlock being added to
+ * 
+ * @todo	testing listen, server_name, root, index for now
+ * 			index can take multiple arug idk how that works
+ */
 void	Parse::processServer( const std::string &first,
 	std::stringstream &stream, ServerBlock &server ) {
 	const char	*ref[] = {"listen", "server_name", "root", "index", "error_page"
@@ -61,8 +73,17 @@ void	Parse::processServer( const std::string &first,
 	{
 	case 0:
 		server.processListen(stream);
-		break;
-
+		break ;
+	case 1:
+		server.processSingleToken(server.server_name, stream);
+		break ;
+	case 2:
+		server.processSingleToken(server.root, stream);
+		break ;
+	case 3:
+		server.processSingleToken(server.index, stream);
+		break ;
+	
 	default:
 		throw ParsingError(unknown_option);
 		break;
@@ -83,7 +104,7 @@ void	Parse::processContent( void ) {
 	std::string			token;
 	int					level = 0;
 	int					bracket = 0;
-	ServerBlock			server;
+	ServerBlock			serverblock;
 	Location			loc;
 	while (buffer >> token)
 	{
@@ -93,6 +114,14 @@ void	Parse::processContent( void ) {
 		{
 			bracket --;
 			level --;
+			if (!bracket && !level) {
+				server.sever_info.push_back(serverblock);
+				serverblock.reset();
+			}
+			if (bracket == 1 && level == 1) {
+				serverblock.location.push_back(loc);
+				//loc.reset();
+			}
 		}
 		level = checkLevel(level, token);
 		if (bracket == 1 && level == 1)

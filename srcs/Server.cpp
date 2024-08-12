@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 15:19:41 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 02:47:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,23 +28,14 @@ Server&	Server::operator=( const Server &src )
 	return (*this);
 }
 
-void	Server::setUpServer( const Parse &ref, int back_log )
+void	Server::setUpServer( Parse &ref, int back_log )
 {
-	// pollfd_t	fd = {.events = POLLIN, .revents = 0};
-	// sockaddr_t	addr = {.sin_family = domain, .sin_port = 0, .sin_addr.s_addr = s_addr, .sin_zero = {0}};
-
-	// addr.sin_port = htons(ref.getPort());
-	// fd.fd = socket(domain, service, protocol);
-	// if (fd.fd < 0)
-	// 	return ; // cannot establish connection
-	// if (bind(fd.fd, (sockaddr *)&addr, sizeof(addr)) < 0)
-	// 	return ;
-	// 	// throw TcpError("Cannot bind socket");
-	// if (listen(fd.fd, back_log) < 0)
-	// 	return ;
-	// 	// throw TcpError("Cannot listening to socket");
-	// server_fd.push_back(fd);
-	// // server_block.push_back();
+	for (std::vector<ServerBlock>::iterator it = server_info.begin();
+		 it != server_info.end(); it ++)
+	{
+		pollfd_t	temp = {0};
+		it->listen;
+	}
 }
 
 void	Server::getNewConnection( void )

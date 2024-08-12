@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 16:05:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/10 00:52:46 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,16 @@ class ServerBlock
 		ServerBlock( void );
 		ServerBlock( const ServerBlock &src );
 		~ServerBlock( void );
+
+		ServerBlock&	operator=( const ServerBlock &src );
+
 		void	processListen( std::stringstream &stream );
+		void	processSingleToken( std::string &dst, std::stringstream &stream );
+		void	processServerName( std::stringstream &stream );
+		void	processRoot( std::stringstream &stream );
+		void	reset( void );
 
 		std::map<uint16_t, sockaddr_t>		listen; // port, ip_addr
-		in_addr_t							host;
 		std::string							server_name;
 		std::string							root;
 		uint64_t							client_max_body_size;
@@ -51,6 +57,7 @@ class ServerBlock
 		503
 		505
 		*/
+
 		std::vector<Location>				location;
 };
 

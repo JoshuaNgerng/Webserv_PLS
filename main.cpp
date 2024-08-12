@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 02:40:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 02:42:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@ int	main(int ac, char **av, char **env) {
 	ref = "default.conf";
 	if (ac == 2)
 		ref = av[1];
-	Parse	parse(ref);
+	Server	server;
+	Parse	parse(ref, server);
 	if (!parse.parseConfigFile())
 		return (parse.getError());
 	
