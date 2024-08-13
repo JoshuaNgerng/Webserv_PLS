@@ -5,42 +5,50 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/15 18:39:28 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/08 18:32:53 by jngerng          ###   ########.fr       */
+/*   Created: 2024/03/29 00:48:08 by jngerng           #+#    #+#             */
+/*   Updated: 2024/06/14 11:44:54 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVERSOCKET_HPP
-# define SERVERSOCKET_HPP
-# include "Const.hpp"
-# include <cstring>
-# include <cerrno>
+#pragma once
 
-typedef struct sockaddr_in sockaddr_t;
+#include <Tcp.hpp>
 
-class ServerSocket
+// assume one client per class, fork for each client
+class ServerSocket : public Tcp
 {
+	private:
+		static const int	capacity = 30720;
+
+		int				backlog;
+		int				socket_fd_new;
+		int				timeout;
+		sa				address_new;
+		struct pollfd	pollfd;
+		char			buffer[capacity + 1];
+
 	public:
 		ServerSocket( void );
-		ServerSocket( const char *ip_add );
-		ServerSocket( uint64_t ip_add );
-		ServerSocket( uint16_t domain_, uint16_t service_, uint16_t protocol_ );
-		ServerSocket( uint16_t domain_, uint16_t service_, uint16_t protocol_, const char *ip_add );
-		ServerSocket( uint16_t domain_, uint16_t service_, uint16_t protocol_, uint64_t ip_add );
-		ServerSocket( const ServerSocket &src );
+		ServerSocket( int backlog_ );
+		ServerSocket( string ip_addr_, int port );
+		ServerSocket( string ip_addr_, int port, int backlog_ );
+		ServerSocket( string ip_addr_, int port, int domain, int service, int protocol );
+		ServerSocket( string ip_addr_, int port, int backlog_, int domain, int service, int protocol );
 		~ServerSocket( void );
 
-		void	setPort( int port );
+		void	establishConnection( void );
+		void	establishConnection( int backlog_ );
+		void	acceptNewConnection( void );
+		void	setPollTimeOut( int timeout_ );
+		void	setPollTimeOut( short events, short revents, int timeout_ );
 
-	private:
-		sockaddr_t	sockaddrInit( int port );
-		ServerSocket&	operator=( const ServerSocket &src );
+		string	readFromNewConnection( void );
+		string	recvFromNewConnection( int flag );
+		string	recvFromNewConnection( void );
+		int		writeToNewConnection( string message );
+		int		sendToNewConnection( string message, int flag );
+		int		sendToNewConnection( string message );
 
-		const uint16_t	domain;
-		const uint16_t	service;
-		const uint16_t	protocol;
-		const uint64_t	s_addr;
-		sockaddr_t		addr;
-};
-
-#endif
+		int		getBackLog( void ) const;
+		sa		getClientAdd( void ) const;
+}	;

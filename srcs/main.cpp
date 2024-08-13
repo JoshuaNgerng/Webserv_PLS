@@ -1,38 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ExampleError.cpp                                   :+:      :+:    :+:   */
+/*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/09 14:39:23 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 14:49:34 by jngerng          ###   ########.fr       */
+/*   Created: 2024/06/13 12:15:58 by jngerng           #+#    #+#             */
+/*   Updated: 2024/06/13 17:15:21 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ExampleError.hpp"
+#include "Webserv.hpp"
 
-ExampleError::ExampleError( int val ) { msgInit(val); }
+int	handle_error(int type)
+{
+	string	errmsg(BOLDRED "Error: " RESET BOLDYELLOW);
 
-ExampleError::~ExampleError( void ) { }
-
-void	ExampleError::msgInit( int val ) {
-	msg = "Error:";
-	switch (val)
+	switch (type)
 	{
-	case example1:
-		msg += "1 errormsg";
+	case 0:
+		errmsg += "Programme required one arugment as config file";
 		break;
-	case example2:
-		msg += "2 msg";
-		break;
-	case example3:
-		msg += "3 lulz";
-		break ;
+
 	default:
-		msg += "Unknown Error";
 		break;
 	}
+	errmsg += RESET "\n";
+	std::cerr << errmsg;
+	return (1);
 }
 
-const char*	ExampleError::what() const throw() { return (msg.c_str()); }
+int	main(int ac, char **av)
+{
+	if (ac != 2)
+		return (handle_error(0));
+	
+	return (0);
+}

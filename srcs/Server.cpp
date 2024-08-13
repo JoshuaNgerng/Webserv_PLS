@@ -1,69 +1,55 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 02:47:25 by jngerng          ###   ########.fr       */
+/*   Created: 2024/03/28 17:44:12 by jngerng           #+#    #+#             */
+/*   Updated: 2024/06/13 17:42:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include <ServerSocket.hpp>
 
-Server::Server( void ) { }
-
-Server::Server( const Server &src ) :
-	server_fd(src.server_fd), server_block(src.server_block) { }
-
-Server::~Server( void ) { }
-
-Server&	Server::operator=( const Server &src )
+int	main(int ac, char **av)
 {
-	if (this == &src)
-		return (*this);
-	server_fd = src.server_fd;
-	server_block = src.server_block;
-	return (*this);
-}
-
-void	Server::setUpServer( Parse &ref, int back_log )
-{
-	for (std::vector<ServerBlock>::iterator it = server_info.begin();
-		 it != server_info.end(); it ++)
+	(void)av;
+	if (ac > 2)
+		return (1);
+	ServerSocket	test;
+	try
 	{
-		pollfd_t	temp = {0};
-		it->listen;
+		test.establishConnection();
 	}
-}
-
-void	Server::getNewConnection( void )
-{
-	for (std::vector<pollfd_t>::iterator it = server_fd.begin(); it != server_fd.end(); it ++)
+	catch(const std::exception& e)
 	{
-		;
+		std::cerr << e.what() << '\n';
+		return (1);
 	}
-}
-
-void	Server::receiveRequest( int client_fd, const Parse &ref )
-{
-
-}
-
-void	Server::sentReponse( int client_fd, const Parse &ref )
-{
-
-}
-
-void	Server::startupServer( void )
-{
-	while (1)
-		getNewConnection();
-}
-
-void	Server::startupServer( const Parse &ref )
-{
-	// setUpServer();
-	startupServer();
+	string	msg = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
+	string	reponse = "<html><h1>Hello world</h1></html?";
+	msg.append(std::to_string(reponse.size()));
+	msg.append("\n\n");
+	msg.append(reponse);
+	for (int i = 0; i < 7; i ++)
+	{
+		std::cout << "Test new connect\n";
+		test.acceptNewConnection();
+		test.setPollTimeOut(100);
+		try
+		{
+			std::cout << "Test receive connect\n";
+			// test.recvFromNewConnection(0);
+			std::cout << "Received:\t" << test.recvFromNewConnection() << '\n';
+			test.sendToNewConnection(msg);
+			std::cout << "test client api " << test.IPAddressRep(test.getClientAdd()) << '\n';
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+		}
+	}
+	std::cout << "Attempt to connect 2 times\n";
+	return (0);
 }
