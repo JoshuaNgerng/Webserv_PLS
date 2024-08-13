@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<style>
+			.parent-div {
+				width: 100vw;
+				height: 100dvh;
+				background-color: black;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+			}
+			.gradient-text {
+				background: linear-gradient(90deg, rgba(205,0,0,1) 0%, rgba(121,9,116,1) 60%, rgba(0,212,255,1) 100%);
+				-webkit-background-clip: text;
+				background-clip: text;
+				-webkit-text-fill-color: transparent;
+				color: transparent;
+				font-size: 3rem;
+				font-weight: 700;
+			}
+			.message {
+				color: white;
+				font-size: 1.5rem;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body style="margin: 0px">
+		<div class="parent-div">
+			<h1 class="gradient-text">ERROR 400: BAD REQUEST</h1>
+			<p class="message">Oops! It looks like your request was not valid. Please check the URL and try again.</p>
+		</div>
+	</body>
+</html>
