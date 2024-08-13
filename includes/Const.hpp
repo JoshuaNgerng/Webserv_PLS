@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 15:43:31 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 02:16:48 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,16 @@
 #define BOLDRED		"\033[1m\033[31m"
 #define BOLDMAGENTA	"\033[1m\033[35m"
 
+/**
+ * @brief	creating std::to_string in c++98
+ * 			if there is a defined operator << into ostringstream
+ * 			then it will use that operator to convert to string
+ * 
+ * @param	val	the object you want to convert into string form
+ * @return	a new string representation
+ * 
+ * @attention	if no << defined it should have a complie error
+ */
 template< typename T >
 std::string	to_String( const T &val )
 {
@@ -41,7 +51,18 @@ std::string	to_String( const T &val )
 	return (oss.str());
 }
 
-template< class T >
+/**
+ * @brief	creating std::all_of in c++98
+ * 			used as a generic way to check every element between start and end
+ * 			whether they fulfill some condition in func f
+ * 
+ * @param	start	the start iterator 
+ * @param	end		the end iterator
+ * 
+ * @attention	if T is not iterator type it will have undefined behaviour
+ * 				if start does not reach the end it will also have undefined behaviour
+ */
+template< typename T >
 bool	all_of(T start, T end, int (*f)(int))
 {
 	for (T it = start; it != end; it ++)
@@ -52,6 +73,22 @@ bool	all_of(T start, T end, int (*f)(int))
 			return (false);
 	}
 	return (true);
+}
+
+/**
+ * @brief	creating std::move in c++98
+ * 			move contents of src to dst then empty the content of src
+ * @param	dst the object you want to move to
+ * @param	src the object you want to move from
+ * 
+ * @attention	if dst is not empty the deconstructor in temp will 
+ * 				erase whatever memory is in dst
+ */
+template< typename T >
+void	ft_move( T &dst, T &src ) {
+	T	temp;
+	std::swap(dst, src);
+	std::swap(src, temp);
 }
 
 class out_of_range : public std::exception {

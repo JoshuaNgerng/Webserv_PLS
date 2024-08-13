@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 18:28:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 12:14:06 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/09 22:09:42 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,14 @@
 #  define NULL (0)
 # endif
 
-# ifndef NULL
-#  define N a
-# endif
-
 typedef struct pollfd pollfd_t;
+
+/**
+ * sin_family domain name for ipv4 its AF_INET
+ * sin_port port info example htons(port)
+ * sin_addr.s_addr ip add info
+ * sin_zero set to zero, padding
+ */
 typedef struct sockaddr_in sockaddr_t;
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 15:18:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 02:32:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@ class Server
 		void	startupServer( void );
 
 	private:
-		std::vector<pollfd_t>								server_fd; // every www..com is tied to one port (extra port is ignored)
-		std::vector<std::pair<ServerSocket, ServerBlock> >	server_block; // every www..com have its own sockaddr_t and methods and each loop a new connection for each port is made
-
+		std::vector<pollfd_t>		server_fd; // every www..com is tied to one port (extra port is ignored)
+		std::vector<ServerBlock>	server_info;
 };
