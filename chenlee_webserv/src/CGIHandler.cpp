@@ -1,6 +1,7 @@
 #include "CGIHandler.hpp"
 #include <fstream>
 
+
 /*
 ** ------------------------- CONSTRUCTOR & DESTRUCTOR --------------------------
 */

@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 #define CHUNK_SIZE (4 * 1024)
 

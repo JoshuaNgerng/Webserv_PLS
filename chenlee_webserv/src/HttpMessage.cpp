@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "HttpMessage.hpp"
+#include <algorithm>
 
 void HttpMessage::addHeader(const std::string &field, const std::string &value)
 {

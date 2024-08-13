@@ -24,6 +24,7 @@
 
 #include "Logger.hpp"
 #include "Router.hpp"
+#include <linux/limits.h>  // Linux-specific header
 
 using std::cout;
 using std::endl;
