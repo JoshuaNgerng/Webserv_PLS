@@ -6,11 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/08 19:02:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 16:57:24 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Const.hpp"
+#ifndef CHECKFILE_HPP
+# define CHECKFILE_HPP
+# include "Const.hpp"
 
 enum filetype {
 	file = 1,
@@ -36,3 +38,5 @@ class CheckFile {
 		uint8_t		type;
 		int8_t		acessiblity;
 };
+
+#endif

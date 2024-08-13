@@ -6,11 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/10 00:52:46 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 16:58:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Const.hpp"
+#ifndef SERVERBLOCK_HPP
+# define SERVERBLOCK_HPP
+# include "Const.hpp"
 
 class Location
 {
@@ -61,3 +63,4 @@ class ServerBlock
 		std::vector<Location>				location;
 };
 
+#endif

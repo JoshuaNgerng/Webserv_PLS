@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:40:26 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 15:57:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 17:12:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 ParsingError::ParsingError( int val ) { msgInit(val); }
 
-ParsingError::~ParsingError( void ) { }
+ParsingError::~ParsingError( void ) throw() { }
 
 void	ParsingError::msgInit( int val ) {
 	msg = "ParsingError: ";

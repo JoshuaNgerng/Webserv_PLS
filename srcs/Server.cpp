@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 02:47:25 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 17:51:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 Server::Server( void ) { }
 
 Server::Server( const Server &src ) :
-	server_fd(src.server_fd), server_block(src.server_block) { }
+	server_fd(src.server_fd), server_info(src.server_info) { }
 
 Server::~Server( void ) { }
 
@@ -24,17 +24,18 @@ Server&	Server::operator=( const Server &src )
 	if (this == &src)
 		return (*this);
 	server_fd = src.server_fd;
-	server_block = src.server_block;
+	server_info = src.server_info;
 	return (*this);
 }
 
-void	Server::setUpServer( Parse &ref, int back_log )
+void	Server::setUpServer( int back_log )
 {
+	(void)back_log;
 	for (std::vector<ServerBlock>::iterator it = server_info.begin();
 		 it != server_info.end(); it ++)
 	{
-		pollfd_t	temp = {0};
-		it->listen;
+		pollfd_t	temp = {.fd = 0, .events = 0, .revents = 0};
+		(void)temp;
 	}
 }
 
@@ -46,15 +47,15 @@ void	Server::getNewConnection( void )
 	}
 }
 
-void	Server::receiveRequest( int client_fd, const Parse &ref )
-{
+// void	Server::receiveRequest( int client_fd )
+// {
 
-}
+// }
 
-void	Server::sentReponse( int client_fd, const Parse &ref )
-{
+// void	Server::sentReponse( int client_fd )
+// {
 
-}
+// }
 
 void	Server::startupServer( void )
 {
@@ -62,8 +63,4 @@ void	Server::startupServer( void )
 		getNewConnection();
 }
 
-void	Server::startupServer( const Parse &ref )
-{
-	// setUpServer();
-	startupServer();
-}
+std::vector<ServerBlock>&	Server::parseServerInfo( void ) { return (server_info); }

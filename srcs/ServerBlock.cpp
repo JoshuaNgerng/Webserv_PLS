@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/10 00:50:10 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 18:02:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 
 ServerBlock::ServerBlock( void ) { }
 
-ServerBlock::ServerBlock( const ServerBlock &src ) { }
+ServerBlock::ServerBlock( const ServerBlock &src ) { (void)src; }
 
 ServerBlock::~ServerBlock( void ) { }
 
-ServerBlock&	ServerBlock::operator=( const ServerBlock &src ) { return (*this); }
+ServerBlock&	ServerBlock::operator=( const ServerBlock &src ) { (void)src; return (*this); }
 
 /**
  * @brief	iter through the token till `;' special char is found
@@ -55,7 +55,7 @@ void	ServerBlock::processListen( std::stringstream &stream ) {
 				throw ParsingError(invalid_ip_add);
 			token.erase(0, pos);
 		}
-		uint16_t	port = ft_stoi(token);
+		uint16_t	port = std::atoi(token.c_str());//ft_stoi(token);
 		add.sin_port = htons(port);
 		if (listen.find(port) != listen.end())
 			throw ParsingError(repeated_port);
@@ -117,7 +117,7 @@ void	ServerBlock::reset( void ) {
 	listen.clear();
 	server_name.clear();
 	root.clear();
-	client_max_body_size = UINT64_MAX;
+	client_max_body_size = ULONG_MAX;
 	index.clear();
 	autoindex = false;
 	error_page.clear();
