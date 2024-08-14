@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 17:11:44 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/14 08:58:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ void	Parse::processServer( const std::string &first,
 		if (first == ref[option])
 			break ;
 	}
+	// std::cout << "server: " << first << ", option: " << option << '\n';
 	switch (option)
 	{
 	case 0:
@@ -111,7 +112,10 @@ void	Parse::processContent( void ) {
 	while (buffer >> token)
 	{
 		if (token == "{")
+		{
 			bracket ++;
+			continue ;
+		}
 		else if (token == "}")
 		{
 			bracket --;
@@ -124,8 +128,10 @@ void	Parse::processContent( void ) {
 				serverblock.location.push_back(loc);
 				//loc.reset();
 			}
+			continue ;
 		}
 		level = checkLevel(level, token);
+		// std::cout << "test: " << token << '\n';
 		if (bracket == 1 && level == 1)
 			processServer(token, buffer, serverblock);
 		else if (bracket == 2 && level == 2)

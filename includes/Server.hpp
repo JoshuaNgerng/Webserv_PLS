@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 17:09:31 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/14 08:55:41 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,10 @@ class Server
 		std::vector<ServerBlock>&	parseServerInfo( void );
 
 	private:
-		std::vector<pollfd_t>		server_fd; // every www..com is tied to one port (extra port is ignored)
+		static const socklen_t		socklen = sizeof(sockaddr);
+		int							server_no;
+		long						client_limit;
+		std::vector<pollfd_t>		socket_fds; // load all servers then only add clients
 		std::vector<ServerBlock>	server_info;
 };
 

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 18:02:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/14 03:28:19 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,8 @@ void	ServerBlock::processListen( std::stringstream &stream ) {
 	while (stream >> token) {
 		if (token == ";")
 			break ;
-		sockaddr_t	add = {.sin_family = AF_INET}; // assume everything is ipv4
+		sockaddr_t	add;
+		add.sin_family = AF_INET; // assume everything is ipv4
 		std::size_t pos = token.find(':');
 		if (pos == std::string::npos) {
 			add.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -63,6 +64,7 @@ void	ServerBlock::processListen( std::stringstream &stream ) {
 		if (token[token.length() - 1] == ';')
 			break ;
 	}
+	// std::cout << "process end token: " << token << '\n';
 }
 
 void	ServerBlock::processSingleToken( std::string &dst, std::stringstream &stream ) {
@@ -81,6 +83,7 @@ void	ServerBlock::processSingleToken( std::string &dst, std::stringstream &strea
 		dst = token;
 		check = true;
 	}
+	// std::cout << "process end token: " << token << '\n';
 }
 
 // assume theres only one servername for now

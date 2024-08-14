@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 17:51:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/14 08:53:12 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 Server::Server( void ) { }
 
 Server::Server( const Server &src ) :
-	server_fd(src.server_fd), server_info(src.server_info) { }
+	socket_fds(src.socket_fds), server_info(src.server_info) { }
 
 Server::~Server( void ) { }
 
@@ -23,7 +23,7 @@ Server&	Server::operator=( const Server &src )
 {
 	if (this == &src)
 		return (*this);
-	server_fd = src.server_fd;
+	socket_fds = src.socket_fds;
 	server_info = src.server_info;
 	return (*this);
 }
@@ -31,11 +31,12 @@ Server&	Server::operator=( const Server &src )
 void	Server::setUpServer( int back_log )
 {
 	(void)back_log;
+	pollfd_t	socket_fd;
+	socket_fd.events = POLLIN;
 	for (std::vector<ServerBlock>::iterator it = server_info.begin();
 		 it != server_info.end(); it ++)
 	{
-		pollfd_t	temp = {.fd = 0, .events = 0, .revents = 0};
-		(void)temp;
+		socket_fd.fd = 
 	}
 }
 
