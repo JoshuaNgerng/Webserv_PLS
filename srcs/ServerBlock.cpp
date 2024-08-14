@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/14 03:28:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/14 14:38:56 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,26 +41,25 @@ void	ServerBlock::processListen( std::stringstream &stream ) {
 	while (stream >> token) {
 		if (token == ";")
 			break ;
-		sockaddr_t	add;
-		add.sin_family = AF_INET; // assume everything is ipv4
+		Socket	socket(AF_INET);// assume everything is ipv4
 		std::size_t pos = token.find(':');
 		if (pos == std::string::npos) {
-			add.sin_addr.s_addr = htonl(INADDR_ANY);
+			socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
 		}
 		else if (!token.compare(pos, 0, "[::]")) {
-			add.sin_addr.s_addr = htonl(INADDR_ANY);
+			socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
 		}
 		else {
 			token[pos] = '\0';
-			if (inet_pton(AF_INET, token.c_str(), &add.sin_addr) != 1)
+			if (inet_pton(AF_INET, token.c_str(), &socket.changeAddress().sin_addr) != 1)
 				throw ParsingError(invalid_ip_add);
 			token.erase(0, pos);
 		}
 		uint16_t	port = std::atoi(token.c_str());//ft_stoi(token);
-		add.sin_port = htons(port);
-		if (listen.find(port) != listen.end())
+		socket.changeAddress().sin_port = htons(port);
+		if (checkDupSocket(socket))
 			throw ParsingError(repeated_port);
-		listen[port] = add;
+		listen.push_back(socket);
 		if (token[token.length() - 1] == ';')
 			break ;
 	}
@@ -83,6 +82,8 @@ void	ServerBlock::processSingleToken( std::string &dst, std::stringstream &strea
 		dst = token;
 		check = true;
 	}
+	if (!check)
+		return ; // empty slot??
 	// std::cout << "process end token: " << token << '\n';
 }
 
@@ -125,4 +126,13 @@ void	ServerBlock::reset( void ) {
 	autoindex = false;
 	error_page.clear();
 	location.clear();
+}
+
+bool	ServerBlock::checkDupSocket( const Socket &ref ) {
+	typedef std::vector<Socket>::iterator iter;
+	for (iter it = listen.begin(); it != listen.end(); it ++) {
+		if (*it == ref)
+			return (true);
+	}
+	return (false);
 }

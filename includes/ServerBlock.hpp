@@ -6,13 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 16:58:18 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/14 14:29:21 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERBLOCK_HPP
 # define SERVERBLOCK_HPP
-# include "Const.hpp"
+# include "Socket.hpp"
 
 class Location
 {
@@ -35,13 +35,13 @@ class ServerBlock
 		void	processRoot( std::stringstream &stream );
 		void	reset( void );
 
-		std::map<uint16_t, sockaddr_t>		listen; // port, ip_addr
-		std::string							server_name;
-		std::string							root;
-		uint64_t							client_max_body_size;
-		std::string							index;
-		bool								autoindex;
-		std::map<uint16_t, std::string>		error_page;
+		std::vector<Socket>				listen;
+		std::string						server_name;
+		std::string						root;
+		uint64_t						client_max_body_size;
+		std::string						index;
+		bool							autoindex;
+		std::map<uint16_t, std::string>	error_page;
 		/*
 		known error pages
 		301
@@ -61,6 +61,8 @@ class ServerBlock
 		*/
 
 		std::vector<Location>				location;
+	private:
+		bool	checkDupSocket( const Socket &ref );
 };
 
 #endif
