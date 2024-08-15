@@ -1,37 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Socket.hpp                                         :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/14 11:02:23 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/15 08:38:36 by jngerng          ###   ########.fr       */
+/*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
+/*   Updated: 2024/08/15 10:27:44 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SOCKET_HPP
-# define SOCKET_HPP
+#ifndef CLIENT_HPP
+# define CLIENT_HPP
 # include "Const.hpp"
+# include "Socket.hpp"
 
-class Socket {
+class Client {
 	public:
-		Socket( void );
-		Socket( uint8_t	domain );
-		Socket( const Socket &src );
-		~Socket( void );
+		Client( void );
+		Client( const Client &src );
+		~Client( void );
 
-		Socket&		operator=( const Socket &src );
-		bool		operator==( const Socket &src );
-
-		sockaddr_in_t&			changeAddress( void );
-		const sockaddr_in_t&	refAddress( void ) const;
+		Client&	operator=( const Client &src );
+		sockaddr_in_t&	changeAddress( void );
+		socklen_t&		getSocklen( void );
+		int&			getFd( void );
 
 	private:
-		void	checkLen( void );
-
-		in_port_t		port;
-		sockaddr_in_t	addr;
+		int			socket_fd;
+		Socket		socket;
+		socklen_t	len;
 };
 
 #endif

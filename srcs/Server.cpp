@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/14 17:49:44 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/15 10:56:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	Server::setupServer( void ) {
 	size_t	serverblock_index = 0;
 	for (ServerIter it = server_info.begin(); it != server_info.end(); it ++) {
 		for (SocketIter addr_it = it->listen.begin(); addr_it != it->listen.end(); addr_it ++) {
-			const sockaddr_t	&addr = addr_it->refAddress();
+			const sockaddr_in_t	&addr = addr_it->refAddress();
 			socket_fds[server_index].fd = socket(addr.sin_family, socket_type, socket_protocol);
 			if (socket_fds[server_index].fd < 0)
 				return ;
@@ -73,17 +73,35 @@ void	Server::setupServer( void ) {
 	}
 }
 
-void	Server::getNewConnection( int server_fd ) {
+void	Server::getNewConnection( int index ) {
 	if (server_index == server_limit) {
 		std::cout << "max connection capacity met\n";
 		return ;
 	}
-	uint32_t	index = findAvaliableSlot();
-	socklen_t	temp = len;
-	sockaddr_t	temp;
-	socket_fds[index].fd = accept(server_fd, (sockaddr_t *)&temp , &temp);
-	if (socket_fds[index].fd < 0)
-		return ; // error
+	uint32_t	index_ = findAvaliableSlot();
+	if (index_ == server_limit)
+		return ;
+	if (!(socket_fds[index].revents & POLLIN))
+		return ; // sock not ready
+	Client	new_client;
+	int		fd = -1;
+	int		flags = 0;
+	fd = accept(socket_fds[index].fd,
+			(sockaddr *)&new_client.changeAddress() , &new_client.getSocklen());
+	if (fd < 0)
+		return ; // error?
+	if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
+		close(fd);
+		return ;
+	}
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+		close(fd);
+		return ; // error?
+	}
+	new_client.getFd() = fd;
+	socket_fds[index_].fd = fd;
+	client_info.push_back(new_client);
+	client_mapping[fd] = index;
 	server_index ++;
 }
 
@@ -97,6 +115,8 @@ void	Server::getNewConnection( int server_fd ) {
 
 // }
 
+// assume client start with pollin 
+// then move to pollout
 void	Server::loopServer( void ) {
 	if (poll(getSocketfds(), server_limit, timeout) < 0)
 		return ; // throw error?
@@ -106,7 +126,7 @@ void	Server::loopServer( void ) {
 			continue ;
 		}
 		if (index < server_no) {
-			getNewConnection(ref_fd);
+			getNewConnection(index);
 			continue ;
 		}
 		

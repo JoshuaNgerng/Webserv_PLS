@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:19:05 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/07 14:23:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/15 08:39:48 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,9 @@ ServerSocket&	ServerSocket::operator=( const ServerSocket &src )
 	return (*this);
 }
 
-sockaddr_t	ServerSocket::sockaddrInit( int port )
+sockaddr_in_t	ServerSocket::sockaddrInit( int port )
 {
-	sockaddr_t add = {0};
+	sockaddr_in_t add = {0};
 	add.sin_family = domain;
 	add.sin_addr.s_addr = s_addr;
 	add.sin_port = htons(port);

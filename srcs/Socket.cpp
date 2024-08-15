@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/14 15:11:40 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/15 08:38:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,6 @@ bool	Socket::operator==( const Socket &src ){
 	return (true);
 }
 
-sockaddr_t&	Socket::changeAddress( void ) { return (addr); }
+sockaddr_in_t&	Socket::changeAddress( void ) { return (addr); }
 
-const sockaddr_t&	Socket::refAddress( void ) const { return (addr); }
+const sockaddr_in_t&	Socket::refAddress( void ) const { return (addr); }
