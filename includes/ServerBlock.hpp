@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/14 14:29:21 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/16 00:51:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ class ServerBlock
 		~ServerBlock( void );
 
 		ServerBlock&	operator=( const ServerBlock &src );
+
+		std::string	testHTML( void );
 
 		void	processListen( std::stringstream &stream );
 		void	processSingleToken( std::string &dst, std::stringstream &stream );

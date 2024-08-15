@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 18:28:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/15 08:55:46 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/16 00:56:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,24 @@
 #  define UCHAR_MAX 255
 # endif
 
+# ifndef UINT_MAX
+#  define UINT_MAX 4294967295
+# endif
+
+# ifndef ULONG_MAX
+#  define ULONG_MAX 18446744073709551615
+# endif
+
 # ifndef NULL
 #  define NULL (0)
+# endif
+
+# ifndef size_t
+typedef unsigned long size_t;
+# endif
+
+# ifndef ssize_t
+typedef signed long ssize_t;
 # endif
 
 /**

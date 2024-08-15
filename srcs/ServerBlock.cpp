@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/14 14:38:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/16 01:20:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,15 @@ void	ServerBlock::reset( void ) {
 	autoindex = false;
 	error_page.clear();
 	location.clear();
+}
+
+std::string	ServerBlock::testHTML( void ) {
+	std::string	msg = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
+	std::string	html = "<html><h1>Hello world</h1></html?";
+	msg.append(to_String(html.size()));
+	msg.append("\n\n");
+	msg.append(html);
+	return (msg);
 }
 
 bool	ServerBlock::checkDupSocket( const Socket &ref ) {

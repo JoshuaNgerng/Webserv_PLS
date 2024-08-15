@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/15 08:38:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/15 20:59:06 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,11 @@ void	Socket::checkLen( void ){
 bool	Socket::operator==( const Socket &src ){
 	if (port != src.port)
 		return (false);
-	if (addr.sin_family != src.addr.sin_family)
+	if (addr.sin_family != src.addr.sin_family ||
+		addr.sin_port != src.addr.sin_port || 
+		addr.sin_addr.s_addr != src.addr.sin_addr.s_addr) {
 		return (false);
-	if (addr.sin_port != src.addr.sin_port)
-		return (false);
-	if (addr.sin_addr.s_addr != src.addr.sin_addr.s_addr)
-		return (false);
+	}
 	return (true);
 }
 

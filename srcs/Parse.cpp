@@ -6,13 +6,11 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/14 08:58:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/15 18:55:35 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parse.hpp"
-
-using std::size_t;
 
 Parse::Parse( void ) : filename("default.conf"), buffer(), server(buffer) {}
 
@@ -123,6 +121,8 @@ void	Parse::processContent( void ) {
 			if (!bracket && !level) {
 				server.parseServerInfo().push_back(serverblock);
 				serverblock.reset();
+				// sockaddr_t	test;
+				// test.sin_addr;
 			}
 			if (bracket == 1 && level == 1) {
 				serverblock.location.push_back(loc);

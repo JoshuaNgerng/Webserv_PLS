@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/15 10:56:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/16 01:51:05 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ void	Server::setupSocketfds( void ) {
 	socket_fd.fd = -1;
 	socket_fd.events = POLLIN;
 	socket_fds.insert(socket_fds.end(), server_limit, socket_fd);
+	server_mapping.insert(server_mapping.end(), server_no, 0);
 }
 
 void	Server::setupServer( void ) {
@@ -73,47 +74,84 @@ void	Server::setupServer( void ) {
 	}
 }
 
-void	Server::getNewConnection( int index ) {
+void	Server::getNewConnection( size_t index ) {
 	if (server_index == server_limit) {
 		std::cout << "max connection capacity met\n";
 		return ;
 	}
-	uint32_t	index_ = findAvaliableSlot();
-	if (index_ == server_limit)
+	uint32_t	slot = findAvaliableSlot();
+	if (slot == server_limit)
 		return ;
-	if (!(socket_fds[index].revents & POLLIN))
-		return ; // sock not ready
-	Client	new_client;
+	Client	new_client(index);
 	int		fd = -1;
 	int		flags = 0;
 	fd = accept(socket_fds[index].fd,
 			(sockaddr *)&new_client.changeAddress() , &new_client.getSocklen());
 	if (fd < 0)
-		return ; // error?
-	if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
+		return ; // cant accept socket error?
+	if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
 		close(fd);
-		return ;
+		return ; // get flag error?
 	}
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
 		close(fd);
-		return ; // error?
+		return ; // set flag error?
 	}
 	new_client.getFd() = fd;
-	socket_fds[index_].fd = fd;
+	socket_fds[slot].fd = fd;
 	client_info.push_back(new_client);
-	client_mapping[fd] = index;
+	client_mapping[fd] = -- client_info.end();
 	server_index ++;
 }
 
-// void	Server::receiveRequest( int client_fd )
-// {
+void	Server::closeConnection( size_t index ) {
+	if (socket_fds[index].fd < 0)
+		return ;
+	close(socket_fds[index].fd);
+	client_ptr pos = client_mapping[socket_fds[index].fd];
+	client_mapping.erase(socket_fds[index].fd);
+	client_info.erase(pos);
+	socket_fds[index].fd = -1;
+	socket_fds[index].events = POLLIN;
+}
 
-// }
+bool	Server::receiveRequest( Client &client )
+{
+	char	buffer[buffer_limit];
+	ssize_t	bytes;
 
-// void	Server::sentReponse( int client_fd )
-// {
+	bytes = recv(client.getFd(), buffer, buffer_limit, recv_flag);
+	if (!bytes)
+		return (false);
+	if (bytes < 0)
+		return (false);
+	std::string	str(buffer);
+	if (str.find("\r\n\r\n") != std::string::npos) {
+		client.finishRecv();
+	}
+	client.addToReq(str);
+	return (true);
+}
 
-// }
+void	Server::fetchData( Client &client ) {
+	ServerBlock	&ref = server_info[client.getServerRef()];
+	client.addToRes(ref.testHTML());
+}
+
+bool	Server::sentReponse( Client &client )
+{
+	const std::string msg = client.getResponse().substr(client.getBytesSent());
+	size_t	len = client.getResponse().length() - client.getBytesSent();
+	ssize_t	bytes = send(client.getFd(), msg.c_str(), len, send_flag);
+	if (bytes == 0)
+		return (false); // error close connection
+	if (bytes < 0)
+		return (false); // error cant write
+	client.addBytesSent(bytes);
+	if (client.getBytesSent() == client.getResponse().length())
+		client.finishSend();
+	return (true);
+}
 
 // assume client start with pollin 
 // then move to pollout
@@ -121,25 +159,47 @@ void	Server::loopServer( void ) {
 	if (poll(getSocketfds(), server_limit, timeout) < 0)
 		return ; // throw error?
 	for (size_t index = 0; index != server_limit; index ++) {
-		int	ref_fd = socket_fds[index].fd;
-		if (ref_fd < 0) {
+		pollfd_t	ref_fd = socket_fds[index];
+		if (ref_fd.fd < 0) {
 			continue ;
 		}
 		if (index < server_no) {
-			getNewConnection(index);
+			if (ref_fd.revents & POLLIN)
+				getNewConnection(ref_fd.fd);
 			continue ;
 		}
-		
+		Client	&client = *(client_mapping[ref_fd.fd]);
+		if (ref_fd.revents & POLLIN) {
+			if (!receiveRequest(client))
+				closeConnection(index);
+			if (client.checkReq()) {
+				ref_fd.events = POLLOUT;
+				fetchData(client);
+			}
+		}
+		if (ref_fd.revents & POLLOUT) {
+			if (!sentReponse(client))
+				closeConnection(index);
+			if (client.checkRes())
+				closeConnection(index);
+		}
+		if (ref_fd.revents & (POLLHUP | POLLERR)) {
+			closeConnection(index);
+		}
 	}
 }
 
-void	Server::startServerLoop( void )
-{
+void	Server::startServerLoop( int *signal ) {
 	setupSocketfds();
 	setupServer();
-	while (1) {
+	while (*signal) {
 		loopServer();
 	}
+}
+
+void	Server::startServerLoop( void ) {
+	int	fix = 1;
+	startServerLoop(&fix);
 }
 
 uint32_t	Server::findAvaliableSlot( void ) const {
