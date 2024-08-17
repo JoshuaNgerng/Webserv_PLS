@@ -6,22 +6,24 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 02:42:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/13 17:07:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "CheckFile.hpp"
-#include "ServerBlock.hpp"
-#include "Server.hpp"
+#ifndef PARSE_HPP
+# define PARSE_HPP
+# include "CheckFile.hpp"
+# include "ServerBlock.hpp"
+# include "Server.hpp"
 
-/**
- * @todo havent start processing location block
- */
-class Location
-{
-	private:
-		std::string	path;
-};
+// /**
+//  * @todo havent start processing location block
+//  */
+// class Location
+// {
+// 	private:
+// 		std::string	path;
+// };
 
 // assume regex dont exist lulz
 class Parse
@@ -47,5 +49,8 @@ class Parse
 
 		std::string	filename;
 		std::string	config_info;
+		Server		buffer;
 		Server		&server;
 };
+
+#endif

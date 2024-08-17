@@ -1,29 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 18:00:58 by jngerng          ###   ########.fr       */
+/*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
+/*   Updated: 2024/08/15 09:58:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Parse.hpp"
+#include "Client.hpp"
 
-int	main(int ac, char **av, char **env) {
-	(void)env;
-	if (ac > 2)
-		return (1); // too many arug error
-	const char *ref;
-	ref = "default.conf";
-	if (ac == 2)
-		ref = av[1];
-	Server	server;
-	Parse	parse(ref, server);
-	// if (!parse.parseConfigFile())
-	// 	return (parse.getError());
-	parse.parseConfigFile();
-	return (0);
-}
+Client::Client( void ) { }
+
+Client::Client( const Client &src ) { (void)src; }
+
+Client::~Client( void ) { }
+
+Client&	Client::operator=( const Client &src ) { (void)src; return (*this); }
+
+sockaddr_in_t&	Client::changeAddress( void ) { return(socket.changeAddress()); }

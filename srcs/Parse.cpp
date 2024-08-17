@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 02:38:59 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/14 08:58:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 using std::size_t;
 
-Parse::Parse( void ) : filename("default.conf") {}
+Parse::Parse( void ) : filename("default.conf"), buffer(), server(buffer) {}
 
-Parse::Parse( const char *config ) : filename(config) {}
+Parse::Parse( const char *config, Server &server_ ) : filename(config), buffer(), server(server_) {}
 
 Parse::~Parse( void ) { }
 
@@ -69,6 +69,7 @@ void	Parse::processServer( const std::string &first,
 		if (first == ref[option])
 			break ;
 	}
+	// std::cout << "server: " << first << ", option: " << option << '\n';
 	switch (option)
 	{
 	case 0:
@@ -92,7 +93,9 @@ void	Parse::processServer( const std::string &first,
 
 void	Parse::processLocation( const std::string &first,
 	std::stringstream &stream, Location &loc ) {
-	
+	(void)first;
+	(void)stream;
+	(void)loc;
 }
 
 /**
@@ -109,23 +112,28 @@ void	Parse::processContent( void ) {
 	while (buffer >> token)
 	{
 		if (token == "{")
+		{
 			bracket ++;
+			continue ;
+		}
 		else if (token == "}")
 		{
 			bracket --;
 			level --;
 			if (!bracket && !level) {
-				server.sever_info.push_back(serverblock);
+				server.parseServerInfo().push_back(serverblock);
 				serverblock.reset();
 			}
 			if (bracket == 1 && level == 1) {
 				serverblock.location.push_back(loc);
 				//loc.reset();
 			}
+			continue ;
 		}
 		level = checkLevel(level, token);
+		// std::cout << "test: " << token << '\n';
 		if (bracket == 1 && level == 1)
-			processServer(token, buffer, server);
+			processServer(token, buffer, serverblock);
 		else if (bracket == 2 && level == 2)
 			processLocation(token, buffer, loc);
 	}

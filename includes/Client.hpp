@@ -1,29 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 18:00:58 by jngerng          ###   ########.fr       */
+/*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
+/*   Updated: 2024/08/15 10:27:44 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Parse.hpp"
+#ifndef CLIENT_HPP
+# define CLIENT_HPP
+# include "Const.hpp"
+# include "Socket.hpp"
 
-int	main(int ac, char **av, char **env) {
-	(void)env;
-	if (ac > 2)
-		return (1); // too many arug error
-	const char *ref;
-	ref = "default.conf";
-	if (ac == 2)
-		ref = av[1];
-	Server	server;
-	Parse	parse(ref, server);
-	// if (!parse.parseConfigFile())
-	// 	return (parse.getError());
-	parse.parseConfigFile();
-	return (0);
-}
+class Client {
+	public:
+		Client( void );
+		Client( const Client &src );
+		~Client( void );
+
+		Client&	operator=( const Client &src );
+		sockaddr_in_t&	changeAddress( void );
+		socklen_t&		getSocklen( void );
+		int&			getFd( void );
+
+	private:
+		int			socket_fd;
+		Socket		socket;
+		socklen_t	len;
+};
+
+#endif

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:39:28 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/08 18:32:53 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/15 08:39:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,14 +33,14 @@ class ServerSocket
 		void	setPort( int port );
 
 	private:
-		sockaddr_t	sockaddrInit( int port );
+		sockaddr_in_t	sockaddrInit( int port );
 		ServerSocket&	operator=( const ServerSocket &src );
 
 		const uint16_t	domain;
 		const uint16_t	service;
 		const uint16_t	protocol;
 		const uint64_t	s_addr;
-		sockaddr_t		addr;
+		sockaddr_in_t	addr;
 };
 
 #endif
