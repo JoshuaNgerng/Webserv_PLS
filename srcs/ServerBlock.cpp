@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/16 01:20:25 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 01:22:02 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,4 +144,24 @@ bool	ServerBlock::checkDupSocket( const Socket &ref ) {
 			return (true);
 	}
 	return (false);
+}
+
+std::ostream&	operator<<( std::ostream &o, const ServerBlock &ref ) {
+	typedef std::vector<Socket>::const_iterator sock_iter;
+	typedef std::map<uint16_t, std::string>::const_iterator error_iter;
+	o << "Listening on: ";
+	for (sock_iter it = ref.listen.begin(); it != ref.listen.end(); it ++) {
+		o << *it << ' ';
+	}
+	o << '\n';
+	o << "Server name: " << ref.server_name << '\n';
+	o << "Root directory: " << ref.root << '\n';
+	o << "Client max body size: " << ref.client_max_body_size << '\n';
+	o << "Index: " << ref.index << '\n';
+	o << "Error pages: ";
+	for (error_iter it = ref.error_page.begin(); it != ref.error_page.end(); it ++) {
+		o << it->first << " = " << it->second << ' ';
+	}
+	o << '\n';
+	return (o);
 }

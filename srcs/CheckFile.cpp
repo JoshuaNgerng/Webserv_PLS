@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/08 19:02:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 15:15:53 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,27 @@ uint8_t	CheckFile::getType( void ) const { return (type); }
 
 uint8_t	CheckFile::getAccessbility( void ) const { return (acessiblity); }
 
-std::string	CheckFile::getFileContent( void ) const {
-	std::ifstream	config_file(filename.c_str());
-	if (!(config_file.is_open()))
-		return (std::string(""));
-	std::stringstream fileStream;
+bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file ) {
+	if (!(file.is_open()))
+		return (false);
+	dst << file.rdbuf();
+	return (true);
+}
+
+uint8_t	CheckFile::getFileContent( std::string &dst ) const {
+	std::ifstream		config_file(filename.c_str());
+	std::stringstream	fileStream;
+	if (!fileToStringStream(fileStream, config_file))
+		return (open);
 	fileStream << config_file.rdbuf();
-	return (fileStream.str());
+	dst = fileStream.str();
+	return (success);
+}
+
+uint8_t	CheckFile::getFileContent( std::stringstream &dst ) const {
+	std::ifstream		config_file(filename.c_str());
+	std::stringstream	fileStream;
+	if (!fileToStringStream(dst, config_file))
+		return (open);
+	return (success);
 }

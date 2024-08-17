@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/16 01:43:13 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 10:22:00 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,11 @@ class Server
 		void	startServerLoop( int *signal );
 		void	startServerLoop( void );
 
-		std::vector<ServerBlock>&	parseServerInfo( void );
-		pollfd_t*					getSocketfds( void );
+		void		addServerBlock( const ServerBlock &ref );
+		pollfd_t*	getSocketfds( void );
+
+		//someone help write getters const type getSomething( void ) const
+		//so lazy lulz
 
 	private:
 		typedef std::list<Client>::iterator client_ptr;
@@ -60,5 +63,7 @@ class Server
 		uint32_t	findAvaliableSlot( void ) const;
 		Client&		getClient( int client_fd );
 };
+
+std::ostream&	operator<<( std::ostream &o, const Server& ref );
 
 #endif

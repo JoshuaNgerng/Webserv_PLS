@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 16:57:24 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 15:12:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,12 @@ enum filetype {
 	error = UCHAR_MAX
 };
 
+enum checkfileerror {
+	success = 0,
+	open = 1,
+	read = 2
+};
+
 class CheckFile {
 	public:
 		CheckFile( const char *filename_ );
@@ -30,10 +36,14 @@ class CheckFile {
 		void	checking( int check_flags );
 		uint8_t	getType( void ) const;
 		uint8_t	getAccessbility( void ) const;
-		std::string	getFileContent( void ) const;
+		uint8_t	getFileContent( std::string &dst ) const;
+		uint8_t	getFileContent( std::stringstream &dst ) const;
+
+		static bool	fileToStringStream( std::stringstream &dst, std::ifstream &file );
 
 	private:
 		CheckFile( void );
+
 		std::string	filename;
 		uint8_t		type;
 		int8_t		acessiblity;

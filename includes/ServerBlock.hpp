@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/16 00:51:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/16 18:18:56 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,25 +46,16 @@ class ServerBlock
 		std::map<uint16_t, std::string>	error_page;
 		/*
 		known error pages
-		301
-		302
-		400
-		401
-		402
-		403
-		404
-		405
-		406
-		500
-		501
-		502
-		503
-		505
+		301 302
+		400 401 402 403 404 405 406
+		500 501 502 503 505
 		*/
 
 		std::vector<Location>				location;
 	private:
 		bool	checkDupSocket( const Socket &ref );
 };
+
+std::ostream&	operator<<( std::ostream &o, const ServerBlock &ref );
 
 #endif

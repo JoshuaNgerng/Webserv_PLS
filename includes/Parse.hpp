@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 17:07:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 16:01:43 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Parse
 		~Parse( void );
 
 		void	parseConfigFile( void );
+		void	parseListen( ServerBlock &dst );
 
 	private:
 		Parse( void );
@@ -47,10 +48,13 @@ class Parse
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );
 
-		std::string	filename;
-		std::string	config_info;
-		Server		buffer;
-		Server		&server;
+		std::string			filename;
+		std::string			content;
+		std::stringstream	content_stream;
+		std::string			line;
+		std::stringstream	line_stream;
+		Server				buffer;
+		Server				&server;
 };
 
 #endif

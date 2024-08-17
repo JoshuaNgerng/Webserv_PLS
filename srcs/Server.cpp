@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/16 01:51:05 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 03:27:32 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,15 +58,23 @@ void	Server::setupServer( void ) {
 	size_t	server_index = 0;
 	size_t	serverblock_index = 0;
 	for (ServerIter it = server_info.begin(); it != server_info.end(); it ++) {
+		std::cout << "huh"<< it->listen.size() << "\n";
 		for (SocketIter addr_it = it->listen.begin(); addr_it != it->listen.end(); addr_it ++) {
 			const sockaddr_in_t	&addr = addr_it->refAddress();
 			socket_fds[server_index].fd = socket(addr.sin_family, socket_type, socket_protocol);
-			if (socket_fds[server_index].fd < 0)
+			std::cout << "check server fd: " << socket_fds[server_index].fd;
+			if (socket_fds[server_index].fd < 0) {
+				std::cout << "socket failed\n";
 				return ;
-			if (bind(socket_fds[server_index].fd, (sockaddr *)&addr, socklen) < 0)
+			}
+			if (bind(socket_fds[server_index].fd, (sockaddr *)&addr, socklen) < 0) {
+				std::cout << "bind failed\n";
 				return ;
-			if (listen(socket_fds[server_index].fd, backlog_limit) < 0)
+			}
+			if (listen(socket_fds[server_index].fd, backlog_limit) < 0) {
+				std::cout << "listen failed\n";
 				return ;
+			}
 			server_mapping[server_index] = serverblock_index;
 			server_index ++;
 		}
@@ -85,10 +93,13 @@ void	Server::getNewConnection( size_t index ) {
 	Client	new_client(index);
 	int		fd = -1;
 	int		flags = 0;
+	std::cout << "test on " << server_info[server_mapping[index]].listen[0];
 	fd = accept(socket_fds[index].fd,
 			(sockaddr *)&new_client.changeAddress() , &new_client.getSocklen());
-	if (fd < 0)
+	if (fd < 0) {
+		std::cout << "accept fail\n";
 		return ; // cant accept socket error?
+	}
 	if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
 		close(fd);
 		return ; // get flag error?
@@ -158,12 +169,15 @@ bool	Server::sentReponse( Client &client )
 void	Server::loopServer( void ) {
 	if (poll(getSocketfds(), server_limit, timeout) < 0)
 		return ; // throw error?
-	for (size_t index = 0; index != server_limit; index ++) {
+	std::cout << "check: " << socket_fds[0].fd << '\n';
+	for (size_t index = server_limit - 1; index != 0; index --) {
 		pollfd_t	ref_fd = socket_fds[index];
+		std::cout << index <<") test: " << ref_fd.fd << '\n';
 		if (ref_fd.fd < 0) {
 			continue ;
 		}
 		if (index < server_no) {
+			std::cout << "process server\n";
 			if (ref_fd.revents & POLLIN)
 				getNewConnection(ref_fd.fd);
 			continue ;
@@ -192,6 +206,10 @@ void	Server::loopServer( void ) {
 void	Server::startServerLoop( int *signal ) {
 	setupSocketfds();
 	setupServer();
+	if (!server_no) {
+		std::cout << "no servers lulz\n";
+		return ;
+	}
 	while (*signal) {
 		loopServer();
 	}
@@ -213,6 +231,13 @@ uint32_t	Server::findAvaliableSlot( void ) const {
 	return (server_limit);
 } 
 
-std::vector<ServerBlock>&	Server::parseServerInfo( void ) { return (server_info); }
+void	Server::addServerBlock( const ServerBlock &ref ) {
+	server_info.push_back(ref);
+}
 
 pollfd_t*	Server::getSocketfds( void ) { return (&(*(socket_fds.begin()))); }
+
+// can format after someone write getters
+std::ostream&	operator<<(std::ostream &o, const Server& ref ) {
+	(void)ref;return (o);
+}

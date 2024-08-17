@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/16 01:41:43 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 02:37:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class Client {
 		void				finishSend( void );
 		bool				checkReq( void ) const;
 		bool				checkRes( void ) const;
+		int					refFd( void ) const;
 		int					getServerRef( void ) const;
 		const std::string&	getRequest( void ) const;
 		const std::string&	getResponse( void ) const;
@@ -50,5 +51,7 @@ class Client {
 		bool		finish_request;
 		bool		finish_write;
 };
+
+std::ostream&	operator<<( std::ostream &o, const Client &ref );
 
 #endif

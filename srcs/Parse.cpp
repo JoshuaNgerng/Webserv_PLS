@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/15 18:55:35 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 16:02:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@ Parse::~Parse( void ) { }
  * 			comments begins with # and end at `\n' char
 */
 void	Parse::removeComments( void ) {
-	for (size_t pos = config_info.find('#');
-		 pos != std::string::npos; pos = config_info.find('#'))
+	for (size_t pos = content.find('#');
+		 pos != std::string::npos; pos = content.find('#'))
 	{
-		size_t pos_end = config_info.find('\n', pos);
-		config_info.erase(pos, pos_end - pos);
+		size_t pos_end = content.find('\n', pos);
+		content.erase(pos, pos_end - pos);
 	}
 }
 
@@ -101,13 +101,13 @@ void	Parse::processLocation( const std::string &first,
  * 			
 */
 void	Parse::processContent( void ) {
-	std::stringstream	buffer(config_info);
 	std::string			token;
 	int					level = 0;
 	int					bracket = 0;
 	ServerBlock			serverblock;
 	Location			loc;
-	while (buffer >> token)
+	
+	while (content_stream >> token)
 	{
 		if (token == "{")
 		{
@@ -119,7 +119,8 @@ void	Parse::processContent( void ) {
 			bracket --;
 			level --;
 			if (!bracket && !level) {
-				server.parseServerInfo().push_back(serverblock);
+				std::cout << "Parsing ServerBlock info\n" << serverblock;
+				server.addServerBlock(serverblock);
 				serverblock.reset();
 				// sockaddr_t	test;
 				// test.sin_addr;
@@ -156,9 +157,11 @@ void Parse::parseConfigFile( void ) {
 	check.checking(F_OK | R_OK);
 	if (!(!check.getAccessbility() && check.getType() == file))
 		throw ParsingError(file_type);
-	config_info = check.getFileContent();
-	if (!config_info.length())
+	if (check.getFileContent(content))
+		throw ParsingError(file_open);
+	if (!content.length())
 		throw ParsingError(file_empty);
 	removeComments();
+	content_stream << content;
 	processContent();
 }
