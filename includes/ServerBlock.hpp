@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/16 18:18:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/18 03:27:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,19 @@ class ServerBlock
 
 		std::string	testHTML( void );
 
+		bool	checkDupSocket( const Socket &ref );
 		void	processListen( std::stringstream &stream );
 		void	processSingleToken( std::string &dst, std::stringstream &stream );
 		void	processServerName( std::stringstream &stream );
 		void	processRoot( std::stringstream &stream );
 		void	reset( void );
+		void	addListen( const Socket &add );
+		void	addServerName( const std::string &add );
+		void	addRoot( const std::string &add );
+		void	setClientMax( uint64_t add );
+		void	addIndex( const std::string &add );
+		void	toggleAutoIndex( void );
+		void	addErrorPage( uint16_t error_code, const std::string &path );
 
 		std::vector<Socket>				listen;
 		std::string						server_name;
@@ -52,8 +60,7 @@ class ServerBlock
 		*/
 
 		std::vector<Location>				location;
-	private:
-		bool	checkDupSocket( const Socket &ref );
+	// private:
 };
 
 std::ostream&	operator<<( std::ostream &o, const ServerBlock &ref );

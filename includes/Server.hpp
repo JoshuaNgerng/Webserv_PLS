@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/17 10:22:00 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/18 02:50:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class Server
 		void	startServerLoop( int *signal );
 		void	startServerLoop( void );
 
-		void		addServerBlock( const ServerBlock &ref );
+		void		addServerBlock( ServerBlock &ref );
 		pollfd_t*	getSocketfds( void );
 
 		//someone help write getters const type getSomething( void ) const

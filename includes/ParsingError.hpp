@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:40:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/09 15:54:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/18 03:35:02 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ enum parsingerrorval {
 	unclosed_bracket = 4,
 	unknown_option = 5,
 	repeated_port = 6,
-	invalid_ip_add = 7
+	invalid_ip_add = 7,
+	delimitor_not_found = 8
 };
 
 class ParsingError : public std::exception

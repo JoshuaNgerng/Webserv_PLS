@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/17 03:27:32 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/18 02:53:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,8 +231,10 @@ uint32_t	Server::findAvaliableSlot( void ) const {
 	return (server_limit);
 } 
 
-void	Server::addServerBlock( const ServerBlock &ref ) {
-	server_info.push_back(ref);
+void	Server::addServerBlock( ServerBlock &ref ) {
+	ServerBlock	buffer;
+	server_info.push_back(buffer);
+	ft_move(server_info.back(), ref);
 }
 
 pollfd_t*	Server::getSocketfds( void ) { return (&(*(socket_fds.begin()))); }

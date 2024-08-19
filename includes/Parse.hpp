@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/17 16:01:43 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/18 04:05:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@
 // 		std::string	path;
 // };
 
+// class Parse;
+// typedef void (Parse::* processFunc) (std::string &);
+
 // assume regex dont exist lulz
 class Parse
 {
@@ -34,27 +37,36 @@ class Parse
 
 		void	parseConfigFile( void );
 		void	parseListen( ServerBlock &dst );
+		void	parseSingleToken( ServerBlock &dst );
 
 	private:
 		Parse( void );
 
-		void	removeComments( void );
+		void	removeComments( std::string &content ) const;
+		void	removeWhitespace( std::string &content ) const;
 		void	processContent( void );
-		void	processServer( const std::string &first, 
-			std::stringstream &stream, ServerBlock &server );
-		void	processLocation( const std::string &first, 
-			std::stringstream &stream, Location &loc );
-		
+		void	processToken( const std::string &token );
+		void	processParameters( void (Parse::*process)(std::string &) );
+		void	processServer( const std::string &keyw );
+		void	processListen( std::string &token );
+		void	processLocation( const std::string &keyw );
+		void	processSingleToken( const std::string &token );
+		bool	getNextLine( void );
+
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );
 
+		uint64_t			line_counter;
+		uint16_t			block_level;
+		uint16_t			bracket_no;
 		std::string			filename;
-		std::string			content;
-		std::stringstream	content_stream;
+		std::istringstream	content_stream;
 		std::string			line;
-		std::stringstream	line_stream;
+		std::istringstream	line_stream;
 		Server				buffer;
 		Server				&server;
+		ServerBlock			serverblock;
+		Location			location;
 };
 
 #endif
