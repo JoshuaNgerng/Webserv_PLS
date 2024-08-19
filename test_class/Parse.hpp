@@ -6,15 +6,15 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/19 09:11:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/19 12:09:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PARSE_HPP
 # define PARSE_HPP
+# include <stdint.h>
 # include "CheckFile.hpp"
-# include "ServerBlock.hpp"
-# include "Server.hpp"
+# include "ParsingError.hpp"
 
 // /**
 //  * @todo havent start processing location block
@@ -32,12 +32,11 @@
 class Parse
 {
 	public:
-		Parse( const char *config, Server &ref );
+		Parse( const char *config );
 		~Parse( void );
 
 		void	parseConfigFile( void );
-		void	parseListen( ServerBlock &dst );
-		void	parseSingleToken( ServerBlock &dst );
+		void	checkParsing( void ) const;
 
 	private:
 		Parse( void );
@@ -48,24 +47,26 @@ class Parse
 		void	processToken( const std::string &token );
 		void	processParameters( void (Parse::*process)(std::string &) );
 		void	processServer( const std::string &keyw );
-		void	processListen( std::string &token );
 		void	processLocation( const std::string &keyw );
-		void	processSingleToken( const std::string &token );
 		bool	getNextLine( void );
+		void	processListen( std::string &token );
+		void	processIndex( std::string &token );
+		void	processServerName( std::string &token );
 
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );
 
-		uint64_t			line_counter;
-		uint16_t			block_level;
-		uint16_t			bracket_no;
-		std::string			filename;
-		std::istringstream	content_stream;
-		std::istringstream	line_stream;
-		Server				buffer;
-		Server				&server;
-		ServerBlock			serverblock;
-		Location			location;
+		uint64_t					line_counter;
+		uint16_t					block_level;
+		uint16_t					bracket_no;
+		std::string					filename;
+		std::istringstream			content_stream;
+		std::string					line;
+		std::istringstream			line_stream;
+		std::vector<std::string>	listen;
+		std::vector<std::string>	index;
+		std::vector<std::string>	server_name;
+
 };
 
 #endif

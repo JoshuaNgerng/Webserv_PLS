@@ -6,14 +6,14 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:40:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/19 09:15:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/19 11:04:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PARSINGERROR_HPP
-# define PARSEINGERROR_HPP
-# include <exception>
-# include <string>
+# define PARSINGERROR_HPP
+#include <exception>
+#include <string>
 
 // use errorvalue in exception class construction
 enum parsingerrorval {
