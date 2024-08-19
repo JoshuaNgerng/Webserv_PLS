@@ -39,6 +39,17 @@ class Parse
 		void	parseListen( ServerBlock &dst );
 		void	parseSingleToken( ServerBlock &dst );
 
+		// getters
+		uint64_t			get_line_counter();
+		uint16_t			get_block_level();
+		uint16_t			get_bracket_no();
+		std::string			get_filename();
+
+		Server				&get_server();
+		ServerBlock			get_serverblock();
+
+		Location			getlocation(); // have make yet
+		
 	private:
 		Parse( void );
 
@@ -60,12 +71,15 @@ class Parse
 		uint16_t			block_level;
 		uint16_t			bracket_no;
 		std::string			filename;
-		std::istringstream	content_stream;
-		std::istringstream	line_stream;
-		Server				buffer;
+
+		std::istringstream	content_stream; // no
+		std::istringstream	line_stream; // no
+		Server				buffer; // no
+
 		Server				&server;
 		ServerBlock			serverblock;
-		Location			location;
+		
+		Location			location; // have make yet
 };
 
 #endif

@@ -84,6 +84,7 @@ bool	all_of(T start, T end, int (*f)(int))
  * 
  * @attention	if dst is not empty the deconstructor in temp will 
  * 				erase whatever memory is in dst
+ * 				no tested yet lulz
  */
 template< typename T >
 void	ft_move( T &dst, T &src ) {

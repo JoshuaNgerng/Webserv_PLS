@@ -243,3 +243,50 @@ pollfd_t*	Server::getSocketfds( void ) { return (&(*(socket_fds.begin()))); }
 std::ostream&	operator<<(std::ostream &o, const Server& ref ) {
 	(void)ref;return (o);
 }
+
+
+//getters
+const	socklen_t	Server::get_socklen(){
+	return this->socklen;
+}
+
+const	int			Server::get_socket_type(){
+	return this->socket_type;
+}
+
+const	int			Server::get_socket_protocol(){
+	return this->socket_protocol;
+}
+
+const	int			Server::get_backlog_limit(){
+	return this->backlog_limit;
+}
+
+const	int			Server::get_recv_flag(){
+	return this->recv_flag;
+}
+
+const	int			Server::get_send_flag(){
+	return this->send_flag;
+}
+
+const	int			Server::get_timeout(){
+	return this->timeout;
+}
+
+const	int			Server::get_buffer_limit(){
+	return this->buffer_limit;
+}
+
+uint32_t			Server::get_server_no(){
+	return this->server_no;
+}
+
+nfds_t				Server::get_server_limit(){
+	return this->server_limit;
+}
+
+uint32_t			Server::get_server_index(){
+	return this->server_index;
+}
+// end of getters

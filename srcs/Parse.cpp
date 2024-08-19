@@ -243,3 +243,34 @@ void Parse::parseConfigFile( void ) {
 	content_stream.str(content);
 	processContent();
 }
+
+//getters
+uint64_t			Parse::get_line_counter(){
+	return this->line_counter;
+}
+
+uint16_t			Parse::get_block_level(){
+	return this->block_level;
+}
+
+uint16_t			Parse::get_bracket_no(){
+	return this->bracket_no;
+}
+
+std::string			Parse::get_filename(){
+	return this->filename;
+}
+
+Server				&Parse::get_server(){
+	return this->server;
+}
+
+ServerBlock			Parse::get_serverblock(){
+	return this->serverblock;
+}
+
+Location			Parse::getlocation(){
+	return this->location;
+}
+
+// end of getters

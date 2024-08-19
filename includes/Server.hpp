@@ -30,7 +30,20 @@ class Server
 		pollfd_t*	getSocketfds( void );
 
 		//someone help write getters const type getSomething( void ) const
-		//so lazy lulz
+		//so lazy lulz (Okay ;-)
+		//getters
+		const	socklen_t	get_socklen();
+		const	int			get_socket_type();
+		const	int			get_socket_protocol();
+		const	int			get_backlog_limit();
+		const	int			get_recv_flag();
+		const	int			get_send_flag();
+		const	int			get_timeout();
+		const	int			get_buffer_limit();
+		uint32_t			get_server_no();
+		nfds_t				get_server_limit();
+		uint32_t			get_server_index();
+
 
 	private:
 		typedef std::list<Client>::iterator client_ptr;
@@ -48,8 +61,8 @@ class Server
 		std::vector<pollfd_t>		socket_fds; // load all servers then only add clients (assume all fd on the same vector)
 		std::vector<size_t>			server_mapping; // server_index to serverblock_index
 		std::map<int, client_ptr>	client_mapping; // client fd to client index
-		std::vector<ServerBlock>	server_info;
-		std::list<Client>			client_info;
+		std::vector<ServerBlock>	server_info; // no
+		std::list<Client>			client_info; // no
 
 		void	setupServer( void );
 		void	setupSocketfds( void );
