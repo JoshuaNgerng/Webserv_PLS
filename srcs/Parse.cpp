@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/19 08:27:03 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/19 17:05:03 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ void	Parse::processServer( const std::string &keyw ) {
 		process = &processListen;
 		break ;
 	case 1:
-		processSingleToken(serverblock.server_name);//
+		processSingleToken(serverblock.server_name);
 		break ;
 	case 2:
 		processSingleToken(serverblock.root);
