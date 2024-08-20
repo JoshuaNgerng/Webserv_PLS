@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/18 02:50:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/20 16:18:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,21 +29,23 @@ class Server
 		void		addServerBlock( ServerBlock &ref );
 		pollfd_t*	getSocketfds( void );
 
-		//someone help write getters const type getSomething( void ) const
-		//so lazy lulz (Okay ;-)
 		//getters
-		const	socklen_t	get_socklen();
-		const	int			get_socket_type();
-		const	int			get_socket_protocol();
-		const	int			get_backlog_limit();
-		const	int			get_recv_flag();
-		const	int			get_send_flag();
-		const	int			get_timeout();
-		const	int			get_buffer_limit();
-		uint32_t			get_server_no();
-		nfds_t				get_server_limit();
-		uint32_t			get_server_index();
+		const socklen_t	getSocklen( void ) const;
+		const int		getSocketType( void ) const;
+		const int		getSocketProtocol( void ) const;
+		const int		getBacklogLimit( void ) const;
+		const int		getRecvFlag( void ) const;
+		const int		getSendFlag( void ) const;
+		const int		getTimeout( void ) const;
+		const int		getBufferLimit( void ) const;
+		uint32_t		getServerNo( void ) const;
+		nfds_t			getServerLimit( void ) const;
+		uint32_t		getServerIndex( void ) const;
 
+		//display for ostream
+		std::ostream&	displaySocketFds( std::ostream &o ) const;
+		std::ostream&	displayServerInfo( std::ostream &o ) const;
+		std::ostream&	displayClientInfo( std::ostream &o ) const;
 
 	private:
 		typedef std::list<Client>::iterator client_ptr;

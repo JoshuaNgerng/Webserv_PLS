@@ -6,13 +6,14 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/15 23:40:32 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/20 17:27:04 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONST_HPP
 # define CONST_HPP
 # include <iostream>
+// # include <ostream>
 # include <fstream>
 # include <istream>
 # include <sstream>
@@ -91,6 +92,30 @@ void	ft_move( T &dst, T &src ) {
 	T	temp;
 	std::swap(dst, src);
 	std::swap(src, temp);
+}
+
+template< class T >
+std::ostream&	displayContainer( std::ostream &o, const T &ref ) {
+	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
+		o << *it << ' ';
+	}
+	return (o);
+}
+
+template< class T >
+std::ostream&	displayContainer( std::ostream &o, const T &ref, const std::string &end ) {
+	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
+		o << *it << end;
+	}
+	return (o);
+}
+
+template< class T >
+std::ostream&	displayContainer( std::ostream &o, const T &ref, const char *end ) {
+	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
+		o << *it << end;
+	}
+	return (o);
 }
 
 // class out_of_range : public std::exception {

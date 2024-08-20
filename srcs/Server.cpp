@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/18 02:53:25 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/20 17:40:40 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,54 +239,78 @@ void	Server::addServerBlock( ServerBlock &ref ) {
 
 pollfd_t*	Server::getSocketfds( void ) { return (&(*(socket_fds.begin()))); }
 
-// can format after someone write getters
-std::ostream&	operator<<(std::ostream &o, const Server& ref ) {
-	(void)ref;return (o);
-}
-
 
 //getters
-const	socklen_t	Server::get_socklen(){
-	return this->socklen;
+const socklen_t	Server::getSocklen( void ) const {
+	return (this->socklen);
 }
 
-const	int			Server::get_socket_type(){
-	return this->socket_type;
+const int	Server::getSocketType( void ) const {
+	return (this->socket_type);
 }
 
-const	int			Server::get_socket_protocol(){
-	return this->socket_protocol;
+const int	Server::getSocketProtocol( void ) const {
+	return (this->socket_protocol);
 }
 
-const	int			Server::get_backlog_limit(){
-	return this->backlog_limit;
+const int	Server::getBacklogLimit( void ) const {
+	return (this->backlog_limit);
 }
 
-const	int			Server::get_recv_flag(){
-	return this->recv_flag;
+const int	Server::getRecvFlag( void ) const {
+	return (this->recv_flag);
 }
 
-const	int			Server::get_send_flag(){
-	return this->send_flag;
+const int	Server::getSendFlag( void ) const {
+	return (this->send_flag);
 }
 
-const	int			Server::get_timeout(){
-	return this->timeout;
+const int	Server::getTimeout( void ) const {
+	return (this->timeout);
 }
 
-const	int			Server::get_buffer_limit(){
-	return this->buffer_limit;
+const int	Server::getBufferLimit( void ) const {
+	return (this->buffer_limit);
 }
 
-uint32_t			Server::get_server_no(){
-	return this->server_no;
+uint32_t	Server::getServerNo( void ) const {
+	return (this->server_no);
 }
 
-nfds_t				Server::get_server_limit(){
-	return this->server_limit;
+nfds_t	Server::getServerLimit( void ) const {
+	return (this->server_limit);
 }
 
-uint32_t			Server::get_server_index(){
-	return this->server_index;
+uint32_t	Server::getServerIndex( void ) const {
+	return (this->server_index);
 }
 // end of getters
+
+//display
+std::ostream&	Server::displaySocketFds( std::ostream &o ) const {
+	return (displayContainer(o, socket_fds));
+}
+
+std::ostream&	Server::displayServerInfo( std::ostream &o ) const {
+	return (displayContainer(o, server_info, "\n"));
+}
+
+std::ostream&	Server::displayClientInfo( std::ostream &o ) const {
+	return (displayContainer(o, client_info));
+}
+
+std::ostream&	Server::displaySocketFds( std::ostream &o ) const {
+	return (displayContainer(o, socket_fds));
+}
+//end of display
+
+std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
+	o << "Servers Status\n";
+	o << "Const info: " << "backlog limit: " << ref.getBacklogLimit() <<
+		", recv flag: " << ref.getRecvFlag() << ", send flag: " << ref.getSendFlag() <<
+		", poll timeout: " << ref.getTimeout() << ", recv buffer size: " << ref.getBufferLimit() << '\n';
+	o << "Display Sockets: " << ref.displaySocketFds(o);
+	o << "Server status\n";
+	o << ref.displayServerInfo(o);
+	return (o);
+}
