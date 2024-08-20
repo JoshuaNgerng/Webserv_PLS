@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/17 01:22:02 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 01:00:19 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,22 @@ void	ServerBlock::reset( void ) {
 	autoindex = false;
 	error_page.clear();
 	location.clear();
+}
+
+void	ServerBlock::addListen( const Socket &add ) { listen.push_back(add); }
+
+void	ServerBlock::addServerName( const std::string &add ) { server_name = add; }
+
+void	ServerBlock::addRoot( const std::string &add ) { root = add; }
+
+void	ServerBlock::setClientMax( uint64_t add ) { client_max_body_size = add; }
+
+void	ServerBlock::addIndex( const std::string &add ) { index = add; }
+
+void	ServerBlock::toggleAutoIndex( void ) { autoindex = true; }
+
+void	ServerBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
+	error_page[error_code] = path;
 }
 
 std::string	ServerBlock::testHTML( void ) {

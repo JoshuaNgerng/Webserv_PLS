@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/20 16:18:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 00:51:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,17 @@ class Server
 		pollfd_t*	getSocketfds( void );
 
 		//getters
-		const socklen_t	getSocklen( void ) const;
-		const int		getSocketType( void ) const;
-		const int		getSocketProtocol( void ) const;
-		const int		getBacklogLimit( void ) const;
-		const int		getRecvFlag( void ) const;
-		const int		getSendFlag( void ) const;
-		const int		getTimeout( void ) const;
-		const int		getBufferLimit( void ) const;
-		uint32_t		getServerNo( void ) const;
-		nfds_t			getServerLimit( void ) const;
-		uint32_t		getServerIndex( void ) const;
+		socklen_t	getSocklen( void ) const;
+		int			getSocketType( void ) const;
+		int			getSocketProtocol( void ) const;
+		int			getBacklogLimit( void ) const;
+		int			getRecvFlag( void ) const;
+		int			getSendFlag( void ) const;
+		int			getTimeout( void ) const;
+		int			getBufferLimit( void ) const;
+		uint32_t	getServerNo( void ) const;
+		nfds_t		getServerLimit( void ) const;
+		uint32_t	getServerIndex( void ) const;
 
 		//display for ostream
 		std::ostream&	displaySocketFds( std::ostream &o ) const;
@@ -79,6 +79,7 @@ class Server
 		Client&		getClient( int client_fd );
 };
 
+std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref );
 std::ostream&	operator<<( std::ostream &o, const Server& ref );
 
 #endif

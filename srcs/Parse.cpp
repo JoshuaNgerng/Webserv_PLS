@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/19 17:05:03 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 00:49:02 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,47 +34,49 @@ void	Parse::removeComments( std::string &content ) const {
 // remove line if line only have empty spaces
 void	Parse::removeWhitespace( std::string &content ) const {
 	size_t	pos = 0;
+	size_t	end = 0;
 	while (pos != std::string::npos || pos == content.length())
 	{
 		bool	erase = true;
-		size_t	end = content.find('\n', pos);
-		if (end == std::string::npos)
+		size_t	check = content.find('\n', pos);
+		if (check == std::string::npos)
 			end = content.length();
+		else
+			end = check;
 		for (size_t i = pos; i != end; i ++) {
 			if (!(std::isspace(content[i]))) {
 				erase = false;
 				break ;
 			}
 		}
-		if (erase)
+		if (erase && pos != end)
 			content.erase(pos, end);
-		pos = end;
+		if (check == pos)
+			check ++;
+		// std::cout << "check loop {" << pos << ", " << end << ", " << check << "}\n";
+		pos = check;
 	}
 }
 
 bool	Parse::getNextLine( void ) {
 	std::string	line;
-	std::getline(content_stream, line);
-	if (!line.length())
+	if (content_stream.eof())
 		return (false);
+	std::getline(content_stream, line);
+	// std::cout << "test gnl: " << line << '\n';
+	while (!line.length()) {
+		std::getline(content_stream, line);
+		// std::cout << "test gnl: " << line << '\n';
+		if (line.length())
+			break ;
+		if (content_stream.eof())
+			return (false);
+	}
+	line_stream.clear();
 	line_stream.str(line);
 	line_counter ++;
+	// std::cout << "test gnl: " << line << '\n';
 	return (true);
-}
-
-/**
- * check the level of block the config
-*/
-static int	checkLevel( int level, const std::string &ref ) {
-	if (!level) {
-		if (ref == "server")
-			return (1);
-	}
-	else if (level == 1) {
-		if (ref == "location")
-			return (2);
-	}
-	return (level);
 }
 
 void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
@@ -95,7 +97,21 @@ void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 		}
 		(this->*process)(token);
 	}
-	
+}
+
+/**
+ * check the level of block the config
+*/
+static int	checkLevel( int level, const std::string &ref ) {
+	if (!level) {
+		if (ref == "server")
+			return (1);
+	}
+	else if (level == 1) {
+		if (ref == "location")
+			return (2);
+	}
+	return (level);
 }
 
 void	Parse::processListen( std::string &token ) {
@@ -147,7 +163,7 @@ void	Parse::processServer( const std::string &keyw ) {
 	switch (option)
 	{
 	case 0:
-		process = &processListen;
+		process = &Parse::processListen;
 		break ;
 	case 1:
 		processSingleToken(serverblock.server_name);
@@ -181,7 +197,7 @@ void	Parse::processToken( const std::string &token ) {
 		bracket_no --;
 		block_level --;
 		if (!bracket_no && !block_level) {
-			std::cout << "Parsing ServerBlock info\n" << serverblock;
+			// std::cout << "Parsing ServerBlock info\n" << serverblock;
 			server.addServerBlock(serverblock);
 		}
 		if (bracket_no == 1 && block_level == 1) {
@@ -204,13 +220,10 @@ void	Parse::processToken( const std::string &token ) {
 */
 void	Parse::processContent( void ) {
 	std::string	token;
-	
-	while (getNextLine())
-	{
-		while (line_stream >> token)
-		{
-			if (!token.length())
-				break ;
+	while (getNextLine()) {
+		// std::cout << "test line_stream: " << line_stream.str() << '\n';
+		while (line_stream >> token) {
+			// std::cout << "test token from line: " << token << '\n';
 			processToken(token);
 		}
 	}
@@ -245,32 +258,32 @@ void Parse::parseConfigFile( void ) {
 }
 
 //getters
-uint64_t			Parse::get_line_counter(){
-	return this->line_counter;
+uint64_t	Parse::getLineCounter( void ) const {
+	return (this->line_counter);
 }
 
-uint16_t			Parse::get_block_level(){
-	return this->block_level;
+uint16_t	Parse::getBlockLevel( void ) const {
+	return (this->block_level);
 }
 
-uint16_t			Parse::get_bracket_no(){
-	return this->bracket_no;
+uint16_t	Parse::getBracketNo( void ) const {
+	return (this->bracket_no);
 }
 
-std::string			Parse::get_filename(){
-	return this->filename;
+const std::string&	Parse::getFilename( void ) const {
+	return (this->filename);
 }
 
-Server				&Parse::get_server(){
-	return this->server;
+// const Server	&Parse::getServer( void ) const {
+// 	return (this->server);
+// }
+
+ServerBlock	Parse::getServerBlock( void ) const {
+	return (this->serverblock);
 }
 
-ServerBlock			Parse::get_serverblock(){
-	return this->serverblock;
-}
-
-Location			Parse::getlocation(){
-	return this->location;
-}
+// Location	Parse::getlocation( void ) const{
+// 	return this->location;
+// } location not yet implemented yet lulz
 
 // end of getters

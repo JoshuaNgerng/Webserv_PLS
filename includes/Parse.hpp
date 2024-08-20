@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/19 09:11:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/20 23:52:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,13 +40,13 @@ class Parse
 		void	parseSingleToken( ServerBlock &dst );
 
 		// getters
-		uint64_t			get_line_counter();
-		uint16_t			get_block_level();
-		uint16_t			get_bracket_no();
-		std::string			get_filename();
+		uint64_t			getLineCounter( void ) const;
+		uint16_t			getBlockLevel( void ) const;
+		uint16_t			getBracketNo( void ) const;
+		const std::string&	getFilename( void ) const;
 
-		Server				&get_server();
-		ServerBlock			get_serverblock();
+		// Server				&getServer( void ) const;
+		ServerBlock			getServerBlock( void ) const;
 
 		Location			getlocation(); // have make yet
 		

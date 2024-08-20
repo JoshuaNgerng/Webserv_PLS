@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/17 15:15:53 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 00:33:53 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ CheckFile::CheckFile( const char *filename_ ) : filename(filename_) { }
 CheckFile::~CheckFile( void ) { }
 
 void	CheckFile::checking( void ) {
-	checking(F_OK | W_OK | R_OK | X_OK  );
+	checking(F_OK | W_OK | R_OK | X_OK);
 }
 
 void	CheckFile::checking( int check_flags ) {
@@ -51,7 +51,7 @@ uint8_t	CheckFile::getFileContent( std::string &dst ) const {
 	std::ifstream		config_file(filename.c_str());
 	std::stringstream	fileStream;
 	if (!fileToStringStream(fileStream, config_file))
-		return (open);
+		return (open_);
 	fileStream << config_file.rdbuf();
 	dst = fileStream.str();
 	return (success);
@@ -61,6 +61,6 @@ uint8_t	CheckFile::getFileContent( std::stringstream &dst ) const {
 	std::ifstream		config_file(filename.c_str());
 	std::stringstream	fileStream;
 	if (!fileToStringStream(dst, config_file))
-		return (open);
+		return (open_);
 	return (success);
 }

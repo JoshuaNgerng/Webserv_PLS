@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/17 15:12:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 00:33:29 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ enum filetype {
 
 enum checkfileerror {
 	success = 0,
-	open = 1,
-	read = 2
+	open_ = 1,
+	read_ = 2
 };
 
 class CheckFile {
