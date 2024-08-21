@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 13:24:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 22:11:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ int	main(int ac, char **av, char **env) {
 	// if (!parse.parseConfigFile())
 	// 	return (parse.getError());
 	parse.parseConfigFile();
+	std::cout << "test\n" << server << '\n';
+	return (0);
 	server.startServerLoop();
 	return (0);
 }

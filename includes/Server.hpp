@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 18:08:36 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/22 00:50:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ class Server
 
 		void		addServerBlock( ServerBlock &ref );
 		pollfd_t*	getSocketfds( void );
+
+		static void	setNonBlockFd( int fd );
+		static int	setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol );
 
 		//getters
 		socklen_t	getSocklen( void ) const;
@@ -81,6 +84,7 @@ class Server
 		Client&		getClient( int client_fd );
 };
 
+std::ostream&	operator<<( std::ostream &o, std::ostream &o_ );
 std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref );
 std::ostream&	operator<<( std::ostream &o, const Server& ref );
 

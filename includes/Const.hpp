@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 13:37:13 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 21:21:59 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <sstream>
 # include <string>
 # include <cstring>
+# include <cstdlib>
 # include <exception>
 # include <list>
 # include <vector>

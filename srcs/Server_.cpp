@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 18:11:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/22 00:59:15 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,32 @@ Server::~Server( void ) { }
 // 	return (*this);
 // }
 
+void	Server::setNonBlockFd( int fd ) {
+	int flagss = fcntl(fd, F_GETFL);
+	if (flagss < 0) {
+		return ; // cant get flags
+	}
+	flagss |= O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, flagss) < 0) {
+		return ; // cant set nonblock flag
+	}
+}
+
+int	Server::setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol ) {
+	int	fd = socket(addr.sin_family, socket_type, socket_protocol);
+	if (fd < 0) {
+		return (-1); // cant set socket
+	}
+	if (bind(fd, (sockaddr *)&addr, socklen) < 0) {
+		// std::cout << "bind failed\n";
+		return ; // bind failed
+	}
+	if (listen(fd, backlog_limit) < 0) {
+		// std::cout << "listen failed\n";
+		return ; // listen failed
+	}
+}
+
 void	Server::setupSocketfds( void ) {
 	typedef std::vector<ServerBlock>::iterator iter;
 	server_no = 0;
@@ -52,20 +78,19 @@ void	Server::setupSocketfds( void ) {
 }
 
 void	Server::setupServer( void ) {
+	setupSocketfds();
 	typedef std::vector<ServerBlock>::iterator ServerIter;
 	typedef std::vector<Socket>::iterator SocketIter;
 	size_t	index = 0;
 	for (ServerIter it = server_info.begin(); it != server_info.end(); it ++) {
 		std::cout << "huh"<< it->listen.size() << "\n";
 		for (SocketIter addr_it = it->listen.begin(); addr_it != it->listen.end(); addr_it ++) {
-			const sockaddr_in_t	&addr = addr_it->refAddress();
-			socket_fds[index].fd = socket(addr.sin_family, socket_type, socket_protocol);
+			socket_fds[index].fd = setListeningSocket(addr_it->refAddress(), socket_type, socket_protocol);
 			std::cout << "check server fd: " << socket_fds[index].fd;
 			if (socket_fds[fd_counter].fd < 0) {
 				std::cout << "socket failed\n";
 				return ;
 			}
-			//flagss |= O_NONBLOCK; fcntl
 			if (bind(socket_fds[index].fd, (sockaddr *)&addr, socklen) < 0) {
 				std::cout << "bind failed\n";
 				return ;
@@ -85,11 +110,12 @@ void	Server::loopServer( void ) {
 }
 
 void	Server::startServerLoop( int *signal ) {
-	setupSocketfds();
-	setupServer();
 	if (!server_no) {
 		std::cout << "no servers lulz\n";
 		return ;
+	}
+	if (!socket_fds.size()) {
+		setupServer();
 	}
 	while (*signal) {
 		loopServer();

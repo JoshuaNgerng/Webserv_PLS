@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 17:59:10 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 22:14:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	Server::setupSocketfds( void ) {
 	for (iter it = server_info.begin(); it != server_info.end(); it ++) {
 		server_no += it->listen.size();
 	}
-	server_index = server_no;
+	fd_counter = server_no;
 	long	upper_limit = (server_no + 1) * backlog_limit + server_no;
 	if (upper_limit > UINT_MAX)
 		server_limit = UINT_MAX;
@@ -61,7 +61,7 @@ void	Server::setupServer( void ) {
 			const sockaddr_in_t	&addr = addr_it->refAddress();
 			socket_fds[index].fd = socket(addr.sin_family, socket_type, socket_protocol);
 			std::cout << "check server fd: " << socket_fds[index].fd;
-			if (socket_fds[server_index].fd < 0) {
+			if (socket_fds[fd_counter].fd < 0) {
 				std::cout << "socket failed\n";
 				return ;
 			}
@@ -80,7 +80,7 @@ void	Server::setupServer( void ) {
 }
 
 void	Server::getNewConnection( size_t index, server_block_iter &it ) {
-	if (server_index == server_limit) {
+	if (fd_counter == server_limit) {
 		std::cout << "max connection capacity met\n";
 		return ;
 	}
@@ -108,7 +108,7 @@ void	Server::getNewConnection( size_t index, server_block_iter &it ) {
 	socket_fds[slot].fd = fd;
 	client_info.push_back(new_client);
 	client_mapping[fd] = -- client_info.end();
-	server_index ++;
+	fd_counter ++;
 }
 
 void	Server::closeConnection( size_t index ) {
@@ -276,8 +276,8 @@ nfds_t	Server::getServerLimit( void ) const {
 	return (this->server_limit);
 }
 
-uint32_t	Server::getServerIndex( void ) const {
-	return (this->server_index);
+uint32_t	Server::getFdCounter( void ) const {
+	return (this->fd_counter);
 }
 // end of getters
 
@@ -296,6 +296,10 @@ std::ostream&	Server::displayClientInfo( std::ostream &o ) const {
 
 //end of display
 
+std::ostream&	operator<<( std::ostream &o, std::ostream &o_ ) {
+	(void)o; return(o_);
+}
+
 std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref ) {
 	o << "fd: " << ref.fd;
 	return (o);
@@ -308,9 +312,7 @@ std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
 		", send flag: " << ref.getSendFlag() <<
 		", poll timeout: " << ref.getTimeout() <<
 		", recv buffer size: " << ref.getBufferLimit() << '\n';
-	o << "Display Sockets: ";
-	ref.displaySocketFds(o) << '\n';
-	o << "Servers info\n";
-	ref.displayServerInfo(o) << '\n';
+	o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
+	o << "Servers info\n" << ref.displayServerInfo(o) << '\n';
 	return (o);
 }
