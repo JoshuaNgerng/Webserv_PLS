@@ -6,17 +6,20 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 00:49:02 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 12:49:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parse.hpp"
 
-Parse::Parse( void ) : filename("default.conf"), buffer(), server(buffer) {}
+Parse::Parse( void ) : filename("default.conf"), server() {}
 
-Parse::Parse( const char *config, Server &server_ ) : filename(config), buffer(), server(server_) {}
+Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_) {}
 
 Parse::~Parse( void ) { }
+
+void	Parse::setServer( Server &s ) { server = &s; }
+
 
 /**
  * @brief	remove comments
@@ -35,26 +38,31 @@ void	Parse::removeComments( std::string &content ) const {
 void	Parse::removeWhitespace( std::string &content ) const {
 	size_t	pos = 0;
 	size_t	end = 0;
-	while (pos != std::string::npos || pos == content.length())
+	while (pos != std::string::npos)
 	{
 		bool	erase = true;
 		size_t	check = content.find('\n', pos);
+		// std::cout << "test erase: " << ((erase) ? "true" : "false") << '\n';
 		if (check == std::string::npos)
 			end = content.length();
-		else
+		else {
 			end = check;
+			check ++;
+		}
+		// std::cout << "section to be checked " << content.substr(pos, end - pos) << '\n';
 		for (size_t i = pos; i != end; i ++) {
 			if (!(std::isspace(content[i]))) {
 				erase = false;
 				break ;
 			}
 		}
-		if (erase && pos != end)
-			content.erase(pos, end);
-		if (check == pos)
-			check ++;
-		// std::cout << "check loop {" << pos << ", " << end << ", " << check << "}\n";
+		if (erase ) {
+			// std::cout << "erase pos: " << pos << ", end: " << end << '\n';
+			content.erase(pos, end - pos + 1);
+			continue ;
+		}
 		pos = check;
+		// std::cout << "check loop {" << pos << ", " << end << ", " << check << "}\n";
 	}
 }
 
@@ -137,6 +145,18 @@ void	Parse::processListen( std::string &token ) {
 	serverblock.addListen(socket);
 }
 
+void	Parse::processServerName( std::string &token ) {
+	serverblock.addServerName(token);
+}
+
+void	Parse::processRoot( std::string &token ) {
+	serverblock.addRoot(token);
+}
+
+void	Parse::processIndex( std::string &token ) {
+	serverblock.addIndex(token);
+}
+
 /**
  * @brief	check keyword in the server block
  * 			have a switch case to further process the tokens till `;' char
@@ -159,23 +179,24 @@ void	Parse::processServer( const std::string &keyw ) {
 	}
 	void (Parse::*process)(std::string &);
 	process = NULL;
-	// std::cout << "server: " << first << ", option: " << option << '\n';
+	std::cout << "server: " << keyw << ", option: " << option << '\n';
 	switch (option)
 	{
 	case 0:
 		process = &Parse::processListen;
 		break ;
 	case 1:
-		processSingleToken(serverblock.server_name);
+		process = &Parse::processServerName;
 		break ;
 	case 2:
-		processSingleToken(serverblock.root);
+		process = &Parse::processRoot;
 		break ;
 	case 3:
-		processSingleToken(serverblock.index);
+		process = &Parse::processIndex;
 		break ;
 	
 	default:
+		std::cout << "kekW: " << keyw << '\n';
 		throw ParsingError(unknown_option);
 		break;
 	}
@@ -192,13 +213,17 @@ void	Parse::processToken( const std::string &token ) {
 		bracket_no ++;
 		return ;
 	}
-	else if (token == "}")
+	else if (token == "}" || token == "};")
 	{
 		bracket_no --;
 		block_level --;
 		if (!bracket_no && !block_level) {
-			// std::cout << "Parsing ServerBlock info\n" << serverblock;
-			server.addServerBlock(serverblock);
+			// std::cout << "\nParsing ServerBlock info\n" << serverblock << '\n';
+			server->addServerBlock(serverblock);
+			serverblock.reset();
+			// std::cout << "test adding\n" << *server << '\n';
+			// std::cout << "\nParsing ServerBlock info after transfer\n" << serverblock << '\n';
+			// std::cout << "\ntest parsed block\n"; server.displayServerInfo(std::cout); std::cout << '\n';
 		}
 		if (bracket_no == 1 && block_level == 1) {
 			serverblock.location.push_back(location);
@@ -207,6 +232,7 @@ void	Parse::processToken( const std::string &token ) {
 		return ;
 	}
 	block_level = checkLevel(block_level, token);
+	// std::cout << "test level: " << block_level << ", and bracket " << bracket_no << '\n';
 	// std::cout << "test: " << token << '\n';
 	if (bracket_no == 1 && block_level == 1)
 		processServer(token);
@@ -242,6 +268,8 @@ void	Parse::processContent( void ) {
  * 
 */
 void Parse::parseConfigFile( void ) {
+	if (!server)
+		return ; // no server given
 	CheckFile	check(filename.c_str());
 	check.checking(F_OK | R_OK);
 	if (!(!check.getAccessbility() && check.getType() == file))
@@ -252,7 +280,10 @@ void Parse::parseConfigFile( void ) {
 	if (!content.length())
 		throw ParsingError(file_empty);
 	removeComments(content);
+	// std::cout << "test str len: " << content.length() << '\n';
+	// std::cout << "test cleaned content\n" << content << '\n';
 	removeWhitespace(content);
+	// std::cout << "test cleaned content\n" << content << '\n';
 	content_stream.str(content);
 	processContent();
 }

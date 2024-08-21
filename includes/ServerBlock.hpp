@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/18 03:27:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 13:51:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ class ServerBlock
 		void	addIndex( const std::string &add );
 		void	toggleAutoIndex( void );
 		void	addErrorPage( uint16_t error_code, const std::string &path );
+		void	addLocation( const Location &add );
 
 		std::vector<Socket>				listen;
 		std::string						server_name;

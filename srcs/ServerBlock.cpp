@@ -6,15 +6,21 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 01:00:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 13:53:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerBlock.hpp"
 
-ServerBlock::ServerBlock( void ) { }
+ServerBlock::ServerBlock( void ) : listen(), server_name(),
+	root(), client_max_body_size(ULONG_MAX), index(),
+	autoindex(false), error_page() { }
 
-ServerBlock::ServerBlock( const ServerBlock &src ) { (void)src; }
+ServerBlock::ServerBlock( const ServerBlock &src ) : listen(src.listen),
+	server_name(src.server_name), root(src.root),
+	client_max_body_size(src.client_max_body_size), index(src.index),
+	autoindex(src.autoindex), error_page(src.error_page), location(src.location)
+	{ }
 
 ServerBlock::~ServerBlock( void ) { }
 
@@ -130,6 +136,8 @@ void	ServerBlock::reset( void ) {
 
 void	ServerBlock::addListen( const Socket &add ) { listen.push_back(add); }
 
+void	ServerBlock::addLocation( const Location &add ) { location.push_back(add); }
+
 void	ServerBlock::addServerName( const std::string &add ) { server_name = add; }
 
 void	ServerBlock::addRoot( const std::string &add ) { root = add; }
@@ -138,7 +146,7 @@ void	ServerBlock::setClientMax( uint64_t add ) { client_max_body_size = add; }
 
 void	ServerBlock::addIndex( const std::string &add ) { index = add; }
 
-void	ServerBlock::toggleAutoIndex( void ) { autoindex = true; }
+void	ServerBlock::toggleAutoIndex( void ) { autoindex = !autoindex; }
 
 void	ServerBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
 	error_page[error_code] = path;
@@ -175,6 +183,8 @@ std::ostream&	operator<<( std::ostream &o, const ServerBlock &ref ) {
 	o << "Client max body size: " << ref.client_max_body_size << '\n';
 	o << "Index: " << ref.index << '\n';
 	o << "Error pages: ";
+	if (ref.error_page.begin() == ref.error_page.end())
+		return (o);
 	for (error_iter it = ref.error_page.begin(); it != ref.error_page.end(); it ++) {
 		o << it->first << " = " << it->second << ' ';
 	}

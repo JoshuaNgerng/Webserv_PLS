@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   Server_.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 17:59:10 by jngerng          ###   ########.fr       */
+/*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
+/*   Updated: 2024/08/21 18:11:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	Server::setupSocketfds( void ) {
 	for (iter it = server_info.begin(); it != server_info.end(); it ++) {
 		server_no += it->listen.size();
 	}
-	server_index = server_no;
+	fd_counter = server_no;
 	long	upper_limit = (server_no + 1) * backlog_limit + server_no;
 	if (upper_limit > UINT_MAX)
 		server_limit = UINT_MAX;
@@ -61,10 +61,11 @@ void	Server::setupServer( void ) {
 			const sockaddr_in_t	&addr = addr_it->refAddress();
 			socket_fds[index].fd = socket(addr.sin_family, socket_type, socket_protocol);
 			std::cout << "check server fd: " << socket_fds[index].fd;
-			if (socket_fds[server_index].fd < 0) {
+			if (socket_fds[fd_counter].fd < 0) {
 				std::cout << "socket failed\n";
 				return ;
 			}
+			//flagss |= O_NONBLOCK; fcntl
 			if (bind(socket_fds[index].fd, (sockaddr *)&addr, socklen) < 0) {
 				std::cout << "bind failed\n";
 				return ;
@@ -79,124 +80,8 @@ void	Server::setupServer( void ) {
 	}
 }
 
-void	Server::getNewConnection( size_t index, server_block_iter &it ) {
-	if (server_index == server_limit) {
-		std::cout << "max connection capacity met\n";
-		return ;
-	}
-	uint32_t	slot = findAvaliableSlot();
-	if (slot == server_limit)
-		return ;
-	Client	new_client(it);
-	int		fd = -1;
-	int		flags = 0;
-	fd = accept(socket_fds[index].fd,
-			(sockaddr *)&new_client.changeAddress() , &new_client.getSocklen());
-	if (fd < 0) {
-		std::cout << "accept fail\n";
-		return ; // cant accept socket error?
-	}
-	if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
-		close(fd);
-		return ; // get flag error?
-	}
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
-		close(fd);
-		return ; // set flag error?
-	}
-	new_client.setFd(fd);
-	socket_fds[slot].fd = fd;
-	client_info.push_back(new_client);
-	client_mapping[fd] = -- client_info.end();
-	server_index ++;
-}
-
-void	Server::closeConnection( size_t index ) {
-	if (socket_fds[index].fd < 0)
-		return ;
-	close(socket_fds[index].fd);
-	client_ptr pos = client_mapping[socket_fds[index].fd];
-	client_mapping.erase(socket_fds[index].fd);
-	client_info.erase(pos);
-	socket_fds[index].fd = -1;
-	socket_fds[index].events = POLLIN;
-}
-
-bool	Server::receiveRequest( Client &client )
-{
-	char	buffer[buffer_limit];
-	ssize_t	bytes;
-
-	bytes = recv(client.getFd(), buffer, buffer_limit, recv_flag);
-	if (!bytes)
-		return (false);
-	if (bytes < 0)
-		return (false);
-	std::string	str(buffer);
-	if (str.find("\r\n\r\n") != std::string::npos) {
-		client.finishRecv();
-	}
-	client.addToReq(str);
-	return (true);
-}
-
-void	Server::fetchData( Client &client ) {
-	ServerBlock	&ref = *(client.getServerRef());
-	client.addToRes(ref.testHTML());
-}
-
-bool	Server::sentReponse( Client &client )
-{
-	const std::string msg = client.getResponse().substr(client.getBytesSent());
-	size_t	len = client.getResponse().length() - client.getBytesSent();
-	ssize_t	bytes = send(client.getFd(), msg.c_str(), len, send_flag);
-	if (bytes == 0)
-		return (false); // error close connection
-	if (bytes < 0)
-		return (false); // error cant write
-	client.addBytesSent(bytes);
-	if (client.getBytesSent() == client.getResponse().length())
-		client.finishSend();
-	return (true);
-}
-
-// assume client start with pollin 
-// then move to pollout
 void	Server::loopServer( void ) {
-	if (poll(getSocketfds(), server_limit, timeout) < 0)
-		return ; // throw error?
-	std::cout << "check: " << socket_fds[0].fd << '\n';
-	for (size_t index = server_limit - 1; index != 0; index --) {
-		pollfd_t	ref_fd = socket_fds[index];
-		std::cout << index <<") test: " << ref_fd.fd << '\n';
-		if (ref_fd.fd < 0) {
-			continue ;
-		}
-		if (index < server_no) {
-			std::cout << "process server\n";
-			if (ref_fd.revents & POLLIN)
-				getNewConnection(ref_fd.fd, server_mapping[index].second);
-			continue ;
-		}
-		Client	&client = *(client_mapping[ref_fd.fd]);
-		if (ref_fd.revents & POLLIN) {
-			if (!receiveRequest(client))
-				closeConnection(index);
-			if (client.checkReq()) {
-				ref_fd.events = POLLOUT;
-				fetchData(client);
-			}
-		}
-		if (ref_fd.revents & POLLOUT) {
-			if (!sentReponse(client))
-				closeConnection(index);
-			if (client.checkRes())
-				closeConnection(index);
-		}
-		if (ref_fd.revents & (POLLHUP | POLLERR)) {
-			closeConnection(index);
-		}
-	}
+	
 }
 
 void	Server::startServerLoop( int *signal ) {
@@ -276,8 +161,8 @@ nfds_t	Server::getServerLimit( void ) const {
 	return (this->server_limit);
 }
 
-uint32_t	Server::getServerIndex( void ) const {
-	return (this->server_index);
+uint32_t	Server::getFdCounter( void ) const {
+	return (this->fd_counter);
 }
 // end of getters
 
@@ -308,6 +193,7 @@ std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
 		", send flag: " << ref.getSendFlag() <<
 		", poll timeout: " << ref.getTimeout() <<
 		", recv buffer size: " << ref.getBufferLimit() << '\n';
+	o << "Server info";
 	o << "Display Sockets: ";
 	ref.displaySocketFds(o) << '\n';
 	o << "Servers info\n";

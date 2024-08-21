@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/20 23:52:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 12:27:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,8 @@ class Parse
 		void	parseListen( ServerBlock &dst );
 		void	parseSingleToken( ServerBlock &dst );
 
+		void	setServer( Server &s );
+
 		// getters
 		uint64_t			getLineCounter( void ) const;
 		uint16_t			getBlockLevel( void ) const;
@@ -60,8 +62,10 @@ class Parse
 		void	processParameters( void (Parse::*process)(std::string &) );
 		void	processServer( const std::string &keyw );
 		void	processListen( std::string &token );
+		void	processServerName( std::string &token );
+		void	processRoot( std::string &token );
+		void	processIndex( std::string &token );
 		void	processLocation( const std::string &keyw );
-		void	processSingleToken( const std::string &token );
 		bool	getNextLine( void );
 
 		Parse( const Parse &src );
@@ -74,9 +78,8 @@ class Parse
 
 		std::istringstream	content_stream; // no
 		std::istringstream	line_stream; // no
-		Server				buffer; // no
 
-		Server				&server;
+		Server				*server;
 		ServerBlock			serverblock;
 		
 		Location			location; // have make yet

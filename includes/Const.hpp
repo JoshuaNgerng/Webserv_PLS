@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/20 17:27:04 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 13:37:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,22 +77,22 @@ bool	all_of(T start, T end, int (*f)(int))
 	return (true);
 }
 
-/**
- * @brief	creating std::move in c++98
- * 			move contents of src to dst then empty the content of src
- * @param	dst the object you want to move to
- * @param	src the object you want to move from
- * 
- * @attention	if dst is not empty the deconstructor in temp will 
- * 				erase whatever memory is in dst
- * 				no tested yet lulz
- */
-template< typename T >
-void	ft_move( T &dst, T &src ) {
-	T	temp;
-	std::swap(dst, src);
-	std::swap(src, temp);
-}
+// /** buggy dont work as intendded
+//  * @brief	creating std::move in c++98
+//  * 			move contents of src to dst then empty the content of src
+//  * @param	dst the object you want to move to
+//  * @param	src the object you want to move from
+//  * 
+//  * @attention	if dst is not empty the deconstructor in temp will 
+//  * 				erase whatever memory is in dst
+//  * 				no tested yet lulz
+//  */
+// template< typename T >
+// void	ft_move( T &dst, T &src ) {
+// 	T	temp;
+// 	std::swap(dst, src);
+// 	std::swap(src, temp);
+// }
 
 template< class T >
 std::ostream&	displayContainer( std::ostream &o, const T &ref ) {
