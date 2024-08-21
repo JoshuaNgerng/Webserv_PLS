@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/13 18:00:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 13:24:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,5 +25,6 @@ int	main(int ac, char **av, char **env) {
 	// if (!parse.parseConfigFile())
 	// 	return (parse.getError());
 	parse.parseConfigFile();
+	server.startServerLoop();
 	return (0);
 }

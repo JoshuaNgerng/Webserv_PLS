@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:02:23 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/15 08:38:36 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/17 00:45:39 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,9 @@ class Socket {
 	private:
 		void	checkLen( void );
 
-		in_port_t		port;
 		sockaddr_in_t	addr;
 };
+
+std::ostream&	operator<<( std::ostream &o, const Socket& ref );
 
 #endif

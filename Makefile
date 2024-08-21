@@ -6,7 +6,7 @@
 #    By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/13 16:47:15 by jngerng           #+#    #+#              #
-#    Updated: 2024/08/14 02:05:52 by jngerng          ###   ########.fr        #
+#    Updated: 2024/08/16 17:05:17 by jngerng          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME = webserv
 SRC_DIR = srcs
 INC_DIR = includes
 OBJ_DIR = obj
-FILES = CheckFile Parse ParsingError Server ServerBlock
+FILES = CheckFile Parse ParsingError Socket Server ServerBlock Client
 SRC = $(foreach item, $(FILES), $(SRC_DIR)/$(item).cpp)
 M_SRC = main
 OBJ = $(foreach item, $(FILES) $(M_SRC), $(OBJ_DIR)/$(item).o)

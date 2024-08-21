@@ -6,15 +6,21 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/14 14:38:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 13:53:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerBlock.hpp"
 
-ServerBlock::ServerBlock( void ) { }
+ServerBlock::ServerBlock( void ) : listen(), server_name(),
+	root(), client_max_body_size(ULONG_MAX), index(),
+	autoindex(false), error_page() { }
 
-ServerBlock::ServerBlock( const ServerBlock &src ) { (void)src; }
+ServerBlock::ServerBlock( const ServerBlock &src ) : listen(src.listen),
+	server_name(src.server_name), root(src.root),
+	client_max_body_size(src.client_max_body_size), index(src.index),
+	autoindex(src.autoindex), error_page(src.error_page), location(src.location)
+	{ }
 
 ServerBlock::~ServerBlock( void ) { }
 
@@ -128,6 +134,33 @@ void	ServerBlock::reset( void ) {
 	location.clear();
 }
 
+void	ServerBlock::addListen( const Socket &add ) { listen.push_back(add); }
+
+void	ServerBlock::addLocation( const Location &add ) { location.push_back(add); }
+
+void	ServerBlock::addServerName( const std::string &add ) { server_name = add; }
+
+void	ServerBlock::addRoot( const std::string &add ) { root = add; }
+
+void	ServerBlock::setClientMax( uint64_t add ) { client_max_body_size = add; }
+
+void	ServerBlock::addIndex( const std::string &add ) { index = add; }
+
+void	ServerBlock::toggleAutoIndex( void ) { autoindex = !autoindex; }
+
+void	ServerBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
+	error_page[error_code] = path;
+}
+
+std::string	ServerBlock::testHTML( void ) {
+	std::string	msg = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
+	std::string	html = "<html><h1>Hello world</h1></html?";
+	msg.append(to_String(html.size()));
+	msg.append("\n\n");
+	msg.append(html);
+	return (msg);
+}
+
 bool	ServerBlock::checkDupSocket( const Socket &ref ) {
 	typedef std::vector<Socket>::iterator iter;
 	for (iter it = listen.begin(); it != listen.end(); it ++) {
@@ -135,4 +168,26 @@ bool	ServerBlock::checkDupSocket( const Socket &ref ) {
 			return (true);
 	}
 	return (false);
+}
+
+std::ostream&	operator<<( std::ostream &o, const ServerBlock &ref ) {
+	typedef std::vector<Socket>::const_iterator sock_iter;
+	typedef std::map<uint16_t, std::string>::const_iterator error_iter;
+	o << "Listening on: ";
+	for (sock_iter it = ref.listen.begin(); it != ref.listen.end(); it ++) {
+		o << *it << ' ';
+	}
+	o << '\n';
+	o << "Server name: " << ref.server_name << '\n';
+	o << "Root directory: " << ref.root << '\n';
+	o << "Client max body size: " << ref.client_max_body_size << '\n';
+	o << "Index: " << ref.index << '\n';
+	o << "Error pages: ";
+	if (ref.error_page.begin() == ref.error_page.end())
+		return (o);
+	for (error_iter it = ref.error_page.begin(); it != ref.error_page.end(); it ++) {
+		o << it->first << " = " << it->second << ' ';
+	}
+	o << '\n';
+	return (o);
 }

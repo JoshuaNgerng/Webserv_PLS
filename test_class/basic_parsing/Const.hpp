@@ -6,14 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 13:37:13 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/15 23:40:32 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONST_HPP
 # define CONST_HPP
 # include <iostream>
-// # include <ostream>
 # include <fstream>
 # include <istream>
 # include <sstream>
@@ -77,45 +76,20 @@ bool	all_of(T start, T end, int (*f)(int))
 	return (true);
 }
 
-// /** buggy dont work as intendded
-//  * @brief	creating std::move in c++98
-//  * 			move contents of src to dst then empty the content of src
-//  * @param	dst the object you want to move to
-//  * @param	src the object you want to move from
-//  * 
-//  * @attention	if dst is not empty the deconstructor in temp will 
-//  * 				erase whatever memory is in dst
-//  * 				no tested yet lulz
-//  */
-// template< typename T >
-// void	ft_move( T &dst, T &src ) {
-// 	T	temp;
-// 	std::swap(dst, src);
-// 	std::swap(src, temp);
-// }
-
-template< class T >
-std::ostream&	displayContainer( std::ostream &o, const T &ref ) {
-	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
-		o << *it << ' ';
-	}
-	return (o);
-}
-
-template< class T >
-std::ostream&	displayContainer( std::ostream &o, const T &ref, const std::string &end ) {
-	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
-		o << *it << end;
-	}
-	return (o);
-}
-
-template< class T >
-std::ostream&	displayContainer( std::ostream &o, const T &ref, const char *end ) {
-	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
-		o << *it << end;
-	}
-	return (o);
+/**
+ * @brief	creating std::move in c++98
+ * 			move contents of src to dst then empty the content of src
+ * @param	dst the object you want to move to
+ * @param	src the object you want to move from
+ * 
+ * @attention	if dst is not empty the deconstructor in temp will 
+ * 				erase whatever memory is in dst
+ */
+template< typename T >
+void	ft_move( T &dst, T &src ) {
+	T	temp;
+	std::swap(dst, src);
+	std::swap(src, temp);
 }
 
 // class out_of_range : public std::exception {
