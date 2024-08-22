@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/22 00:50:18 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/22 01:27:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class Server
 		nfds_t						server_limit;
 		uint32_t					fd_counter;
 		std::vector<pollfd_t>		socket_fds; // load all servers then only add clients (assume all fd on the same vector)
+		std::vector<pollfd_t>		buffer_new_fd;
 		vector_pair					server_mapping; // server_index to serverblock_index
 		std::map<int, client_ptr>	client_mapping; // client fd to client index
 		std::vector<ServerBlock>	server_info; // no

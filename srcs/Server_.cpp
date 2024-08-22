@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/22 00:59:15 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/22 13:31:03 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ void	Server::setupSocketfds( void ) {
 	socket_fd.fd = -1;
 	socket_fd.events = POLLIN;
 	socket_fds.insert(socket_fds.end(), server_limit, socket_fd);
+	buffer_new_fd.insert(buffer_new_fd.end(), server_no, socket_fd);
 }
 
 void	Server::setupServer( void ) {
@@ -87,18 +88,7 @@ void	Server::setupServer( void ) {
 		for (SocketIter addr_it = it->listen.begin(); addr_it != it->listen.end(); addr_it ++) {
 			socket_fds[index].fd = setListeningSocket(addr_it->refAddress(), socket_type, socket_protocol);
 			std::cout << "check server fd: " << socket_fds[index].fd;
-			if (socket_fds[fd_counter].fd < 0) {
-				std::cout << "socket failed\n";
-				return ;
-			}
-			if (bind(socket_fds[index].fd, (sockaddr *)&addr, socklen) < 0) {
-				std::cout << "bind failed\n";
-				return ;
-			}
-			if (listen(socket_fds[index].fd, backlog_limit) < 0) {
-				std::cout << "listen failed\n";
-				return ;
-			}
+			setNonBlockFd(socket_fds[index].fd);
 			server_mapping.push_back(std::make_pair(socket_fds[index].fd, it));
 			index ++;
 		}
@@ -106,7 +96,20 @@ void	Server::setupServer( void ) {
 }
 
 void	Server::loopServer( void ) {
-	
+	if (poll(getSocketfds(), server_limit, timeout) < 0)
+		return ; // throw error?
+	for (size_t index = 0; index != server_limit; index ++) {
+		pollfd_t	poll_fd = socket_fds[index];
+		if (poll_fd.fd < 0) {
+			continue ;
+		}
+		if (poll_fd.revents == 0) {
+			continue ;
+		}
+		if (index < server_no) [
+			
+		]
+	}
 }
 
 void	Server::startServerLoop( int *signal ) {
