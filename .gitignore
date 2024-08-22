@@ -35,3 +35,5 @@ webserv
 #vscode
 .vscode/*
 .vscode
+
+node_modules/*
