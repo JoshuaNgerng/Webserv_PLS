@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/22 13:31:03 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/23 15:12:18 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ void	Server::setupSocketfds( void ) {
 		server_no += it->listen.size();
 	}
 	fd_counter = server_no;
+	buffer_fd = server_no * 2;
 	long	upper_limit = (server_no + 1) * backlog_limit + server_no;
 	if (upper_limit > UINT_MAX)
 		server_limit = UINT_MAX;
@@ -75,7 +76,7 @@ void	Server::setupSocketfds( void ) {
 	socket_fd.fd = -1;
 	socket_fd.events = POLLIN;
 	socket_fds.insert(socket_fds.end(), server_limit, socket_fd);
-	buffer_new_fd.insert(buffer_new_fd.end(), server_no, socket_fd);
+	buffer_new_fd.insert(buffer_new_fd.end(),  buffer_fd, socket_fd);
 }
 
 void	Server::setupServer( void ) {
@@ -89,10 +90,31 @@ void	Server::setupServer( void ) {
 			socket_fds[index].fd = setListeningSocket(addr_it->refAddress(), socket_type, socket_protocol);
 			std::cout << "check server fd: " << socket_fds[index].fd;
 			setNonBlockFd(socket_fds[index].fd);
-			server_mapping.push_back(std::make_pair(socket_fds[index].fd, it));
+			server_mapping.push_back(it);
 			index ++;
 		}
 	}
+}
+
+void	Server::getNewConnection( int fd, server_block_iter &it ) {
+	if (buffer_counter == buffer_fd) {
+		return ; // too many fds in buffer
+	}
+	if (fd_counter == server_limit) {
+		return ; // too many fds in server
+	}
+	Client	buffer(it);
+	int fd_client = accept(fd, (sockaddr_t *)&buffer.changeAddress(),
+			&buffer.getSocklen());
+	if (fd_client < 0) {
+		return ; // cant get
+	}
+	setNonBlockFd(fd_client); // need try catch?
+	buffer.setFd(fd);
+	buffer_new_fd[buffer_counter].fd = fd;
+	client_info.push_back(buffer);
+	client_mapping[fd] = -- client_info.end();
+	buffer_counter ++;
 }
 
 void	Server::loopServer( void ) {
@@ -100,25 +122,35 @@ void	Server::loopServer( void ) {
 		return ; // throw error?
 	for (size_t index = 0; index != server_limit; index ++) {
 		pollfd_t	poll_fd = socket_fds[index];
+		server_block_iter&	it = server_mapping[index];
 		if (poll_fd.fd < 0) {
 			continue ;
 		}
 		if (poll_fd.revents == 0) {
 			continue ;
 		}
-		if (index < server_no) [
-			
-		]
+		if (poll_fd.revents & POLLIN) {
+			if (index < server_no) {
+				getNewConnection(poll_fd.fd, it);
+			}
+			else {
+				receiveRequest(*(client_mapping[poll_fd.fd]));
+			}
+		}
+		if (poll_fd.revents & POLLOUT) {
+			//handle send
+		}
 	}
+	resetFds();
 }
 
 void	Server::startServerLoop( int *signal ) {
+	if (!socket_fds.size()) {
+		setupServer();
+	}
 	if (!server_no) {
 		std::cout << "no servers lulz\n";
 		return ;
-	}
-	if (!socket_fds.size()) {
-		setupServer();
 	}
 	while (*signal) {
 		loopServer();
@@ -186,11 +218,15 @@ uint32_t	Server::getServerNo( void ) const {
 	return (this->server_no);
 }
 
+uint32_t	Server::getBufferFd( void ) const {
+	return (this->buffer_fd);
+}
+
 nfds_t	Server::getServerLimit( void ) const {
 	return (this->server_limit);
 }
 
-uint32_t	Server::getFdCounter( void ) const {
+nfds_t	Server::getFdCounter( void ) const {
 	return (this->fd_counter);
 }
 // end of getters
