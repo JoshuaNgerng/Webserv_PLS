@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 12:49:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/24 01:07:35 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,16 @@ bool	Parse::getNextLine( void ) {
 	return (true);
 }
 
+/**
+ * @brief	this loop keeping tokenizing content till `;' char is found
+ * 			line_stream is replaced if new line if line have no token leftover
+ * 			and `;' char is not met
+ * 
+ * @param	process the function pointer to store the token (string) into the serverblock
+ * 					or the location block, the dev will implement the function
+ *
+ * @throws	whatever error the function passed into will throw
+ */
 void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 	std::string token;
 	while (line_stream >> token)
@@ -158,12 +168,12 @@ void	Parse::processIndex( std::string &token ) {
 }
 
 /**
- * @brief	check keyword in the server block
- * 			have a switch case to further process the tokens till `;' char
+ * @brief	check keyword in the server block the func will loop through all known
+ * 			keyword and assign the proper function pointer to pass it into
+ * 			processParameter to futher tokenize the arugment for the keyword and
+ * 			store it into the serverblock
  * 
- * @param	first	token to check
- * @param	stream	main stringstream from parent func
- * @param	server	ServerBlock being added to
+ * @param	keyw the keyword in the serverblock being process
  * 
  * @todo	testing listen, server_name, root, index for now
  * 			index can take multiple arug idk how that works
@@ -203,10 +213,22 @@ void	Parse::processServer( const std::string &keyw ) {
 	processParameters(process);
 }
 
+/**
+ * implement something similar to processServer but add to location class instead
+ */
 void	Parse::processLocation( const std::string &keyw ) {
 	(void)keyw;
 }
 
+/**
+ * @brief	check the token for important block indentifier such as `server'
+ * 			and `location' then search for brackets to determine which keyword to process
+ * 			whether it is within the serverblock or the location 
+ * 
+ * @param	token	the token to check for block indentifier or pass into further processing
+ * 					as keywords of the certain block
+ * 
+ */
 void	Parse::processToken( const std::string &token ) {
 	if (token == "{")
 	{
@@ -241,8 +263,12 @@ void	Parse::processToken( const std::string &token ) {
 }
 
 /**
- * @brief	tokenization process
- * 			
+ * @brief	Parse class will pass the whole file content as a ostringstream (oss)
+ * 			getNextLine will take a new line from the oss and put into another oss
+ * 			line_stream for further tokenization
+ * 
+ * @throws	the func will check the final bracket_level to ensure all brackets are
+ * 			closed { }	
 */
 void	Parse::processContent( void ) {
 	std::string	token;

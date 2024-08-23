@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/23 14:53:12 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/23 18:47:27 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,7 @@ class Server
 		int			getSendFlag( void ) const;
 		int			getTimeout( void ) const;
 		int			getBufferLimit( void ) const;
-		uint32_t	getServerNo( void ) const;
-		uint32_t	getBufferFd( void ) const;
+		nfds_t		getServerNo( void ) const;
 		nfds_t		getServerLimit( void ) const;
 		nfds_t		getFdCounter( void ) const;
 
@@ -63,11 +62,11 @@ class Server
 		static const int				send_flag = 0;
 		static const int				timeout = (3 * 60 * 1000);
 		static const int				buffer_limit = 1024;
-		uint32_t						server_no;
-		uint32_t						buffer_fd;
+		nfds_t							server_no;
 		nfds_t							server_limit;
 		nfds_t							fd_counter;
 		nfds_t							buffer_counter;
+		nfds_t							poll_tracker;
 		std::vector<pollfd_t>			socket_fds; // load all servers then only add clients (assume all fd on the same vector)
 		std::vector<pollfd_t>			buffer_new_fd; // store new fds
 		std::vector<server_block_iter>	server_mapping; // server_index to serverblock_index

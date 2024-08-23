@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/23 15:12:18 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/23 18:44:01 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,17 +66,45 @@ void	Server::setupSocketfds( void ) {
 		server_no += it->listen.size();
 	}
 	fd_counter = server_no;
-	buffer_fd = server_no * 2;
+	poll_tracker = fd_counter;
 	long	upper_limit = (server_no + 1) * backlog_limit + server_no;
 	if (upper_limit > UINT_MAX)
 		server_limit = UINT_MAX;
 	else
 		server_limit = upper_limit;
+	poll_tracker = server_no;
 	pollfd_t	socket_fd;
 	socket_fd.fd = -1;
 	socket_fd.events = POLLIN;
 	socket_fds.insert(socket_fds.end(), server_limit, socket_fd);
-	buffer_new_fd.insert(buffer_new_fd.end(),  buffer_fd, socket_fd);
+	buffer_new_fd.insert(buffer_new_fd.end(), server_no * 2, socket_fd);
+}
+
+void	Server::resetFds( void ) {
+	nfds_t	i = 0;
+	nfds_t	buffer_index = 0;
+	for (i = 0; i < poll_tracker; i ++) {
+		if (socket_fds[i].fd == -1) {
+			if (buffer_index < buffer_counter) {
+				std::swap(buffer_new_fd[buffer_index], socket_fds[i]);
+				buffer_index ++;
+			}
+			else {
+				;	
+			}
+		}
+	}
+	for (buffer_index; buffer_index < buffer_counter; buffer_index ++) {
+		while (i < server_limit)
+		{
+			if (socket_fds[i].fd == -1)
+				break ;
+			i ++;
+		}
+		std::swap(socket_fds[i], buffer_new_fd[buffer_index]);
+	}
+	buffer_counter = 0;
+	poll_tracker = fd_counter;
 }
 
 void	Server::setupServer( void ) {
@@ -97,7 +125,7 @@ void	Server::setupServer( void ) {
 }
 
 void	Server::getNewConnection( int fd, server_block_iter &it ) {
-	if (buffer_counter == buffer_fd) {
+	if (buffer_counter == buffer_new_fd.size()) {
 		return ; // too many fds in buffer
 	}
 	if (fd_counter == server_limit) {
@@ -115,13 +143,26 @@ void	Server::getNewConnection( int fd, server_block_iter &it ) {
 	client_info.push_back(buffer);
 	client_mapping[fd] = -- client_info.end();
 	buffer_counter ++;
+	fd_counter ++;
+}
+
+void	Server::closeConnection( size_t index ) {
+	close(socket_fds[index].fd);
+	std::map<int, client_ptr>::iterator it = client_mapping.find(socket_fds[index].fd);
+	socket_fds[index].fd = -1;
+	socket_fds[index].events = POLLIN;
+	if (it == client_mapping.end()) {
+		return ;
+	}
+	client_info.erase(it->second);
+	client_mapping.erase(it);
 }
 
 void	Server::loopServer( void ) {
-	if (poll(getSocketfds(), server_limit, timeout) < 0)
+	if (poll(getSocketfds(), poll_tracker, timeout) < 0)
 		return ; // throw error?
 	for (size_t index = 0; index != server_limit; index ++) {
-		pollfd_t	poll_fd = socket_fds[index];
+		pollfd_t			poll_fd = socket_fds[index];
 		server_block_iter&	it = server_mapping[index];
 		if (poll_fd.fd < 0) {
 			continue ;
@@ -134,11 +175,20 @@ void	Server::loopServer( void ) {
 				getNewConnection(poll_fd.fd, it);
 			}
 			else {
-				receiveRequest(*(client_mapping[poll_fd.fd]));
+				Client	&ptr = *(client_mapping[poll_fd.fd]);
+				receiveRequest(ptr);
+				if (ptr) {
+					poll_fd.events = POLLOUT;
+				}
+
 			}
 		}
 		if (poll_fd.revents & POLLOUT) {
-			//handle send
+			Client	&ptr = *(client_mapping[poll_fd.fd]);
+			sentReponse(ptr);
+			if (ptr) {
+				closeConnection(index);
+			}	
 		}
 	}
 	resetFds();
@@ -214,12 +264,8 @@ int	Server::getBufferLimit( void ) const {
 	return (this->buffer_limit);
 }
 
-uint32_t	Server::getServerNo( void ) const {
+nfds_t	Server::getServerNo( void ) const {
 	return (this->server_no);
-}
-
-uint32_t	Server::getBufferFd( void ) const {
-	return (this->buffer_fd);
 }
 
 nfds_t	Server::getServerLimit( void ) const {
