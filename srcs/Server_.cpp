@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 18:11:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/23 18:44:01 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,32 @@ Server::~Server( void ) { }
 // 	return (*this);
 // }
 
+void	Server::setNonBlockFd( int fd ) {
+	int flagss = fcntl(fd, F_GETFL);
+	if (flagss < 0) {
+		return ; // cant get flags
+	}
+	flagss |= O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, flagss) < 0) {
+		return ; // cant set nonblock flag
+	}
+}
+
+int	Server::setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol ) {
+	int	fd = socket(addr.sin_family, socket_type, socket_protocol);
+	if (fd < 0) {
+		return (-1); // cant set socket
+	}
+	if (bind(fd, (sockaddr *)&addr, socklen) < 0) {
+		// std::cout << "bind failed\n";
+		return ; // bind failed
+	}
+	if (listen(fd, backlog_limit) < 0) {
+		// std::cout << "listen failed\n";
+		return ; // listen failed
+	}
+}
+
 void	Server::setupSocketfds( void ) {
 	typedef std::vector<ServerBlock>::iterator iter;
 	server_no = 0;
@@ -40,53 +66,138 @@ void	Server::setupSocketfds( void ) {
 		server_no += it->listen.size();
 	}
 	fd_counter = server_no;
+	poll_tracker = fd_counter;
 	long	upper_limit = (server_no + 1) * backlog_limit + server_no;
 	if (upper_limit > UINT_MAX)
 		server_limit = UINT_MAX;
 	else
 		server_limit = upper_limit;
+	poll_tracker = server_no;
 	pollfd_t	socket_fd;
 	socket_fd.fd = -1;
 	socket_fd.events = POLLIN;
 	socket_fds.insert(socket_fds.end(), server_limit, socket_fd);
+	buffer_new_fd.insert(buffer_new_fd.end(), server_no * 2, socket_fd);
+}
+
+void	Server::resetFds( void ) {
+	nfds_t	i = 0;
+	nfds_t	buffer_index = 0;
+	for (i = 0; i < poll_tracker; i ++) {
+		if (socket_fds[i].fd == -1) {
+			if (buffer_index < buffer_counter) {
+				std::swap(buffer_new_fd[buffer_index], socket_fds[i]);
+				buffer_index ++;
+			}
+			else {
+				;	
+			}
+		}
+	}
+	for (buffer_index; buffer_index < buffer_counter; buffer_index ++) {
+		while (i < server_limit)
+		{
+			if (socket_fds[i].fd == -1)
+				break ;
+			i ++;
+		}
+		std::swap(socket_fds[i], buffer_new_fd[buffer_index]);
+	}
+	buffer_counter = 0;
+	poll_tracker = fd_counter;
 }
 
 void	Server::setupServer( void ) {
+	setupSocketfds();
 	typedef std::vector<ServerBlock>::iterator ServerIter;
 	typedef std::vector<Socket>::iterator SocketIter;
 	size_t	index = 0;
 	for (ServerIter it = server_info.begin(); it != server_info.end(); it ++) {
 		std::cout << "huh"<< it->listen.size() << "\n";
 		for (SocketIter addr_it = it->listen.begin(); addr_it != it->listen.end(); addr_it ++) {
-			const sockaddr_in_t	&addr = addr_it->refAddress();
-			socket_fds[index].fd = socket(addr.sin_family, socket_type, socket_protocol);
+			socket_fds[index].fd = setListeningSocket(addr_it->refAddress(), socket_type, socket_protocol);
 			std::cout << "check server fd: " << socket_fds[index].fd;
-			if (socket_fds[fd_counter].fd < 0) {
-				std::cout << "socket failed\n";
-				return ;
-			}
-			//flagss |= O_NONBLOCK; fcntl
-			if (bind(socket_fds[index].fd, (sockaddr *)&addr, socklen) < 0) {
-				std::cout << "bind failed\n";
-				return ;
-			}
-			if (listen(socket_fds[index].fd, backlog_limit) < 0) {
-				std::cout << "listen failed\n";
-				return ;
-			}
-			server_mapping.push_back(std::make_pair(socket_fds[index].fd, it));
+			setNonBlockFd(socket_fds[index].fd);
+			server_mapping.push_back(it);
 			index ++;
 		}
 	}
 }
 
+void	Server::getNewConnection( int fd, server_block_iter &it ) {
+	if (buffer_counter == buffer_new_fd.size()) {
+		return ; // too many fds in buffer
+	}
+	if (fd_counter == server_limit) {
+		return ; // too many fds in server
+	}
+	Client	buffer(it);
+	int fd_client = accept(fd, (sockaddr_t *)&buffer.changeAddress(),
+			&buffer.getSocklen());
+	if (fd_client < 0) {
+		return ; // cant get
+	}
+	setNonBlockFd(fd_client); // need try catch?
+	buffer.setFd(fd);
+	buffer_new_fd[buffer_counter].fd = fd;
+	client_info.push_back(buffer);
+	client_mapping[fd] = -- client_info.end();
+	buffer_counter ++;
+	fd_counter ++;
+}
+
+void	Server::closeConnection( size_t index ) {
+	close(socket_fds[index].fd);
+	std::map<int, client_ptr>::iterator it = client_mapping.find(socket_fds[index].fd);
+	socket_fds[index].fd = -1;
+	socket_fds[index].events = POLLIN;
+	if (it == client_mapping.end()) {
+		return ;
+	}
+	client_info.erase(it->second);
+	client_mapping.erase(it);
+}
+
 void	Server::loopServer( void ) {
-	
+	if (poll(getSocketfds(), poll_tracker, timeout) < 0)
+		return ; // throw error?
+	for (size_t index = 0; index != server_limit; index ++) {
+		pollfd_t			poll_fd = socket_fds[index];
+		server_block_iter&	it = server_mapping[index];
+		if (poll_fd.fd < 0) {
+			continue ;
+		}
+		if (poll_fd.revents == 0) {
+			continue ;
+		}
+		if (poll_fd.revents & POLLIN) {
+			if (index < server_no) {
+				getNewConnection(poll_fd.fd, it);
+			}
+			else {
+				Client	&ptr = *(client_mapping[poll_fd.fd]);
+				receiveRequest(ptr);
+				if (ptr) {
+					poll_fd.events = POLLOUT;
+				}
+
+			}
+		}
+		if (poll_fd.revents & POLLOUT) {
+			Client	&ptr = *(client_mapping[poll_fd.fd]);
+			sentReponse(ptr);
+			if (ptr) {
+				closeConnection(index);
+			}	
+		}
+	}
+	resetFds();
 }
 
 void	Server::startServerLoop( int *signal ) {
-	setupSocketfds();
-	setupServer();
+	if (!socket_fds.size()) {
+		setupServer();
+	}
 	if (!server_no) {
 		std::cout << "no servers lulz\n";
 		return ;
@@ -153,7 +264,7 @@ int	Server::getBufferLimit( void ) const {
 	return (this->buffer_limit);
 }
 
-uint32_t	Server::getServerNo( void ) const {
+nfds_t	Server::getServerNo( void ) const {
 	return (this->server_no);
 }
 
@@ -161,7 +272,7 @@ nfds_t	Server::getServerLimit( void ) const {
 	return (this->server_limit);
 }
 
-uint32_t	Server::getFdCounter( void ) const {
+nfds_t	Server::getFdCounter( void ) const {
 	return (this->fd_counter);
 }
 // end of getters

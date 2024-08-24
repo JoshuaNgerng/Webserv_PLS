@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 15:21:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/23 15:18:01 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Client {
 		const std::string&	getRequest( void ) const;
 		const std::string&	getResponse( void ) const;
 		size_t				getBytesSent( void ) const;
+
 		std::vector<ServerBlock>::iterator	getServerRef( void ) const;
 
 	private:
@@ -51,6 +52,7 @@ class Client {
 		size_t								bytes_sent;
 		bool								finish_request;
 		bool								finish_write;
+		int									status_code;
 };
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref );
