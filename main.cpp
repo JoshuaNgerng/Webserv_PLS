@@ -21,11 +21,11 @@ int	main(int ac, char **av, char **env) {
 	if (ac == 2)
 		ref = av[1];
 	Server	server;
-	Parse	parse(ref, server);
+	Parse	parse(ref, server); 
 	// if (!parse.parseConfigFile())
 	// 	return (parse.getError());
 	parse.parseConfigFile();
-	std::cout << "test\n" << server << '\n';
+	std::cout << "Start Test\n" << server << "End of Test\n";
 	return (0);
 	server.startServerLoop();
 	return (0);

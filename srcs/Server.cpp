@@ -79,7 +79,7 @@ void	Server::setupServer( void ) {
 	}
 }
 
-void	Server::getNewConnection( size_t index, server_block_iter &it ) {
+void	Server::getNewConnection( int index, server_block_iter &it ) {
 	if (fd_counter == server_limit) {
 		std::cout << "max connection capacity met\n";
 		return ;
@@ -268,7 +268,7 @@ int	Server::getBufferLimit( void ) const {
 	return (this->buffer_limit);
 }
 
-uint32_t	Server::getServerNo( void ) const {
+nfds_t	Server::getServerNo( void ) const {
 	return (this->server_no);
 }
 
@@ -276,7 +276,7 @@ nfds_t	Server::getServerLimit( void ) const {
 	return (this->server_limit);
 }
 
-uint32_t	Server::getFdCounter( void ) const {
+nfds_t	Server::getFdCounter( void ) const {
 	return (this->fd_counter);
 }
 // end of getters

@@ -69,7 +69,8 @@ class Server
 		nfds_t							poll_tracker;
 		std::vector<pollfd_t>			socket_fds; // load all servers then only add clients (assume all fd on the same vector)
 		std::vector<pollfd_t>			buffer_new_fd; // store new fds
-		std::vector<server_block_iter>	server_mapping; // server_index to serverblock_index
+		// std::vector<server_block_iter>	server_mapping; // server_index to serverblock_index
+		std::vector<std::pair<int, std::vector<ServerBlock>::iterator > > server_mapping;
 		std::map<int, client_ptr>		client_mapping; // client fd to client index
 		std::vector<ServerBlock>		server_info; // no
 		std::list<Client>				client_info; // no
