@@ -72,7 +72,7 @@ class Parse
 		Parse&	operator=( const Parse &src );
 
 		uint64_t			line_counter;
-		uint16_t			block_level;
+		uint16_t			block_level; // 1 == server, 2 == location
 		uint16_t			bracket_no;
 		std::string			filename;
 

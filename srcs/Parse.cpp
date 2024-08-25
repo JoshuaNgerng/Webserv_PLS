@@ -14,9 +14,16 @@
 
 Parse::Parse( void ) : filename("default.conf"), server() {}
 
-Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_) {}
+Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_) {
+	std::cout << "block_level: " << block_level << "\n";
+}
 
-Parse::~Parse( void ) { }
+Parse::~Parse( void ) {
+	std::cout << "line_counter: " << line_counter << "\n";
+	std::cout << "block_level: " << block_level << "\n";
+	std::cout << "bracket_no: " << bracket_no << "\n";
+	std::cout << "filename: " << filename << "\n";
+}
 
 void	Parse::setServer( Server &s ) { server = &s; }
 
@@ -38,7 +45,8 @@ void	Parse::removeComments( std::string &content ) const {
 void	Parse::removeWhitespace( std::string &content ) const {
 	size_t	pos = 0;
 	size_t	end = 0;
-	while (pos != std::string::npos)
+	// return ;
+	while (pos != std::string::npos && content[pos])
 	{
 		bool	erase = true;
 		size_t	check = content.find('\n', pos);
@@ -61,9 +69,13 @@ void	Parse::removeWhitespace( std::string &content ) const {
 			content.erase(pos, end - pos + 1);
 			continue ;
 		}
+		// std::cout << "pos before: " << pos << "\n";
 		pos = check;
 		// std::cout << "check loop {" << pos << ", " << end << ", " << check << "}\n";
+		// std::cout << pos << ", " << end << ", " << check  << ", " << std::string::npos << "\n";	
 	}
+	// std::cout << "Check\n";
+	// std::cout << content << "\n";
 }
 
 bool	Parse::getNextLine( void ) {
@@ -99,13 +111,16 @@ bool	Parse::getNextLine( void ) {
  */
 void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 	std::string token;
+	// std::cout << "line_stream: " << line_stream << "\n";
 	while (line_stream >> token)
 	{
+		std::cout << "token: " << token << "\n";
 		if (!token.length()) {
 			if (!getNextLine())
 				throw ParsingError(delimitor_not_found);
 			continue ;
 		}
+		// check this
 		if (token == ";")
 			break ;
 		if (token[token.length() - 1] == ';') {
@@ -133,7 +148,7 @@ static int	checkLevel( int level, const std::string &ref ) {
 }
 
 void	Parse::processListen( std::string &token ) {
-	Socket	socket(AF_INET);// assume everything is ipv4
+	Socket	socket(AF_INET); // assume everything is ipv4
 	std::size_t pos = token.find(':');
 	if (pos == std::string::npos) {
 			socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
@@ -180,15 +195,18 @@ void	Parse::processIndex( std::string &token ) {
  */
 void	Parse::processServer( const std::string &keyw ) {
 	const char	*ref[] = {"listen", "server_name", "root", "index", "error_page"
-				"access_log", "error_log", "ssl_certificate", "ssl_certificate_key", NULL};
-	int			option = -1;
+				"access_log", "error_log", "ssl_certificate", "ssl_certificate_key",
+				"hostname", "route", "cgi-bin", "client_limit", NULL};
+	int			option = -1; // illiterator
 	while (ref[++ option])
 	{
 		if (keyw == ref[option])
 			break ;
 	}
-	void (Parse::*process)(std::string &);
+
+	void (Parse::*process)(std::string &); //process is a pointer to a member function
 	process = NULL;
+
 	std::cout << "server: " << keyw << ", option: " << option << '\n';
 	switch (option)
 	{
@@ -270,7 +288,7 @@ void	Parse::processToken( const std::string &token ) {
  * @throws	the func will check the final bracket_level to ensure all brackets are
  * 			closed { }	
 */
-void	Parse::processContent( void ) {
+void	Parse:: processContent( void ) {
 	std::string	token;
 	while (getNextLine()) {
 		// std::cout << "test line_stream: " << line_stream.str() << '\n';
