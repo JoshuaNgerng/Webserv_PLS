@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:55:53 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/23 15:41:23 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 02:37:50 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,8 +155,9 @@ bool	Server::sentReponse( Client &client )
 	if (bytes < 0)
 		return (false); // error cant write
 	client.addBytesSent(bytes);
-	if (client.getBytesSent() == client.getResponse().length())
-		client.finishSend();
+	if (client.getBytesSent() != client.getResponse().length())
+		return (false);
+	client.checkResponse();
 	return (true);
 }
 

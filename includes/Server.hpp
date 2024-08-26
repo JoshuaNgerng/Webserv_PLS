@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/23 18:47:27 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 09:14:04 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,19 +76,24 @@ class Server
 
 		void	setupServer( void );
 		void	setupSocketfds( void );
+		bool	checkBufferfds( void ) const;
+		void	addBufferfds( int fd );
 		void	loopServer( void );
+		void	handleFd( size_t index );
 		void	resetFds( void );
+		bool	receiveFromClient( Client &ptr, int fd );
+		bool	reponseToClient( Client &ptr );
+		void	getClientReponseFd( Client &client );
 		void	getNewConnection( int fd, server_block_iter &it );
 		void	closeConnection( size_t index );
 		bool	receiveRequest( Client &client );
 		bool	sentReponse( Client &client );
-		void	fetchData( Client &client );
+		bool	fetchReponseData( Client &client );
 
-		uint32_t	findAvaliableSlot( void ) const;
 		Client&		getClient( int client_fd );
 };
 
-std::ostream&	operator<<( std::ostream &o, std::ostream &o_ );
+std::ostream&	operator<<( std::ostream &o, std::ostream &display );
 std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref );
 std::ostream&	operator<<( std::ostream &o, const Server& ref );
 

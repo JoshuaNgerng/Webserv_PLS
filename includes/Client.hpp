@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/23 15:18:01 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 02:45:17 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,17 +25,25 @@ class Client {
 
 		Client&	operator=( const Client &src );
 
+		int					getResource( void );
+
+		/* setters */
 		sockaddr_in_t&		changeAddress( void );
 		socklen_t&			getSocklen( void );
-		void				setFd( int fd );
+		void				setSocketFd( int fd );
+		void				setReponseFd( int fd );
 		void				addToReq( const std::string &add );
 		void				addToRes( const std::string &add );
 		void				addBytesSent( size_t add );
 		void				finishRecv( void );
 		void				finishSend( void );
-		int					getFd( void ) const;
-		bool				checkReq( void ) const;
-		bool				checkRes( void ) const;
+
+		/* getters */
+		int					getSocketFd( void ) const;
+		int					getReponseFd( void ) const;
+		bool				checkRequest( void ) const;
+		bool				checkResponse( void ) const;
+		bool				getReponseReady( void ) const;
 		const std::string&	getRequest( void ) const;
 		const std::string&	getResponse( void ) const;
 		size_t				getBytesSent( void ) const;
@@ -45,11 +53,13 @@ class Client {
 	private:
 		std::vector<ServerBlock>::iterator	server_ref;
 		int									socket_fd;
+		int									reponse_fd;
 		Socket								socket;
 		socklen_t							len;
 		std::string							request;
 		std::string							response;
 		size_t								bytes_sent;
+		bool								get_reponse;
 		bool								finish_request;
 		bool								finish_write;
 		int									status_code;

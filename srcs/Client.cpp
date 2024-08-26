@@ -6,27 +6,27 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/23 18:47:52 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 02:45:49 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client( void ) : server_ref(), socket_fd(-1),
-	socket(), len(0), request(), response(), bytes_sent(0),
+Client::Client( void ) : server_ref(), socket_fd(-1), reponse_fd(-1), socket(),
+	len(0), request(), response(), bytes_sent(0), get_reponse(false),
 	finish_request(false), finish_write(false), status_code(0) { }
 
 Client::Client( std::vector<ServerBlock>::iterator &it ) :
-	server_ref(it), socket_fd(0), socket(), len(0), request(),
-	response(), bytes_sent(0), finish_request(false),
+	server_ref(it), socket_fd(-1), reponse_fd(-1), socket(), len(0), request(),
+	response(), bytes_sent(0), get_reponse(false), finish_request(false),
 	finish_write(false), status_code(0) { }
 
 Client::Client( const Client &src ) :
-	server_ref(src.server_ref), socket_fd(src.socket_fd),
+	server_ref(src.server_ref), socket_fd(src.socket_fd), reponse_fd(-1),
 	socket(src.socket), len(src.len), request(src.request),
 	response(src.response), bytes_sent(src.bytes_sent),
-	finish_request(src.finish_request), finish_write(src.finish_write),
-	status_code(src.status_code) { }
+	get_reponse(src.get_reponse), finish_request(src.finish_request),
+	finish_write(src.finish_write), status_code(src.status_code) { }
 
 Client::~Client( void ) { }
 
@@ -45,7 +45,9 @@ sockaddr_in_t&	Client::changeAddress( void ) { return(socket.changeAddress()); }
 
 socklen_t&	Client::getSocklen( void ) { return(len); }
 
-void	Client::setFd( int fd ) { socket_fd = fd; }
+void	Client::setSocketFd( int fd ) { socket_fd = fd; }
+
+void	Client::setReponseFd( int fd ) { reponse_fd = fd; }
 
 void	Client::addToReq( const std::string &add ) { request += add; }
 
@@ -57,13 +59,15 @@ void	Client::finishRecv( void ) { finish_request = true; }
 
 void	Client::finishSend( void ) { finish_write = true; }
 
-bool	Client::checkReq( void ) const { return(finish_request); }
+bool	Client::checkRequest( void ) const { return(finish_request); }
 
-bool	Client::checkRes( void ) const { return(finish_write); }
+bool	Client::checkResponse( void ) const { return(finish_write); }
+
+bool	Client::getReponseReady( void ) const { return(get_reponse); }
 
 std::vector<ServerBlock>::iterator	Client::getServerRef( void ) const { return(server_ref); }
 
-int	Client::getFd( void ) const { return(socket_fd); }
+int	Client::getSocketFd( void ) const { return(socket_fd); }
 
 const std::string&	Client::getRequest( void ) const { return(request); }
 
@@ -72,10 +76,12 @@ const std::string&	Client::getResponse( void ) const { return(response); }
 size_t	Client::getBytesSent( void ) const { return(bytes_sent); }
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
-	o << "Client socket fd: " << ref.getFd() << '\n';
-	o << "Request status: " << ((ref.checkReq()) ? "complete" : "not ready") << '\n';
+	o << "Client socket fd: " << ref.getSocketFd() << '\n';
+	o << "Client reponse fd: " << ref.getReponseFd() <<
+		", reponse resource status: " << ((ref.getReponseReady()) ? "complete" : "not ready") << '\n';
+	o << "Request status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
 	o << "Request from Client\n" << ref.getRequest() << '\n';
-	o << "Reponse status: " << ((ref.checkReq()) ? "complete" : "not ready") << '\n';
+	o << "Reponse status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
 	o << "Reponse to Client\n" << ref.getResponse() << '\n';
 	return (o);
 }
