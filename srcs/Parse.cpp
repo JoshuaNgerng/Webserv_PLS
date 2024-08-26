@@ -114,7 +114,6 @@ void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 	// std::cout << "line_stream: " << line_stream << "\n";
 	while (line_stream >> token)
 	{
-		std::cout << "token: " << token << "\n";
 		if (!token.length()) {
 			if (!getNextLine())
 				throw ParsingError(delimitor_not_found);
@@ -126,9 +125,11 @@ void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 		if (token[token.length() - 1] == ';') {
 			token.erase(token.length() - 1);
 			(this->*process)(token);
+			std::cout << "token: " << token << "\n";
 			break ;
 		}
 		(this->*process)(token);
+		std::cout << "token: " << token << "\n";
 	}
 }
 
@@ -182,6 +183,36 @@ void	Parse::processIndex( std::string &token ) {
 	serverblock.addIndex(token);
 }
 
+void	Parse::processErrorPage( std::string &token ){
+	// Not yet decided
+	// serverblock.addErrorPage(
+	(void)token;
+}
+
+void	Parse::processAccessLog( std::string &token ){
+	serverblock.addAccessLog(token);
+}
+
+void	Parse::processErrorLog( std::string &token ){
+	serverblock.addErrorLog(token);
+}
+
+void	Parse::processSSLCertificate( std::string &token ){
+	serverblock.addSSLCertificate(token);
+}
+
+void	Parse::processSSLCertificateKey( std::string &token ){
+	serverblock.addSSLCertificateKey(token);
+}
+
+void	Parse::processClientLimit( std::string &token ){
+	serverblock.setClientMax(static_cast<uint64_t>(std::atoll(token.c_str())));
+}
+
+void	Parse::processHostname( std::string &token ){
+	serverblock.addHostname(token);
+}
+
 /**
  * @brief	check keyword in the server block the func will loop through all known
  * 			keyword and assign the proper function pointer to pass it into
@@ -194,9 +225,9 @@ void	Parse::processIndex( std::string &token ) {
  * 			index can take multiple arug idk how that works
  */
 void	Parse::processServer( const std::string &keyw ) {
-	const char	*ref[] = {"listen", "server_name", "root", "index", "error_page"
-				"access_log", "error_log", "ssl_certificate", "ssl_certificate_key",
-				"hostname", "route", "cgi-bin", "client_limit", NULL};
+	const char	*ref[] = {"listen", "server_name", "error_page", "access_log",
+							"error_log", "ssl_certificate", "ssl_certificate_key",
+							"client_limit", "index", "hostname", "root", NULL};
 	int			option = -1; // illiterator
 	while (ref[++ option])
 	{
@@ -210,23 +241,20 @@ void	Parse::processServer( const std::string &keyw ) {
 	std::cout << "server: " << keyw << ", option: " << option << '\n';
 	switch (option)
 	{
-	case 0:
-		process = &Parse::processListen;
-		break ;
-	case 1:
-		process = &Parse::processServerName;
-		break ;
-	case 2:
-		process = &Parse::processRoot;
-		break ;
-	case 3:
-		process = &Parse::processIndex;
-		break ;
-	
-	default:
-		std::cout << "kekW: " << keyw << '\n';
-		throw ParsingError(unknown_option);
-		break;
+		case 0: process = &Parse::processListen; break ;
+		case 1: process = &Parse::processServerName; break ;
+		case 2: process = &Parse::processErrorPage; break ;
+		case 3: process = &Parse::processAccessLog; break ;
+		case 4: process = &Parse::processErrorLog; break ;
+		case 5: process = &Parse::processSSLCertificate; break ;
+		case 6: process = &Parse::processSSLCertificateKey; break ;
+		case 7: process = &Parse::processClientLimit; break ;
+		case 8: process = &Parse::processIndex; break ;
+		case 9: process = &Parse::processHostname; break ;
+		case 10: process = &Parse::processRoot; break ;
+		default: std::cout << "kekW: " << keyw << '\n';
+			throw ParsingError(unknown_option);
+			break;
 	}
 	processParameters(process);
 }
@@ -255,6 +283,7 @@ void	Parse::processToken( const std::string &token ) {
 	}
 	else if (token == "}" || token == "};")
 	{
+		std::cout << "token is }\n";
 		bracket_no --;
 		block_level --;
 		if (!bracket_no && !block_level) {

@@ -72,7 +72,7 @@ class Server
 		// std::vector<server_block_iter>	server_mapping; // server_index to serverblock_index
 		std::vector<std::pair<int, std::vector<ServerBlock>::iterator > > server_mapping;
 		std::map<int, client_ptr>		client_mapping; // client fd to client index
-		std::vector<ServerBlock>		server_info; // no
+		std::vector<ServerBlock>		server_info; // parse into here
 		std::list<Client>				client_info; // no
 
 		void	setupServer( void );

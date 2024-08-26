@@ -61,12 +61,21 @@ class Parse
 		void	processToken( const std::string &token );
 		void	processParameters( void (Parse::*process)(std::string &) );
 		void	processServer( const std::string &keyw );
+		void	processLocation( const std::string &keyw );
+		bool	getNextLine( void );
+
+		// processes for Key Value for Server Block
 		void	processListen( std::string &token );
 		void	processServerName( std::string &token );
 		void	processRoot( std::string &token );
 		void	processIndex( std::string &token );
-		void	processLocation( const std::string &keyw );
-		bool	getNextLine( void );
+		void	processErrorPage( std::string &token );
+		void	processAccessLog( std::string &token );
+		void	processErrorLog( std::string &token );
+		void	processSSLCertificate( std::string &token );
+		void	processSSLCertificateKey( std::string &token );
+		void	processClientLimit( std::string &token );
+		void	processHostname( std::string &token );
 
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );

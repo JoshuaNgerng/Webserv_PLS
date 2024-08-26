@@ -13,14 +13,14 @@
 #include "ServerBlock.hpp"
 
 ServerBlock::ServerBlock( void ) : listen(), server_name(),
-	root(), client_max_body_size(ULONG_MAX), index(),
+	root(), access_log(), error_log(), ssl_certificate(),
+	ssl_certificate_key() ,index(), hostname(), client_max_body_size(ULONG_MAX),
 	autoindex(false), error_page() { }
 
-ServerBlock::ServerBlock( const ServerBlock &src ) : listen(src.listen),
-	server_name(src.server_name), root(src.root),
-	client_max_body_size(src.client_max_body_size), index(src.index),
-	autoindex(src.autoindex), error_page(src.error_page), location(src.location)
-	{ }
+ServerBlock::ServerBlock( const ServerBlock &src ) : listen(src.listen), server_name(src.server_name),
+	root(src.root), access_log(src.access_log), error_log(src.error_log), ssl_certificate(src.ssl_certificate),
+	ssl_certificate_key(src.ssl_certificate_key) ,index(src.index), hostname(src.hostname), client_max_body_size(src.client_max_body_size),
+	autoindex(src.autoindex), error_page(src.error_page) { }
 
 ServerBlock::~ServerBlock( void ) { }
 
@@ -134,14 +134,6 @@ void	ServerBlock::reset( void ) {
 	location.clear();
 }
 
-void	ServerBlock::addListen( const Socket &add ) { listen.push_back(add); }
-
-void	ServerBlock::addLocation( const Location &add ) { location.push_back(add); }
-
-void	ServerBlock::addServerName( const std::string &add ) { server_name = add; }
-
-void	ServerBlock::addRoot( const std::string &add ) { root = add; }
-
 void	ServerBlock::setClientMax( uint64_t add ) { client_max_body_size = add; }
 
 void	ServerBlock::addIndex( const std::string &add ) { index = add; }
@@ -151,6 +143,26 @@ void	ServerBlock::toggleAutoIndex( void ) { autoindex = !autoindex; }
 void	ServerBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
 	error_page[error_code] = path;
 }
+
+void	ServerBlock::addListen( const Socket &add ) { listen.push_back(add); }
+
+void	ServerBlock::addLocation( const Location &add ) { location.push_back(add); }
+
+void	ServerBlock::addServerName( const std::string &add ) { server_name = add; }
+
+void	ServerBlock::addRoot( const std::string &add ) { root = add; }
+
+void	ServerBlock::addAccessLog( const std::string &add ) { access_log = add; }
+
+void	ServerBlock::addErrorLog( const std::string &add ) { error_log = add; }
+
+void	ServerBlock::addSSLCertificate( const std::string &add ) { ssl_certificate = add; }
+
+void	ServerBlock::addSSLCertificateKey( const std::string &add ) { ssl_certificate_key = add; }
+
+// void	ServerBlock::addClientLimit( const std::string &add ) { client_limit = add; }
+
+void	ServerBlock::addHostname( const std::string &add ) { hostname = add; }
 
 std::string	ServerBlock::testHTML( void ) {
 	std::string	msg = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
