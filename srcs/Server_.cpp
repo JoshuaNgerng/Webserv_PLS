@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 04:30:20 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 11:44:03 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,17 +32,6 @@ Server::~Server( void ) { }
 // 	server_info = src.server_info;
 // 	return (*this);
 // }
-
-void	Server::setNonBlockFd( int fd ) {
-	int flagss = fcntl(fd, F_GETFL);
-	if (flagss < 0) {
-		return ; // cant get flags
-	}
-	flagss |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, flagss) < 0) {
-		return ; // cant set nonblock flag
-	}
-}
 
 int	Server::setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol ) {
 	int	fd = socket(addr.sin_family, socket_type, socket_protocol);
@@ -146,7 +135,10 @@ void	Server::setupServer( void ) {
 			socket_fds[index].fd = setListeningSocket(addr_it->refAddress(),
 						socket_type, socket_protocol);
 			// std::cout << "check server fd: " << socket_fds[index].fd;
-			setNonBlockFd(socket_fds[index].fd);
+			if (fcntl(socket_fds[index].fd, F_SETFL, fcntl_flag) < 0) {
+				close(socket_fds[index].fd);
+				return ; // error cant set fl for fd
+			}
 			server_mapping.push_back(it);
 			index ++;
 		}
@@ -162,13 +154,9 @@ void	Server::getNewConnection( int fd, server_block_iter &it ) {
 	if (fd_client < 0) {
 		return ; // cant get
 	}
-	try {
-		setNonBlockFd(fd_client);
-	}
-	catch (const std::exception& e) {
-		// std::cerr << e.what() << '\n';
+	if (fcntl(fd_client, F_SETFL, fcntl_flag) < 0) {
 		close(fd_client);
-		return ;
+		return ; // error cant set fl for fd
 	}
 	buffer.setSocketFd(fd);
 	client_info.push_back(buffer);

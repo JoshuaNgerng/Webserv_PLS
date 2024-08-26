@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckFile.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 00:33:29 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/26 10:11:29 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class CheckFile {
 		void	checking( int check_flags );
 		uint8_t	getType( void ) const;
 		uint8_t	getAccessbility( void ) const;
+		size_t	getFilesize( void ) const;
 		uint8_t	getFileContent( std::string &dst ) const;
 		uint8_t	getFileContent( std::stringstream &dst ) const;
 
@@ -47,6 +48,7 @@ class CheckFile {
 		std::string	filename;
 		uint8_t		type;
 		int8_t		acessiblity;
+		size_t		filesize;
 };
 
 #endif

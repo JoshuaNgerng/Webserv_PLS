@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 09:14:04 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 11:40:54 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ class Server
 		void		addServerBlock( ServerBlock &ref );
 		pollfd_t*	getSocketfds( void );
 
-		static void	setNonBlockFd( int fd );
 		static int	setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol );
 
 		//getters
@@ -56,6 +55,7 @@ class Server
 		typedef std::list<Client>::iterator client_ptr;
 		static const socklen_t			socklen = sizeof(sockaddr_in_t);
 		static const int				socket_type = SOCK_STREAM;
+		static const int				fcntl_flag = O_NONBLOCK | FD_CLOEXEC;
 		static const int				socket_protocol = 0;
 		static const int				backlog_limit = 10;
 		static const int				recv_flag = 0;
