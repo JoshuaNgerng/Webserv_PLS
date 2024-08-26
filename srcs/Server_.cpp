@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 11:44:03 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/26 17:26:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,7 +182,7 @@ void	Server::closeConnection( size_t index ) {
 	client_mapping.erase(it);
 }
 
-void	Server::getClientReponseFd( Client &client ) {
+void	Server::getReponseDataFd( Client &client ) {
 	if (!checkBufferfds())
 		return ;
 	client.getResource();
@@ -193,12 +193,12 @@ void	Server::getClientReponseFd( Client &client ) {
 }
 
 bool	Server::reponseToClient( Client &ptr ) {
-	if (ptr.getReponseFd() < 0 && !ptr.getReponseReady()) {
-		getClientReponseFd(ptr);
+	if (ptr.getReponseFd() < 0 && !ptr.isReponseReady()) {
+		getReponseDataFd(ptr);
 		return (false);
 	}
-	if (!ptr.getReponseReady()) {
-		return (false);//wait for another fd to get stuff
+	if (!ptr.isReponseReady()) {
+		return (false); //wait for another fd to get stuff
 	}
 	if (!ptr.checkResponse()) {
 		return (sentReponse(ptr));
@@ -208,8 +208,7 @@ bool	Server::reponseToClient( Client &ptr ) {
 
 bool	Server::receiveFromClient( Client &ptr, int fd ) {
 	if (ptr.getSocketFd() == fd) {
-		receiveRequest(ptr);
-		return (true);
+		return (receiveRequest(ptr));
 	}
 	return (fetchReponseData(ptr));
 }
@@ -220,32 +219,30 @@ bool	Server::receiveRequest( Client &client ) {
 
 	bytes = recv(client.getSocketFd(), buffer, buffer_limit, recv_flag);
 	if (!bytes)
-		return (false);
+		return (false); // http not finish , but connection close
 	if (bytes < 0)
-		return (false);
+		return (false); // socket error
 	std::string	str(buffer);
+	client.addToReq(str);
 	if (str.find("\r\n\r\n") != std::string::npos) {
 		client.finishRecv();
+		return (true); // http ending
 	}
-	client.addToReq(str);
-	return (true);
+	return (true); // cont to recv
 }
 
 bool	Server::fetchReponseData( Client &client ) {
 	char	buffer[buffer_limit];
 	ssize_t	bytes;
 
-	bytes = recv(client.getSocketFd(), buffer, buffer_limit, recv_flag);
+	bytes = recv(client.getReponseFd(), buffer, buffer_limit, recv_flag);
 	if (!bytes)
-		return (false);
+		return (false); // file / pipe end , close reponse
 	if (bytes < 0)
-		return (false);
+		return (false); // error close respones
 	std::string	str(buffer);
-	if (str.find("\r\n\r\n") != std::string::npos) {
-		client.finishRecv();
-	}
-	client.addToReq(str);
-	return (true);
+	client.addToRes(str);
+	return (true); // still cont to get response
 }
 
 bool	Server::sentReponse( Client &client ) {
@@ -257,9 +254,10 @@ bool	Server::sentReponse( Client &client ) {
 	if (bytes < 0)
 		return (false); // error cant write
 	client.addBytesSent(bytes);
-	if (client.getBytesSent() != client.getResponse().length())
+	if (client.getBytesSent() == client.getResponse().length()) {
+		client.finishSend();
 		return (false);
-	client.checkResponse();
+	}
 	return (true);
 }
 
@@ -285,11 +283,12 @@ void	Server::handleFd( size_t index ) {
 		}
 		if (ptr.checkRequest()) {
 			poll_fd.events = POLLOUT;
-			getClientReponseFd(ptr);
+			getReponseDataFd(ptr);
 		}
 	}
 	else if (poll_fd.revents & POLLOUT) {
-		if (reponseToClient(ptr)) {
+		if (!reponseToClient(ptr)) { // need to check what case does this is valid close
+			// finish sending and sending error
 			closeConnection(index);
 		}
 	}

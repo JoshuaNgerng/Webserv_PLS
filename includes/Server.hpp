@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 11:40:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/26 16:29:00 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ class Server
 		void	resetFds( void );
 		bool	receiveFromClient( Client &ptr, int fd );
 		bool	reponseToClient( Client &ptr );
-		void	getClientReponseFd( Client &client );
+		void	getReponseDataFd( Client &client );
 		void	getNewConnection( int fd, server_block_iter &it );
 		void	closeConnection( size_t index );
 		bool	receiveRequest( Client &client );

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 02:45:17 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 16:15:54 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ class Client {
 		int					getReponseFd( void ) const;
 		bool				checkRequest( void ) const;
 		bool				checkResponse( void ) const;
-		bool				getReponseReady( void ) const;
+		bool				isReponseReady( void ) const;
 		const std::string&	getRequest( void ) const;
 		const std::string&	getResponse( void ) const;
 		size_t				getBytesSent( void ) const;

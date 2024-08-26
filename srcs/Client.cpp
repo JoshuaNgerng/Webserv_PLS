@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 02:45:49 by joshua           ###   ########.fr       */
+/*   Updated: 2024/08/26 16:16:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ bool	Client::checkRequest( void ) const { return(finish_request); }
 
 bool	Client::checkResponse( void ) const { return(finish_write); }
 
-bool	Client::getReponseReady( void ) const { return(get_reponse); }
+bool	Client::isReponseReady( void ) const { return(get_reponse); }
 
 std::vector<ServerBlock>::iterator	Client::getServerRef( void ) const { return(server_ref); }
 
@@ -78,7 +78,7 @@ size_t	Client::getBytesSent( void ) const { return(bytes_sent); }
 std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	o << "Client socket fd: " << ref.getSocketFd() << '\n';
 	o << "Client reponse fd: " << ref.getReponseFd() <<
-		", reponse resource status: " << ((ref.getReponseReady()) ? "complete" : "not ready") << '\n';
+		", reponse resource status: " << ((ref.isReponseReady()) ? "ready" : "not ready") << '\n';
 	o << "Request status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
 	o << "Request from Client\n" << ref.getRequest() << '\n';
 	o << "Reponse status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
