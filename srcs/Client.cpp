@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 16:16:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/27 13:03:32 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ void	Client::setSocketFd( int fd ) { socket_fd = fd; }
 
 void	Client::setReponseFd( int fd ) { reponse_fd = fd; }
 
+int	Client::getResource( void ) { return (-1); } // place holder
+
 void	Client::addToReq( const std::string &add ) { request += add; }
 
 void	Client::addToRes( const std::string &add ) { response += add; }
@@ -68,6 +70,8 @@ bool	Client::isReponseReady( void ) const { return(get_reponse); }
 std::vector<ServerBlock>::iterator	Client::getServerRef( void ) const { return(server_ref); }
 
 int	Client::getSocketFd( void ) const { return(socket_fd); }
+
+int	Client::getReponseFd( void ) const { return(reponse_fd); }
 
 const std::string&	Client::getRequest( void ) const { return(request); }
 
