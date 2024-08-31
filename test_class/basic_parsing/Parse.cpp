@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 00:20:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/31 23:26:42 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,4 +273,24 @@ void	Parse::checkParsing( void ) const {
 		std::cout << *it << ' ';
 	}
 	std::cout << RESET "\n";
+}
+
+/**
+ * @brief	Checks the filename extension.
+ * 			The filename must end with a single ".conf" extension.
+ * 			The filename must not contain additional periods or multiple ".conf" extension.
+ *
+ * @throw	ParsingError()
+ * 			Thrown if the filename does not end with ".conf" or if it contains multiple ".conf" extensions
+ *			or additional periods before the ".conf" extension.
+ *
+ */
+void Parse::checkExtension( void ) const
+{
+	const std::string exten = ".conf";
+	size_t pos = filename.rfind(exten);
+	if (pos == std::string::npos || pos != (filename.length() - exten.length()))
+		throw ParsingError(file_exten);
+	if (filename.substr(0, pos).find(".") != std::string::npos)
+		throw ParsingError(file_exten);
 }

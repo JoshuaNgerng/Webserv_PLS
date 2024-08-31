@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/19 12:09:13 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/31 23:26:59 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class Parse
 
 		void	parseConfigFile( void );
 		void	checkParsing( void ) const;
+		void	checkExtension( void ) const;
 
 	private:
 		Parse( void );
