@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/27 13:03:32 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/04 14:36:46 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,16 @@ int	Client::getResource( void ) { return (-1); } // place holder
 void	Client::addToReq( const std::string &add ) { request += add; }
 
 void	Client::addToRes( const std::string &add ) { response += add; }
+
+void	Client::addToReq( const char *str, size_t len = std::string::npos )
+{
+	if (len == std::string::npos)
+	{
+		request.append(str);
+		return ;
+	}
+	request.append(str, len);
+}
 
 void	Client::addBytesSent( size_t add ) { bytes_sent += add; }
 

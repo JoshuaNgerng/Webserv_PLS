@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 11:09:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/04 15:30:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,18 +33,21 @@ class Client {
 		socklen_t&			getSocklen( void );
 		void				setSocketFd( int fd );
 		void				setReponseFd( int fd );
-		void				addToReq( const std::string &add );
-		void				addToRes( const std::string &add );
+		void				addToRequest( const std::string &add );
+		void				addToRequest( const char *str , size_t len = std::string::npos );
+		void				addToResponse( const std::string &add );
+		void				addToResponse( const char *str , size_t len = std::string::npos );
 		void				addBytesSent( size_t add );
-		void				finishRecv( void );
-		void				finishSend( void );
+		void				finishReceiveRequest( void );
+		void				finishSendReponse( void );
+		void				finishReceiveData( void );
 
 		/* getters */
 		int					getSocketFd( void ) const;
 		int					getReponseFd( void ) const;
 		bool				checkRequest( void ) const;
 		bool				checkResponse( void ) const;
-		bool				isReponseReady( void ) const;
+		bool				isDataReady( void ) const;
 		const std::string&	getRequest( void ) const;
 		const std::string&	getResponse( void ) const;
 		size_t				getBytesSent( void ) const;
@@ -62,9 +65,10 @@ class Client {
 		std::string							request;
 		std::string							response;
 		size_t								bytes_sent;
-		bool								get_reponse;
+		bool								is_cgi;
+		bool								data_ready;
 		bool								finish_request;
-		bool								finish_write;
+		bool								finish_response;
 		int									status_code;
 };
 

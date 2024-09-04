@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 10:46:31 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/04 15:28:15 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,11 @@ class Server
 		void	handleServer( size_t index );
 		void	handleClient( size_t index );
 		void	handleClientRecv( pollfd_t &pollfd, Client &ptr, size_t index );
+		void	handleClientSent( pollfd_t &pollfd, Client &ptr, size_t index );
 		
 		void	getNewConnection( int fd, serverblock_ptr &it );
-		void	closeConnection( size_t index );
+		void	closeFd( size_t index );
+		void	resetPollFd( pollfd_t &pollfd );
 
 		// bool	receiveData( int fd , std::string &output ) const;
 		// bool	receiveRequest( Client &client );

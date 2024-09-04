@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 11:14:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/04 15:39:48 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,29 +166,39 @@ void	Server::getNewConnection( int fd, serverblock_ptr &it ) {
 	addBufferfds(fd);
 }
 
-void	Server::closeConnection( size_t index ) {
+void	Server::resetPollFd( pollfd_t &pollfd )
+{
+	pollfd.fd = -1;
+	pollfd.events = POLLIN;
+	pollfd.revents = 0;
+}
+
+void	Server::closeFd( size_t index ) {
 	int	fd = socket_fds[index].fd;
-	close(fd);
-	socket_fds[index].fd = -1;
-	socket_fds[index].events = POLLIN;
-	socket_fds[index].revents = 0;
+	resetPollFd(socket_fds[index]);
+	fd_counter --;
 	std::map<int, client_ptr>::iterator it1, it2;
 	it1 = client_mapping.find(socket_fds[index].fd);
 	if (it1 == client_mapping.end()) {
 		return ;
 	}
 	client_ptr	ptr = it1->second;
-	if (fd == ptr->getSocketFd() && ptr->getReponseFd() > 0)
-		it2 = client_mapping.find(ptr->getReponseFd());
-	else
-		it2 = client_mapping.find(ptr->getSocketFd());
+	int			fd2 = -1;
+	close(fd);
+	it2 = client_mapping.end();
+	fd2 = (fd == ptr->getSocketFd()) ? ptr->getReponseFd() : ptr->getSocketFd();
+	if (fd2 > 0)
+	{
+		it2 = client_mapping.find(fd2);
+		close(fd2);
+	}
 	client_mapping.erase(it1);
 	if (it2 != client_mapping.end())
 		client_mapping.erase(it2);
 	client_info.erase(ptr);
 }
 
-bool	Server::clientReponseStatus( Client &ptr ) const{
+bool	Server::clientReponseStatus( Client &ptr ) const {
 	if (ptr.getReponseFd() < 0 && !ptr.isReponseReady()) {
 		getReponseDataFd(ptr);
 		return (true);
@@ -270,12 +280,6 @@ bool	Server::sentReponseToClient( Client &client ) {
 
 void	Server::handleServer( size_t index ) {
 	pollfd_t	&poll_fd = socket_fds[index];
-	if (poll_fd.fd < 0) {
-		return ;
-	}
-	if (!poll_fd.revents) {
-		return ;
-	}
 	if (!(poll_fd.revents & POLLIN)) {
 		return ;
 	}
@@ -286,11 +290,45 @@ void	Server::handleClientRecv( pollfd_t &pollfd, Client &ptr, size_t index )
 {
 	char	buffer[buffer_limit];
 	ssize_t	bytes = recv(pollfd.fd, buffer, buffer_limit, recv_flag);
+	if (bytes < 0) {
+		closeFd(index);
+	}
+	if (pollfd.fd == ptr.getSocketFd()) {
+		if (!bytes) {
+			closeFd(index);
+		}
+		ptr.addToRequest(buffer, bytes);
+		if (bytes > 4 && !ft_strncpy(&buffer[bytes - 4], "\r\n\r\n", 4)) {
+			ptr.finishReceiveRequest();
+			pollfd.events = POLLOUT;
+		}
+	}
+	if (!bytes) {
+		close(pollfd.fd);
+		resetPollFd(pollfd);
+	}
+	ptr.addToResponse(buffer, bytes);
+}
+
+void	Server::handleClientSent( pollfd_t &pollfd, Client &ptr, size_t index ){
 	if (pollfd.fd == ptr.getSocketFd())
 	{
-
+		if (!ptr.isDataReady())
+		{
+			if (ptr.getReponseFd() == -1)
+				; // . try add fd 
+		}
+		if (0 == 0) {// error
+			;
+		}
+		size_t	remaining_len = ptr.getResponse().length() - ptr.getBytesSent();
+		ssize_t	bytes = send(pollfd.fd, (ptr.getResponse().c_str() - remaining_len), remaining_len, 0);
+		if (bytes < 0)
+			;
+		if (!bytes)
+			;
+		ptr.addBytesSent(bytes);
 	}
-
 }
 
 void	Server::handleClient( size_t index ) {
@@ -303,14 +341,7 @@ void	Server::handleClient( size_t index ) {
 		return ;
 	}
 	if (poll_fd.revents & POLLIN) {
-		if (!receiveFromClient(ptr, poll_fd.fd)) {
-			closeConnection(index);
-			return ;
-		}
-		if (ptr.checkRequest()) {
-			poll_fd.events = POLLOUT;
-			getReponseDataFd(ptr);
-		}
+		handleClientRecv(poll_fd, ptr, index);
 	}
 	else if (poll_fd.revents & POLLOUT) {
 		if (!clientReponseStatus(ptr)) { // need to check what case does this is valid close
@@ -319,7 +350,7 @@ void	Server::handleClient( size_t index ) {
 		}
 	}
 	else if (poll_fd.revents & (POLLHUP | POLLERR)) {
-		closeConnection(index);
+		closeFd(index);
 	}
 }
 
