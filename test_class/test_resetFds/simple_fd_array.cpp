@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 13:24:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/27 16:43:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/04 09:17:41 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void	TestFds::resetFdsInit( void ) {
 	}
 	// std::cout << "test " << buffer_counter << " " << poll_tracker << '\n';
 	fd_counter = counter + buffer_counter;
-	if (fd_counter >= socket_fds.size())
+	if (fd_counter > socket_fds.size())
 		throw BufferError("not enough space in socket_fds");
 	size_t	index = 0;
 	for (; index < buffer_counter; index ++) {

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/26 16:15:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/04 11:09:20 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include "Socket.hpp"
 
 class Client {
+	typedef std::list<Client>::iterator	client_ptr;
 	public:
 		Client( void );
 		Client( std::vector<ServerBlock>::iterator &it );
@@ -52,6 +53,8 @@ class Client {
 
 	private:
 		std::vector<ServerBlock>::iterator	server_ref;
+		std::map<int, client_ptr>::iterator	socket_ref;
+		std::map<int, client_ptr>::iterator	reponse_ref;
 		int									socket_fd;
 		int									reponse_fd;
 		Socket								socket;

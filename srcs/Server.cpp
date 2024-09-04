@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/27 11:22:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/04 11:14:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ void	Server::setupServer( void ) {
 	}
 }
 
-void	Server::getNewConnection( int fd, server_block_iter &it ) {
+void	Server::getNewConnection( int fd, serverblock_ptr &it ) {
 	if (!checkBufferfds())
 		return ;
 	Client	buffer(it);
@@ -172,19 +172,23 @@ void	Server::closeConnection( size_t index ) {
 	socket_fds[index].fd = -1;
 	socket_fds[index].events = POLLIN;
 	socket_fds[index].revents = 0;
-	std::map<int, client_ptr>::iterator it;
-	it = client_mapping.find(socket_fds[index].fd);
-	if (it == client_mapping.end()) {
+	std::map<int, client_ptr>::iterator it1, it2;
+	it1 = client_mapping.find(socket_fds[index].fd);
+	if (it1 == client_mapping.end()) {
 		return ;
 	}
-	if (fd == it->second->getReponseFd()) {
-		return ;
-	}
-	client_info.erase(it->second);
-	client_mapping.erase(it);
+	client_ptr	ptr = it1->second;
+	if (fd == ptr->getSocketFd() && ptr->getReponseFd() > 0)
+		it2 = client_mapping.find(ptr->getReponseFd());
+	else
+		it2 = client_mapping.find(ptr->getSocketFd());
+	client_mapping.erase(it1);
+	if (it2 != client_mapping.end())
+		client_mapping.erase(it2);
+	client_info.erase(ptr);
 }
 
-bool	Server::reponseToClient( Client &ptr ) {
+bool	Server::clientReponseStatus( Client &ptr ) const{
 	if (ptr.getReponseFd() < 0 && !ptr.isReponseReady()) {
 		getReponseDataFd(ptr);
 		return (true);
@@ -193,7 +197,7 @@ bool	Server::reponseToClient( Client &ptr ) {
 		return (true); //wait for another fd to get stuff
 	}
 	if (!ptr.checkResponse()) {
-		return (sentReponse(ptr));
+		return (sentReponseToClient(ptr));
 	}
 	return (true);
 }
@@ -215,16 +219,16 @@ void	Server::getReponseDataFd( Client &client ) {
 	addBufferfds(client.getReponseFd());
 }
 
-
-bool	Server::receiveRequest( Client &client ) {
+bool	Server::receiveData( int fd, char *buffer ) const {
 	char	buffer[buffer_limit];
-	ssize_t	bytes;
-
-	bytes = recv(client.getSocketFd(), buffer, buffer_limit, recv_flag);
+	ssize_t	bytes = recv(fd, buffer, buffer_limit, recv_flag);
+	if (bytes > 0)
+		output.append(buffer, bytes);
+	return (bytes);
 	if (!bytes)
-		return (false); // http not finish , but connection close
+		return (false); // fd close
 	if (bytes < 0)
-		return (false); // socket error
+		return (false); // fd error
 	std::string	str(buffer);
 	client.addToReq(str);
 	if (str.find("\r\n\r\n") != std::string::npos) {
@@ -248,7 +252,7 @@ bool	Server::fetchReponseData( Client &client ) {
 	return (true); // still cont to get response
 }
 
-bool	Server::sentReponse( Client &client ) {
+bool	Server::sentReponseToClient( Client &client ) {
 	const std::string msg = client.getResponse().substr(client.getBytesSent());
 	size_t	len = client.getResponse().length() - client.getBytesSent();
 	ssize_t	bytes = send(client.getSocketFd(), msg.c_str(), len, send_flag);
@@ -278,6 +282,17 @@ void	Server::handleServer( size_t index ) {
 	getNewConnection(poll_fd.fd, server_mapping[index]);
 }
 
+void	Server::handleClientRecv( pollfd_t &pollfd, Client &ptr, size_t index )
+{
+	char	buffer[buffer_limit];
+	ssize_t	bytes = recv(pollfd.fd, buffer, buffer_limit, recv_flag);
+	if (pollfd.fd == ptr.getSocketFd())
+	{
+
+	}
+
+}
+
 void	Server::handleClient( size_t index ) {
 	pollfd_t	&poll_fd = socket_fds[index];
 	Client		&ptr = *(client_mapping[poll_fd.fd]);
@@ -298,7 +313,7 @@ void	Server::handleClient( size_t index ) {
 		}
 	}
 	else if (poll_fd.revents & POLLOUT) {
-		if (!reponseToClient(ptr)) { // need to check what case does this is valid close
+		if (!clientReponseStatus(ptr)) { // need to check what case does this is valid close
 			// finish sending and sending error
 			closeConnection(index);
 		}
