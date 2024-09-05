@@ -24,7 +24,9 @@ int	main(int ac, char **av, char **env) {
 	Parse	parse(ref, server); 
 	// if (!parse.parseConfigFile())
 	// 	return (parse.getError());
+	std::cout << "***Start of Parsing***\n";
 	parse.parseConfigFile();
+	std::cout << "***End of Parsing***\n\n";
 	std::cout << "Start Test\n" << server << "End of Test\n";
 	return (0);
 	server.startServerLoop();

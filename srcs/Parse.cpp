@@ -227,7 +227,7 @@ void	Parse::processHostname( std::string &token ){
 void	Parse::processServer( const std::string &keyw ) {
 	const char	*ref[] = {"listen", "server_name", "error_page", "access_log",
 							"error_log", "ssl_certificate", "ssl_certificate_key",
-							"client_limit", "index", "hostname", "root", NULL};
+							"client_max_body_size", "index", "hostname", "root", NULL};
 	int			option = -1; // illiterator
 	while (ref[++ option])
 	{
@@ -238,23 +238,26 @@ void	Parse::processServer( const std::string &keyw ) {
 	void (Parse::*process)(std::string &); //process is a pointer to a member function
 	process = NULL;
 
-	std::cout << "server: " << keyw << ", option: " << option << '\n';
+	std::cout << "*************************\n"
+				<< "Server Block = " << keyw << ", Option number = " << option << '\n';
 	switch (option)
 	{
-		case 0: process = &Parse::processListen; break ;
-		case 1: process = &Parse::processServerName; break ;
-		case 2: process = &Parse::processErrorPage; break ;
-		case 3: process = &Parse::processAccessLog; break ;
-		case 4: process = &Parse::processErrorLog; break ;
-		case 5: process = &Parse::processSSLCertificate; break ;
-		case 6: process = &Parse::processSSLCertificateKey; break ;
-		case 7: process = &Parse::processClientLimit; break ;
-		case 8: process = &Parse::processIndex; break ;
-		case 9: process = &Parse::processHostname; break ;
-		case 10: process = &Parse::processRoot; break ;
-		default: std::cout << "kekW: " << keyw << '\n';
-			throw ParsingError(unknown_option);
-			break;
+		case 0:		process = &Parse::processListen; break ;
+		case 1: 	process = &Parse::processServerName; break ;
+		case 2: 	process = &Parse::processErrorPage; break ;
+		case 3: 	process = &Parse::processAccessLog; break ;
+		case 4: 	process = &Parse::processErrorLog; break ;
+		case 5: 	process = &Parse::processSSLCertificate; break ;
+		case 6: 	process = &Parse::processSSLCertificateKey; break ;
+		case 7: 	process = &Parse::processClientLimit; break ;
+		case 8: 	process = &Parse::processIndex; break ;
+		case 9: 	process = &Parse::processHostname; break ;
+		case 10: 	process = &Parse::processRoot; break ;
+		
+		default: 	std::cout << "*************************\n"
+						<< "Keyword: " << keyw << '\n';
+					throw ParsingError(unknown_option);
+					break;
 	}
 	processParameters(process);
 }
@@ -264,6 +267,7 @@ void	Parse::processServer( const std::string &keyw ) {
  */
 void	Parse::processLocation( const std::string &keyw ) {
 	(void)keyw;
+
 }
 
 /**
