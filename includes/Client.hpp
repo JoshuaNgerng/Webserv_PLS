@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 15:30:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/05 09:04:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 class Client {
 	typedef std::list<Client>::iterator	client_ptr;
 	public:
+		static const int	max_attempt = 3;
 		Client( void );
 		Client( std::vector<ServerBlock>::iterator &it );
 		Client( const Client &src );
@@ -37,7 +38,7 @@ class Client {
 		void				addToRequest( const char *str , size_t len = std::string::npos );
 		void				addToResponse( const std::string &add );
 		void				addToResponse( const char *str , size_t len = std::string::npos );
-		void				addBytesSent( size_t add );
+		void				addBytesSent( ssize_t add );
 		void				finishReceiveRequest( void );
 		void				finishSendReponse( void );
 		void				finishReceiveData( void );
@@ -48,6 +49,8 @@ class Client {
 		bool				checkRequest( void ) const;
 		bool				checkResponse( void ) const;
 		bool				isDataReady( void ) const;
+		bool				isDataAvaliable( void ) const;
+		bool				isTimeout( void ) const;
 		const std::string&	getRequest( void ) const;
 		const std::string&	getResponse( void ) const;
 		size_t				getBytesSent( void ) const;
@@ -67,9 +70,10 @@ class Client {
 		size_t								bytes_sent;
 		bool								is_cgi;
 		bool								data_ready;
+		bool								is_data_avaliable;
 		bool								finish_request;
 		bool								finish_response;
-		int									status_code;
+		int									attempts;
 };
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref );

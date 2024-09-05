@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 15:28:15 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/05 09:50:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,8 +71,8 @@ class Server
 		std::vector<pollfd_t>			buffer_new_fd; // store new fds
 		std::vector<serverblock_ptr>	server_mapping; // server_index to serverblock_index
 		std::map<int, client_ptr>		client_mapping; // client fd to client index
-		std::vector<ServerBlock>		server_info; // no
-		std::list<Client>				client_info; // no
+		std::vector<ServerBlock>		server_info;
+		std::list<Client>				client_info;
 
 		void	setupServer( void );
 		void	setupSocketfds( void );
@@ -82,12 +82,13 @@ class Server
 		void	addBufferfds( int fd );
 		void	handleServer( size_t index );
 		void	handleClient( size_t index );
-		void	handleClientRecv( pollfd_t &pollfd, Client &ptr, size_t index );
-		void	handleClientSent( pollfd_t &pollfd, Client &ptr, size_t index );
+		void	handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index );
+		void	handleClientSent( pollfd_t &pollfd, client_ptr &ptr, size_t index );
 		
 		void	getNewConnection( int fd, serverblock_ptr &it );
-		void	closeFd( size_t index );
+		void	clearClient( size_t index );
 		void	resetPollFd( pollfd_t &pollfd );
+		void	fetchClientData( client_ptr &ptr );
 
 		// bool	receiveData( int fd , std::string &output ) const;
 		// bool	receiveRequest( Client &client );

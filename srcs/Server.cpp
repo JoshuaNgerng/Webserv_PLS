@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 15:39:48 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/05 09:52:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,7 @@ void	Server::resetPollFd( pollfd_t &pollfd )
 	pollfd.revents = 0;
 }
 
-void	Server::closeFd( size_t index ) {
+void	Server::clearClient( size_t index ) {
 	int	fd = socket_fds[index].fd;
 	resetPollFd(socket_fds[index]);
 	fd_counter --;
@@ -198,84 +198,25 @@ void	Server::closeFd( size_t index ) {
 	client_info.erase(ptr);
 }
 
-bool	Server::clientReponseStatus( Client &ptr ) const {
-	if (ptr.getReponseFd() < 0 && !ptr.isReponseReady()) {
-		getReponseDataFd(ptr);
-		return (true);
-	}
-	if (!ptr.isReponseReady()) {
-		return (true); //wait for another fd to get stuff
-	}
-	if (!ptr.checkResponse()) {
-		return (sentReponseToClient(ptr));
-	}
-	return (true);
-}
-
-bool	Server::receiveFromClient( Client &ptr, int fd ) {
-	if (ptr.getSocketFd() == fd) {
-		return (receiveRequest(ptr));
-	}
-	return (fetchReponseData(ptr));
-}
-
-void	Server::getReponseDataFd( Client &client ) {
+void	Server::fetchClientData( client_ptr &ptr ) {
 	if (!checkBufferfds())
-		return ; // handle not enough space
-	client.getResource();
-	if (client.getReponseFd() < 0) {
-		return ; // handle cant get resource try again 
+		return ;
+	int	fd = ptr->fetchDataFd();
+	if (fd < 0) {
+		return ;
 	}
-	addBufferfds(client.getReponseFd());
-}
-
-bool	Server::receiveData( int fd, char *buffer ) const {
-	char	buffer[buffer_limit];
-	ssize_t	bytes = recv(fd, buffer, buffer_limit, recv_flag);
-	if (bytes > 0)
-		output.append(buffer, bytes);
-	return (bytes);
-	if (!bytes)
-		return (false); // fd close
-	if (bytes < 0)
-		return (false); // fd error
-	std::string	str(buffer);
-	client.addToReq(str);
-	if (str.find("\r\n\r\n") != std::string::npos) {
-		client.finishRecv();
-		return (true); // http ending
+	if (fcntl(fd, F_SETFL, fcntl_flag) < 0) {
+		goto error;
+		return ; // error cant set fl for fd
 	}
-	return (true); // cont to recv
-}
-
-bool	Server::fetchReponseData( Client &client ) {
-	char	buffer[buffer_limit];
-	ssize_t	bytes;
-
-	bytes = recv(client.getReponseFd(), buffer, buffer_limit, recv_flag);
-	if (!bytes)
-		return (false); // file / pipe end , close reponse
-	if (bytes < 0)
-		return (false); // error close respones
-	std::string	str(buffer);
-	client.addToRes(str);
-	return (true); // still cont to get response
-}
-
-bool	Server::sentReponseToClient( Client &client ) {
-	const std::string msg = client.getResponse().substr(client.getBytesSent());
-	size_t	len = client.getResponse().length() - client.getBytesSent();
-	ssize_t	bytes = send(client.getSocketFd(), msg.c_str(), len, send_flag);
-	if (bytes == 0)
-		return (false); // error close connection
-	if (bytes < 0)
-		return (false); // error cant write
-	client.addBytesSent(bytes);
-	if (client.getBytesSent() == client.getResponse().length()) {
-		client.finishSend();
-		return (false);
-	}
-	return (true);
+	// buffer.setSocketFd(fd);
+	// client_info.push_back(buffer);
+	client_mapping[fd] = ptr;
+	addBufferfds(fd);	
+	return ;
+	error:
+		close(fd);
+		ptr->resetDataFd();
 }
 
 void	Server::handleServer( size_t index ) {
@@ -286,54 +227,68 @@ void	Server::handleServer( size_t index ) {
 	getNewConnection(poll_fd.fd, server_mapping[index]);
 }
 
-void	Server::handleClientRecv( pollfd_t &pollfd, Client &ptr, size_t index )
+void	Server::handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index )
 {
 	char	buffer[buffer_limit];
 	ssize_t	bytes = recv(pollfd.fd, buffer, buffer_limit, recv_flag);
 	if (bytes < 0) {
-		closeFd(index);
+		clearClient(index);
 	}
-	if (pollfd.fd == ptr.getSocketFd()) {
+	if (pollfd.fd == ptr->getSocketFd()) {
 		if (!bytes) {
-			closeFd(index);
+			clearClient(index);
 		}
-		ptr.addToRequest(buffer, bytes);
+		ptr->addToRequest(buffer, bytes);
 		if (bytes > 4 && !ft_strncpy(&buffer[bytes - 4], "\r\n\r\n", 4)) {
-			ptr.finishReceiveRequest();
+			ptr->finishReceiveRequest();
+			fetchClientData(ptr);
 			pollfd.events = POLLOUT;
 		}
 	}
 	if (!bytes) {
 		close(pollfd.fd);
 		resetPollFd(pollfd);
+		return ;
 	}
-	ptr.addToResponse(buffer, bytes);
+	ptr->addToResponse(buffer, bytes);
 }
 
-void	Server::handleClientSent( pollfd_t &pollfd, Client &ptr, size_t index ){
-	if (pollfd.fd == ptr.getSocketFd())
-	{
-		if (!ptr.isDataReady())
-		{
-			if (ptr.getReponseFd() == -1)
-				; // . try add fd 
+void	Server::handleClientSent( pollfd_t &pollfd, client_ptr &ptr, size_t index ){
+	if (pollfd.fd == ptr->getSocketFd()) {
+		if (ptr->isDataReady() == -1) {
+			fetchClientData(ptr); // . try add fd
 		}
-		if (0 == 0) {// error
-			;
+		if (ptr->isDataAvaliable()) {
+			clearClient(index);
+			return ;
 		}
-		size_t	remaining_len = ptr.getResponse().length() - ptr.getBytesSent();
-		ssize_t	bytes = send(pollfd.fd, (ptr.getResponse().c_str() - remaining_len), remaining_len, 0);
-		if (bytes < 0)
-			;
-		if (!bytes)
-			;
-		ptr.addBytesSent(bytes);
+		if (ptr->isTimeout()) {
+			clearClient(index);
+			return ;
+		}
+		if (ptr->isDataReady()) {
+			return ;
+		}
+		size_t	remaining_len = ptr->getResponse().length() - ptr->getBytesSent();
+		ssize_t	bytes = send(pollfd.fd,
+							(ptr->getResponse().c_str() - remaining_len),
+							remaining_len, 0);
+		if (bytes < 0) {
+			clearClient(index);
+			return ;
+		}
+		if (!bytes) {
+			clearClient(index);
+			return ;
+		}
+		ptr->addBytesSent(bytes);
+		if (ptr->checkResponse())
+			clearClient(index);
 	}
 }
 
 void	Server::handleClient( size_t index ) {
 	pollfd_t	&poll_fd = socket_fds[index];
-	Client		&ptr = *(client_mapping[poll_fd.fd]);
 	if (poll_fd.fd < 0) {
 		return ;
 	}
@@ -341,22 +296,20 @@ void	Server::handleClient( size_t index ) {
 		return ;
 	}
 	if (poll_fd.revents & POLLIN) {
-		handleClientRecv(poll_fd, ptr, index);
+		handleClientRecv(poll_fd, client_mapping[poll_fd.fd], index);
 	}
 	else if (poll_fd.revents & POLLOUT) {
-		if (!clientReponseStatus(ptr)) { // need to check what case does this is valid close
-			// finish sending and sending error
-			closeConnection(index);
-		}
+		handleClientSent(poll_fd, client_mapping[poll_fd.fd], index);
 	}
 	else if (poll_fd.revents & (POLLHUP | POLLERR)) {
-		closeFd(index);
+		clearClient(index);
 	}
 }
 
 void	Server::loopServer( void ) {
-	if (poll(getSocketfds(), poll_tracker, timeout) < 0)
+	if (poll(getSocketfds(), poll_tracker, timeout) < 0) {
 		return ; // throw error?
+	}
 	for (size_t index = server_no; index < fd_counter; index ++) { // handle Client first
 		handleClient(index);
 	}
