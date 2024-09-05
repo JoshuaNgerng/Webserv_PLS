@@ -6,25 +6,31 @@
 /*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/05 09:05:15 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/05 15:40:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client( void ) : server_ref(), socket_fd(-1), reponse_fd(-1), socket(),
-	len(0), request(), response(), is_cgi(false), bytes_sent(0), finish_request(false),
-	finish_response(false) { }
+Client::Client( void ) : server_ref(), socket_ref(), reponse_ref(),
+	socket_fd(-1), reponse_fd(-1), socket(), len(0), request(), response(),
+	bytes_sent(0), is_cgi(false), data_ready(false),
+	is_data_avaliable(true), finish_request(false),
+	finish_response(false), attempts(0) { }
 
 Client::Client( std::vector<ServerBlock>::iterator &it ) :
-	server_ref(it), socket_fd(-1), reponse_fd(-1), socket(), len(0), request(),
-	response(), is_cgi(false), bytes_sent(0), finish_request(false), finish_response(false) { }
+	server_ref(it), socket_ref(), reponse_ref(),
+	socket_fd(-1), reponse_fd(-1), socket(), len(0), request(), response(),
+	bytes_sent(0), is_cgi(false), data_ready(false),
+	is_data_avaliable(true), finish_request(false),
+	finish_response(false), attempts(0) { }
 
-Client::Client( const Client &src ) :
-	server_ref(src.server_ref), socket_fd(src.socket_fd), reponse_fd(-1),
-	socket(src.socket), len(src.len), request(src.request),
-	response(src.response), bytes_sent(src.bytes_sent), is_cgi(src.is_cgi),
-	finish_request(src.finish_request), finish_response(src.finish_response) { }
+Client::Client( const Client &src ) : // help me fill in with src T_T or else have bug
+	server_ref(src.server_ref), socket_ref(), reponse_ref(),
+	socket_fd(-1), reponse_fd(-1), socket(), len(0), request(), response(),
+	bytes_sent(0), is_cgi(false), data_ready(false),
+	is_data_avaliable(true), finish_request(false),
+	finish_response(false), attempts(0) { }
 
 Client::~Client( void ) { }
 
@@ -37,6 +43,11 @@ Client&	Client::operator=( const Client &src ) {
 	finish_request = src.finish_request; finish_response = src.finish_response;
 	return (*this);
 }
+
+//placeholder for now
+int	Client::fetchDataFd( void ) { return (-1); }
+
+void	Client::resetDataFd( void ) { }
 
 sockaddr_in_t&	Client::changeAddress( void ) { return(socket.changeAddress()); }
 
@@ -77,6 +88,8 @@ void	Client::addBytesSent( ssize_t add ) { bytes_sent += static_cast<size_t>(add
 void	Client::finishReceiveRequest( void ) { finish_request = true; }
 
 void	Client::finishSendReponse( void ) { finish_response = true; }
+
+void	Client::dataIsReady( void ) { data_ready = true; }
 
 bool	Client::checkRequest( void ) const { return(finish_request); }
 

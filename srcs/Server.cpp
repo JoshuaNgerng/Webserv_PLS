@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/05 09:52:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/05 15:27:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,7 +255,7 @@ void	Server::handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index )
 
 void	Server::handleClientSent( pollfd_t &pollfd, client_ptr &ptr, size_t index ){
 	if (pollfd.fd == ptr->getSocketFd()) {
-		if (ptr->isDataReady() == -1) {
+		if (ptr->isDataReady() == false) {
 			fetchClientData(ptr); // . try add fd
 		}
 		if (ptr->isDataAvaliable()) {

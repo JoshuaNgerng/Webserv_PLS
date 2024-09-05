@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/05 09:04:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/05 15:38:02 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,17 @@ class Client {
 		void				setSocketFd( int fd );
 		void				setReponseFd( int fd );
 		void				addToRequest( const std::string &add );
-		void				addToRequest( const char *str , size_t len = std::string::npos );
+		void				addToRequest( const char *str , size_t len );
 		void				addToResponse( const std::string &add );
-		void				addToResponse( const char *str , size_t len = std::string::npos );
+		void				addToResponse( const char *str , size_t len );
 		void				addBytesSent( ssize_t add );
 		void				finishReceiveRequest( void );
 		void				finishSendReponse( void );
 		void				finishReceiveData( void );
+		void				dataIsReady( void );
+
+		int					fetchDataFd( void );
+		void				resetDataFd( void );
 
 		/* getters */
 		int					getSocketFd( void ) const;
