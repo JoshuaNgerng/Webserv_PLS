@@ -146,7 +146,12 @@ void	ServerBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
 
 void	ServerBlock::addListen( const Socket &add ) { listen.push_back(add); }
 
-void	ServerBlock::addLocation( const Location &add ) { location.push_back(add); }
+void	ServerBlock::addLocation( const Location &add )
+{
+	// location.push_back(add);
+	location.push_back(new Location(add));
+
+}
 
 void	ServerBlock::addServerName( const std::string &add ) { server_name = add; }
 

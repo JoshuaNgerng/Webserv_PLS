@@ -23,6 +23,8 @@
 // {
 // 	private:
 // 		std::string	path;
+// 	public:
+// 		Location(std::string &path);
 // };
 
 // class Parse;
@@ -51,6 +53,7 @@ class Parse
 		ServerBlock			getServerBlock( void ) const;
 
 		Location			getlocation(); // have make yet
+		bool				location_flag;
 		
 	private:
 		Parse( void );
@@ -91,7 +94,7 @@ class Parse
 		Server				*server;
 		ServerBlock			serverblock;
 		
-		Location			location; // have make yet
+		Location			*loc_ptr; // have make yet
 };
 
 #endif

@@ -14,7 +14,8 @@
 
 Parse::Parse( void ) : filename("default.conf"), server() {}
 
-Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_) {
+Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_){
+	location_flag = false;
 	std::cout << "block_level: " << block_level << "\n";
 }
 
@@ -280,6 +281,7 @@ void	Parse::processLocation( const std::string &keyw ) {
  * 
  */
 void	Parse::processToken( const std::string &token ) {
+
 	if (token == "{")
 	{
 		bracket_no ++;
@@ -299,16 +301,29 @@ void	Parse::processToken( const std::string &token ) {
 			// std::cout << "\ntest parsed block\n"; server.displayServerInfo(std::cout); std::cout << '\n';
 		}
 		if (bracket_no == 1 && block_level == 1) {
-			serverblock.location.push_back(location);
-			//loc.reset();
+			// location is vertor of location pointers to location data
+			// remember to free.
+			serverblock.location.push_back(loc_ptr);
+			location_flag = false;
+			// loc.reset();
 		}
 		return ;
 	}
 	block_level = checkLevel(block_level, token);
+	if (block_level == 2 && token == "location")
+	{
+		location_flag = true;
+		return;
+	}
 	// std::cout << "test level: " << block_level << ", and bracket " << bracket_no << '\n';
 	// std::cout << "test: " << token << '\n';
-	if (bracket_no == 1 && block_level == 1)
-		processServer(token);
+	if (location_flag == true)
+	{
+		location_flag = false;
+		loc_ptr = new Location(token);
+	}
+	else if (bracket_no == 1 && block_level == 1)
+			processServer(token);
 	else if (bracket_no == 2 && block_level == 2)
 		processLocation(token);
 }
