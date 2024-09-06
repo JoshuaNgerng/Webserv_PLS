@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/05 15:27:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/06 01:10:09 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,11 +238,13 @@ void	Server::handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index )
 		if (!bytes) {
 			clearClient(index);
 		}
-		ptr->addToRequest(buffer, bytes);
+		ptr->addToRequestHeader(buffer, bytes);
 		if (bytes > 4 && !ft_strncpy(&buffer[bytes - 4], "\r\n\r\n", 4)) {
-			ptr->finishReceiveRequest();
-			fetchClientData(ptr);
-			pollfd.events = POLLOUT;
+			ptr->finishReceiveHeader();
+			if (ptr->checkRequest()) {
+				pollfd.events = POLLOUT;
+				fetchClientData(ptr);
+			}
 		}
 	}
 	if (!bytes) {
