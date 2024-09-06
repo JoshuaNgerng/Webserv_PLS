@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 15:03:34 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/06 14:22:56 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,8 @@ std::ostream&	displayContainer( std::ostream &o, const T &ref, const char *end )
 	return (o);
 }
 
-int	ft_strncpy(const char *s1, const char *s2, size_t n);
+int		ft_strncpy(const char *s1, const char *s2, size_t n);
+size_t	ft_strstr(const char *haystack, const char *needle);
 
 // class out_of_range : public std::exception {
 // 	private:
