@@ -17,15 +17,15 @@
 class Location
 {
 	public:
-		std::string	path;
-		std::string	root;
-		std::string	autoindex;
+		std::string					path;
+		std::string					root;
+		std::string					autoindex;
+		std::string					index;
+		std::string					return_add;
+		std::string					alias;
 		std::vector<std::string>	allow_methods;
-		std::string	index;
-		std::string	return_add;
-		std::string	alias;
-		std::string	cgi_path;
-		std::string	cgi_ext;
+		std::vector<std::string>	cgi_path;
+		std::vector<std::string>	cgi_ext;
 
 		Location(const std::string &path);
 };

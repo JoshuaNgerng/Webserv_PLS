@@ -239,8 +239,8 @@ void	Parse::processServer( const std::string &keyw ) {
 	void (Parse::*process)(std::string &); //process is a pointer to a member function
 	process = NULL;
 
-	std::cout << "*************************\n"
-				<< "Server Block = " << keyw << ", Option number = " << option << '\n';
+	// std::cout << "*************************\n"
+	// 			<< "Server Block = " << keyw << ", Option number = " << option << '\n';
 	switch (option)
 	{
 		case 0:		process = &Parse::processListen; break ;
@@ -255,8 +255,8 @@ void	Parse::processServer( const std::string &keyw ) {
 		case 9: 	process = &Parse::processHostname; break ;
 		case 10: 	process = &Parse::processRoot; break ;
 		
-		default: 	std::cout << "*************************\n"
-						<< "Keyword: " << keyw << '\n';
+		// default: 	std::cout << "*************************\n"
+		// 				<< "Keyword: " << keyw << '\n';
 					throw ParsingError(unknown_option);
 					break;
 	}
@@ -267,7 +267,31 @@ void	Parse::processServer( const std::string &keyw ) {
  * implement something similar to processServer but add to location class instead
  */
 void	Parse::processLocation( const std::string &keyw ) {
-	(void)keyw;
+	// std::cout << "processLocation for " << keyw << "\n";
+	std::string method;
+	if (keyw == "root")
+		line_stream >> loc_ptr->root;
+	else if (keyw == "autoindex")
+		line_stream >> loc_ptr->autoindex;
+	else if (keyw == "return")
+		line_stream >> loc_ptr->return_add;
+	else if (keyw == "alias")
+		line_stream >> loc_ptr->alias;
+	else if (keyw == "index")
+		line_stream >> loc_ptr->index;
+	else if (keyw == "cgi_path")
+		while (line_stream >> method)
+			loc_ptr->cgi_path.push_back(method);
+	else if (keyw == "cgi_ext")
+		while (line_stream >> method)
+			loc_ptr->cgi_ext.push_back(method);
+	else if (keyw == "allow_methods")
+		while (line_stream >> method)
+			loc_ptr->allow_methods.push_back(method);
+	else{
+		std::cout << "ParsingError token: " << keyw << "\n";
+		throw ParsingError(unknown_option);
+	}
 
 }
 
@@ -294,6 +318,7 @@ void	Parse::processToken( const std::string &token ) {
 		block_level --;
 		if (!bracket_no && !block_level) {
 			// std::cout << "\nParsing ServerBlock info\n" << serverblock << '\n';
+			printLocations(serverblock.location); // Prints locations blokcs saved
 			server->addServerBlock(serverblock);
 			serverblock.reset();
 			// std::cout << "test adding\n" << *server << '\n';
@@ -303,6 +328,7 @@ void	Parse::processToken( const std::string &token ) {
 		if (bracket_no == 1 && block_level == 1) {
 			// location is vertor of location pointers to location data
 			// remember to free.
+			// std::cout << "Pushing location: " << loc_ptr->path << "\n";
 			serverblock.location.push_back(loc_ptr);
 			location_flag = false;
 			// loc.reset();
@@ -410,3 +436,37 @@ ServerBlock	Parse::getServerBlock( void ) const {
 // } location not yet implemented yet lulz
 
 // end of getters
+
+void Parse::printLocations(const std::vector<Location*>& locations) {
+	for (size_t i = 0; i < locations.size(); ++i) {
+        Location* loc = locations[i];
+        std::cout << "\nLocation " << i + 1 << ":\n";
+        std::cout << "Path: " << loc->path << "\n";
+        std::cout << "Root: " << loc->root << "\n";
+        std::cout << "Autoindex: " << loc->autoindex << "\n";
+        std::cout << "Index: " << loc->index << "\n";
+        std::cout << "Return Address: " << loc->return_add << "\n";
+        std::cout << "Alias: " << loc->alias << "\n";
+
+        // Print allow_methods vector (C++98 for loop)
+        std::cout << "Allow Methods: ";
+        for (std::vector<std::string>::const_iterator it = loc->allow_methods.begin(); it != loc->allow_methods.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+
+        // Print cgi_path vector (C++98 for loop)
+        std::cout << "CGI Paths: ";
+        for (std::vector<std::string>::const_iterator it = loc->cgi_path.begin(); it != loc->cgi_path.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+
+        // Print cgi_ext vector (C++98 for loop)
+        std::cout << "CGI Extensions: ";
+        for (std::vector<std::string>::const_iterator it = loc->cgi_ext.begin(); it != loc->cgi_ext.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n\n";
+    }
+}

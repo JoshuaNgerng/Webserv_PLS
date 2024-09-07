@@ -53,6 +53,7 @@ class Parse
 		ServerBlock			getServerBlock( void ) const;
 
 		Location			getlocation(); // have make yet
+		void 				printLocations(const std::vector<Location*>& locations);
 		bool				location_flag;
 		
 	private:
