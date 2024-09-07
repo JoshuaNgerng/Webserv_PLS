@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/06 01:30:42 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/07 15:59:51 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class Client {
 
 		Client&	operator=( const Client &src );
 
-		int					getResource( void );
+		int					getDataFd( void );
 
 		/* setters */
 		sockaddr_in_t&		changeAddress( void );
@@ -67,6 +67,7 @@ class Client {
 		std::map<int, client_ptr>::iterator	getReponseRef( void ) const;
 
 	private:
+		/* server related info + data fd*/
 		std::vector<ServerBlock>::iterator	server_ref;
 		std::map<int, client_ptr>::iterator	socket_ref;
 		std::map<int, client_ptr>::iterator	reponse_ref;
@@ -74,6 +75,9 @@ class Client {
 		int									reponse_fd;
 		Socket								socket;
 		socklen_t							len;
+		int									attempts;
+
+		/* http related info + data info */
 		std::string							request_header;
 		std::string							request_body;
 		std::string							response;
@@ -84,7 +88,6 @@ class Client {
 		bool								got_header;
 		bool								got_body;
 		bool								finish_response;
-		int									attempts;
 
 		void	addCStr( std::string &dst, const char *src, size_t len ) const;
 };
