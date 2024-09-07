@@ -112,6 +112,7 @@ bool	Parse::getNextLine( void ) {
  */
 void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 	std::string token;
+	std::string c_semicolon;
 	// std::cout << "line_stream: " << line_stream << "\n";
 	while (line_stream >> token)
 	{
@@ -124,6 +125,7 @@ void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 		if (token == ";")
 			break ;
 		if (token[token.length() - 1] == ';') {
+			c_semicolon = token;
 			token.erase(token.length() - 1);
 			(this->*process)(token);
 			std::cout << "token: " << token << "\n";
@@ -132,6 +134,8 @@ void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 		(this->*process)(token);
 		std::cout << "token: " << token << "\n";
 	}
+	if (c_semicolon[c_semicolon.length() - 1] != ';')
+		throw ParsingError(semicolon_not_found);
 }
 
 /**
@@ -255,12 +259,39 @@ void	Parse::processServer( const std::string &keyw ) {
 		case 9: 	process = &Parse::processHostname; break ;
 		case 10: 	process = &Parse::processRoot; break ;
 		
-		// default: 	std::cout << "*************************\n"
-		// 				<< "Keyword: " << keyw << '\n';
+		default: 	std::cout << "*************************\n"
+						<< "Keyword: " << keyw << '\n';
 					throw ParsingError(unknown_option);
 					break;
 	}
 	processParameters(process);
+}
+
+// check for ';', if don't have throw exception, else remove it and overwrite token
+void	Parse::pushtoDirective(std::vector<std::string>& directive){
+	std::string	token;
+	std::string c_semicolon;
+	while(line_stream >> token){
+		if (!token.length()) {
+			if (!getNextLine())
+				throw ParsingError(delimitor_not_found);
+			continue ;
+		}
+		// check this
+		if (token == ";")
+			break ;
+		if (token[token.length() - 1] == ';') {
+			c_semicolon = token;
+			token.erase(token.length() - 1);
+			directive.push_back(token);
+			std::cout << "token: " << token << "\n";
+			break ;
+		}
+		directive.push_back(token);
+		// std::cout << "token: " << token << "\n";
+	}
+	if (c_semicolon[c_semicolon.length() - 1] != ';')
+			throw ParsingError(semicolon_not_found);
 }
 
 /**
@@ -268,31 +299,26 @@ void	Parse::processServer( const std::string &keyw ) {
  */
 void	Parse::processLocation( const std::string &keyw ) {
 	// std::cout << "processLocation for " << keyw << "\n";
-	std::string method;
 	if (keyw == "root")
-		line_stream >> loc_ptr->root;
+		pushtoDirective(loc_ptr->root);
 	else if (keyw == "autoindex")
-		line_stream >> loc_ptr->autoindex;
+		pushtoDirective(loc_ptr->autoindex);
 	else if (keyw == "return")
-		line_stream >> loc_ptr->return_add;
+		pushtoDirective(loc_ptr->return_add);
 	else if (keyw == "alias")
-		line_stream >> loc_ptr->alias;
+		pushtoDirective(loc_ptr->alias);
 	else if (keyw == "index")
-		line_stream >> loc_ptr->index;
+		pushtoDirective(loc_ptr->index);
 	else if (keyw == "cgi_path")
-		while (line_stream >> method)
-			loc_ptr->cgi_path.push_back(method);
+		pushtoDirective(loc_ptr->cgi_path);
 	else if (keyw == "cgi_ext")
-		while (line_stream >> method)
-			loc_ptr->cgi_ext.push_back(method);
+		pushtoDirective(loc_ptr->cgi_ext);
 	else if (keyw == "allow_methods")
-		while (line_stream >> method)
-			loc_ptr->allow_methods.push_back(method);
+		pushtoDirective(loc_ptr->allow_methods);
 	else{
 		std::cout << "ParsingError token: " << keyw << "\n";
 		throw ParsingError(unknown_option);
 	}
-
 }
 
 /**
@@ -442,27 +468,49 @@ void Parse::printLocations(const std::vector<Location*>& locations) {
         Location* loc = locations[i];
         std::cout << "\nLocation " << i + 1 << ":\n";
         std::cout << "Path: " << loc->path << "\n";
-        std::cout << "Root: " << loc->root << "\n";
-        std::cout << "Autoindex: " << loc->autoindex << "\n";
-        std::cout << "Index: " << loc->index << "\n";
-        std::cout << "Return Address: " << loc->return_add << "\n";
-        std::cout << "Alias: " << loc->alias << "\n";
 
-        // Print allow_methods vector (C++98 for loop)
+        std::cout << "Root: ";
+        for (std::vector<std::string>::const_iterator it = loc->root.begin(); it != loc->root.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+
+        std::cout << "Autoindex: ";
+        for (std::vector<std::string>::const_iterator it = loc->autoindex.begin(); it != loc->autoindex.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+
+        std::cout << "Index: ";
+        for (std::vector<std::string>::const_iterator it = loc->index.begin(); it != loc->index.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+
+        std::cout << "Return Address: ";
+        for (std::vector<std::string>::const_iterator it = loc->return_add.begin(); it != loc->return_add.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+
+        std::cout << "Alias: ";
+        for (std::vector<std::string>::const_iterator it = loc->alias.begin(); it != loc->alias.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+
         std::cout << "Allow Methods: ";
         for (std::vector<std::string>::const_iterator it = loc->allow_methods.begin(); it != loc->allow_methods.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
-        // Print cgi_path vector (C++98 for loop)
         std::cout << "CGI Paths: ";
         for (std::vector<std::string>::const_iterator it = loc->cgi_path.begin(); it != loc->cgi_path.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
-        // Print cgi_ext vector (C++98 for loop)
         std::cout << "CGI Extensions: ";
         for (std::vector<std::string>::const_iterator it = loc->cgi_ext.begin(); it != loc->cgi_ext.end(); ++it) {
             std::cout << *it << " ";

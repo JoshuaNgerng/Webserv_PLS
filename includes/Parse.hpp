@@ -55,6 +55,7 @@ class Parse
 		Location			getlocation(); // have make yet
 		void 				printLocations(const std::vector<Location*>& locations);
 		bool				location_flag;
+		void				pushtoDirective(std::vector<std::string>& directive);
 		
 	private:
 		Parse( void );

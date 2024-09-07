@@ -18,11 +18,16 @@ class Location
 {
 	public:
 		std::string					path;
-		std::string					root;
-		std::string					autoindex;
-		std::string					index;
-		std::string					return_add;
-		std::string					alias;
+		
+	// reason why I put those one method directives as vector is to
+	// accomodate the pushDirective function. I don't have to copy again for string..
+		std::vector<std::string>	root;
+		std::vector<std::string>	autoindex;
+		std::vector<std::string>	index;
+		std::vector<std::string>	return_add;
+		std::vector<std::string>	alias;
+
+
 		std::vector<std::string>	allow_methods;
 		std::vector<std::string>	cgi_path;
 		std::vector<std::string>	cgi_ext;
