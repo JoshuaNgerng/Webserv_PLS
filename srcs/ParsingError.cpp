@@ -35,6 +35,9 @@ void	ParsingError::msgInit( int val ) {
 	case unclosed_bracket:
 		msg += "Brackets not closed";
 		break ;
+	case semicolon_not_found:
+		msg += "Semicolon not found";
+		break ;
 	default:
 		msg += "Unknown Error";
 		break ;

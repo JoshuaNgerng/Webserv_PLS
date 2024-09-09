@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/04 09:26:12 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/08/21 12:27:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 // {
 // 	private:
 // 		std::string	path;
+// 	public:
+// 		Location(std::string &path);
 // };
 
 // class Parse;
@@ -51,6 +53,9 @@ class Parse
 		ServerBlock			getServerBlock( void ) const;
 
 		Location			getlocation(); // have make yet
+		void 				printLocations(const std::vector<Location*>& locations);
+		bool				location_flag;
+		void				pushtoDirective(std::vector<std::string>& directive);
 		
 	private:
 		Parse( void );
@@ -61,18 +66,27 @@ class Parse
 		void	processToken( const std::string &token );
 		void	processParameters( void (Parse::*process)(std::string &) );
 		void	processServer( const std::string &keyw );
+		void	processLocation( const std::string &keyw );
+		bool	getNextLine( void );
+
+		// processes for Key Value for Server Block
 		void	processListen( std::string &token );
 		void	processServerName( std::string &token );
 		void	processRoot( std::string &token );
 		void	processIndex( std::string &token );
-		void	processLocation( const std::string &keyw );
-		bool	getNextLine( void );
+		void	processErrorPage( std::string &token );
+		void	processAccessLog( std::string &token );
+		void	processErrorLog( std::string &token );
+		void	processSSLCertificate( std::string &token );
+		void	processSSLCertificateKey( std::string &token );
+		void	processClientLimit( std::string &token );
+		void	processHostname( std::string &token );
 
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );
 
 		uint64_t			line_counter;
-		uint16_t			block_level;
+		uint16_t			block_level; // 1 == server, 2 == location
 		uint16_t			bracket_no;
 		std::string			filename;
 
@@ -82,7 +96,7 @@ class Parse
 		Server				*server;
 		ServerBlock			serverblock;
 		
-		Location			location; // have make yet
+		Location			*loc_ptr; // have make yet
 };
 
 #endif

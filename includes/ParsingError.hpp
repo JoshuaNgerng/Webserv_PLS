@@ -25,7 +25,8 @@ enum parsingerrorval {
 	unknown_option = 5,
 	repeated_port = 6,
 	invalid_ip_add = 7,
-	delimitor_not_found = 8
+	delimitor_not_found = 8,
+	semicolon_not_found = 9
 };
 
 class ParsingError : public std::exception
