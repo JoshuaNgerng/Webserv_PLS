@@ -1,23 +1,76 @@
 Server Block
-A server block is used to define the configuration for a specific virtual server (usually identified by listen and server_name). It sets up general server-wide settings.
+A server block is used to define the configuration for a specific virtual server
+(usually identified by listen and server_name). It sets up general server-wide settings.
 Location Block
-A location block defines the configuration for handling requests to specific paths or URLs. It's often nested within a server block and can override certain server block settings for the specified path.
-Classification of Options
+A location block defines the configuration for handling requests to specific paths or URLs.
+It's often nested within a server block and can override certain server block settings for the specified path.
+Classification of Directives
 
-1.    Server Block Options:
-    listen: Specifies the IP address and port the server listens on.
-    server_name: Defines the domain names that this server block will respond to.
-    error_page: Specifies custom error pages for different HTTP error codes.
-    access_log: Specifies the path to the access log file.
-    error_log: Specifies the path to the error log file.
-    client_limit: Specifies limits on the number of clients or connections.
+1.    Server Block Directives:
+	listen: Specifies the IP address and port the server listens on.
 
-    ssl_certificate: Specifies the path to the SSL certificate file.
-    ssl_certificate_key: Specifies the path to the SSL certificate key file.
+	server_name: Defines the domain names that this server block will respond to.
+	error_page: Specifies custom error pages for different HTTP error codes.
+	access_log: Specifies the path to the access log file.
+	error_log: Specifies the path to the error log file.
+	client_limit: Specifies limits on the number of clients or connections.
 
-2.    Location Block Options:
-    root: Specifies the root directory for the files to be served within this location.
-    index: Defines the index file(s) to be served when a directory is requested.
-    hostname: Typically used in location blocks, but this is not a standard key for common web servers like NGINX or Apache. It might be custom.
-    route: This is typically custom and might be used to specify routing rules within a location.
-    cgi-bin: Specifies the directory for CGI scripts, usually defined in location blocks.
+	ssl_certificate: Specifies the path to the SSL certificate file.
+	ssl_certificate_key: Specifies the path to the SSL certificate key file.
+
+2.    Location Block Directives:
+	/**/
+	alias: Defines a replacement for the specified location
+	For example, with the following configuration
+	location /i/ {
+		alias /data/w3/images/;
+	}
+	on request of “/i/top.gif”, the file /data/w3/images/top.gif will be sent.
+	/**/
+	root: Specifies the root directory for the files to be served within this location.
+	index: Defines the index file(s) to be served when a directory is requested.
+	hostname: Typically used in location blocks, but this is not a standard key for common web servers like NGINX or Apache. It might be custom.
+	route: This is typically custom and might be used to specify routing rules within a location.
+	cgi-bin: Specifies the directory for CGI scripts, usually defined in location blocks.
+
+http-core-mod
+	absolute_redirect on | off
+	default on
+	http, server, location
+	if (off) all redirects will be relative
+	(can implement this?)
+
+	aio on | off | threads[=pool]
+	default off
+	http, server, location
+	enable /disable async file I/O
+	(no implement no threads, assume everything asyn IO)
+
+	aio_write on | off  
+	If aio is enabled, specifies whether it is used for writing files.
+	Currently, this only works when using aio threads and
+	is limited to writing temporary files with data received from proxied servers.
+	(no implement no threads, assume everything asyn IO)
+
+	alias path
+	default n/a
+	location
+	Defines a replacement for the specified location
+	(must implement this)
+
+	auth_delay time;
+	default auth_delay 0s;
+	http, server, location
+	Delays processing of unauthorized requests with 401 response code to prevent timing attacks,
+	when access is limited by password, by the result of subrequest, or by JWT.
+	(have possibility with cookies session and ssl)
+
+	chunked_transfer_encoding on | off;
+	default chunked_transfer_encoding on;
+	http, server, location
+	Allows disabling chunked transfer encoding in HTTP/1.1.
+	It may come in handy when using a software failing to support chunked encoding
+	despite the standard’s requirement.
+	(encoding related stuff is not within our scope)
+
+	

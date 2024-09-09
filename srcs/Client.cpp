@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/06 01:26:56 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/09 15:18:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,6 @@ socklen_t&	Client::getSocklen( void ) { return(len); }
 void	Client::setSocketFd( int fd ) { socket_fd = fd; }
 
 void	Client::setReponseFd( int fd ) { reponse_fd = fd; }
-
-int	Client::getResource( void ) { return (-1); } // place holder
 
 void	Client::addToRequestHeader( const std::string &add ) { request_header += add; }
 

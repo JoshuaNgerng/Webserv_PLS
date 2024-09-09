@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/07 15:59:51 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/09 15:18:55 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,6 @@ class Client {
 		int									reponse_fd;
 		Socket								socket;
 		socklen_t							len;
-		int									attempts;
 
 		/* http related info + data info */
 		std::string							request_header;
@@ -89,6 +88,7 @@ class Client {
 		bool								got_body;
 		bool								finish_response;
 
+		int									attempts;
 		void	addCStr( std::string &dst, const char *src, size_t len ) const;
 };
 
