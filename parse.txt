@@ -1,0 +1,23 @@
+Server Block
+A server block is used to define the configuration for a specific virtual server (usually identified by listen and server_name). It sets up general server-wide settings.
+Location Block
+A location block defines the configuration for handling requests to specific paths or URLs. It's often nested within a server block and can override certain server block settings for the specified path.
+Classification of Options
+
+1.    Server Block Options:
+    listen: Specifies the IP address and port the server listens on.
+    server_name: Defines the domain names that this server block will respond to.
+    error_page: Specifies custom error pages for different HTTP error codes.
+    access_log: Specifies the path to the access log file.
+    error_log: Specifies the path to the error log file.
+    client_limit: Specifies limits on the number of clients or connections.
+
+    ssl_certificate: Specifies the path to the SSL certificate file.
+    ssl_certificate_key: Specifies the path to the SSL certificate key file.
+
+2.    Location Block Options:
+    root: Specifies the root directory for the files to be served within this location.
+    index: Defines the index file(s) to be served when a directory is requested.
+    hostname: Typically used in location blocks, but this is not a standard key for common web servers like NGINX or Apache. It might be custom.
+    route: This is typically custom and might be used to specify routing rules within a location.
+    cgi-bin: Specifies the directory for CGI scripts, usually defined in location blocks.
