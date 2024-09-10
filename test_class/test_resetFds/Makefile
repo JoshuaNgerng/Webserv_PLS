@@ -3,28 +3,23 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+         #
+#    By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/08/13 16:47:15 by jngerng           #+#    #+#              #
-#    Updated: 2024/09/05 15:41:42 by jngerng          ###   ########.fr        #
+#    Created: 2024/08/27 15:59:42 by jngerng           #+#    #+#              #
+#    Updated: 2024/08/27 16:06:11 by jngerng          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = webserv
-SRC_DIR = srcs
-INC_DIR = includes
+NAME = test
+SRC_DIR = .
+INC_DIR = .
 OBJ_DIR = obj
-FILES = CheckFile Parse ParsingError Socket Server ServerBlock Client Location
+FILES = resetfd simple_fd_array
 SRC = $(foreach item, $(FILES), $(SRC_DIR)/$(item).cpp)
-M_SRC = main
-OBJ = $(foreach item, $(FILES) $(M_SRC), $(OBJ_DIR)/$(item).o)
+OBJ = $(foreach item, $(FILES), $(OBJ_DIR)/$(item).o)
 INC = -I $(INC_DIR)
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -pedantic
+CFLAGS = -Wall -Wextra -Werror -std=c++98 #-pedantic
 CC = c++
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 $(OBJ_DIR)/%.o: %.cpp
 	mkdir -p $(OBJ_DIR)
@@ -43,5 +38,3 @@ fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
-
-

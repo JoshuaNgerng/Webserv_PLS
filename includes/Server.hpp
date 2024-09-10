@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/23 18:47:27 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/09 15:09:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@
 
 class Server
 {
-	typedef std::vector<std::pair<int, std::vector<ServerBlock>::iterator> > vector_pair;
-	typedef std::vector<ServerBlock>::iterator server_block_iter;
+	typedef std::vector<ServerBlock>::iterator serverblock_ptr;
 	public:
 		Server( void );
 		Server( const Server &src );
@@ -58,6 +57,7 @@ class Server
 		static const int				socket_type = SOCK_STREAM;
 		static const int				socket_protocol = 0;
 		static const int				backlog_limit = 10;
+		static const int				fcntl_flag = (O_NONBLOCK );
 		static const int				recv_flag = 0;
 		static const int				send_flag = 0;
 		static const int				timeout = (3 * 60 * 1000);
@@ -69,24 +69,39 @@ class Server
 		nfds_t							poll_tracker;
 		std::vector<pollfd_t>			socket_fds; // load all servers then only add clients (assume all fd on the same vector)
 		std::vector<pollfd_t>			buffer_new_fd; // store new fds
-		// std::vector<server_block_iter>	server_mapping; // server_index to serverblock_index
-		std::vector<std::pair<int, std::vector<ServerBlock>::iterator > > server_mapping;
+		std::vector<serverblock_ptr>	server_mapping; // server_index to serverblock_index
 		std::map<int, client_ptr>		client_mapping; // client fd to client index
-		std::vector<ServerBlock>		server_info; // parse into here
-		std::list<Client>				client_info; // no
+		std::vector<ServerBlock>		server_info;
+		std::list<Client>				client_info;
 
 		void	setupServer( void );
 		void	setupSocketfds( void );
 		void	loopServer( void );
 		void	resetFds( void );
-		void	getNewConnection( int fd, server_block_iter &it );
-		void	closeConnection( size_t index );
-		bool	receiveRequest( Client &client );
-		bool	sentReponse( Client &client );
-		void	fetchData( Client &client );
+		bool	checkBufferfds( void ) const;
+		void	addBufferfds( int fd );
+		void	handleServer( size_t index );
+		void	handleClient( size_t index );
+		void	handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index );
+		void	handleClientSent( pollfd_t &pollfd, client_ptr &ptr, size_t index );
+		
+		void	getNewConnection( int fd, serverblock_ptr &it );
+		void	clearClient( size_t index );
+		void	resetPollFd( pollfd_t &pollfd );
+		void	fetchClientData( client_ptr &ptr );
+
+		// bool	receiveData( int fd , std::string &output ) const;
+		// bool	receiveRequest( Client &client );
+		// bool	sentReponseToClient( Client &client );
+		// void	fetchData( Client &client );
+		// bool	receiveFromClient( Client &ptr, int fd );
 
 		uint32_t	findAvaliableSlot( void ) const;
 		Client&		getClient( int client_fd );
+		// bool		clientReponseStatus( Client &ptr ) const;
+		// bool		fetchReponseData( Client &client ) ;
+		// void		getReponseDataFd( Client &client );
+
 };
 
 std::ostream&	operator<<( std::ostream &o, std::ostream &o_ );
