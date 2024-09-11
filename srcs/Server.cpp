@@ -239,7 +239,8 @@ void	Server::handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index )
 			clearClient(index);
 		}
 		ptr->addToRequestHeader(buffer, bytes);
-		if (bytes > 4 && !ft_strncpy(&buffer[bytes - 4], "\r\n\r\n", 4)) {
+		// if (bytes > 4 && !strncpy(&buffer[bytes - 4], "\r\n\r\n", 4)) {
+		if (bytes > 4 && !memcpy(&buffer[bytes - 4], "\r\n\r\n", 4)) {
 			ptr->finishReceiveHeader();
 			if (ptr->checkRequest()) {
 				pollfd.events = POLLOUT;

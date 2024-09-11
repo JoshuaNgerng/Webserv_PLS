@@ -13,6 +13,8 @@
 #ifndef SERVER_HPP
 # include "ServerBlock.hpp"
 # include "Client.hpp"
+#include <cstring>
+
 
 class Server
 {
