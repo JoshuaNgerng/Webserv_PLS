@@ -13,27 +13,7 @@
 #ifndef SERVERBLOCK_HPP
 # define SERVERBLOCK_HPP
 # include "Socket.hpp"
-
-class Location
-{
-	public:
-		std::string					path;
-		
-	// reason why I put those one method directives as vector is to
-	// accomodate the pushDirective function. I don't have to copy again for string..
-		std::vector<std::string>	root;
-		std::vector<std::string>	autoindex;
-		std::vector<std::string>	index;
-		std::vector<std::string>	return_add;
-		std::vector<std::string>	alias;
-
-
-		std::vector<std::string>	allow_methods;
-		std::vector<std::string>	cgi_path;
-		std::vector<std::string>	cgi_ext;
-
-		Location(const std::string &path);
-};
+# include "Location.hpp"
 
 class ServerBlock
 {
@@ -93,7 +73,7 @@ class ServerBlock
 		500 501 502 503 505
 		*/
 
-		std::vector<Location*>				location;
+		std::vector<Location>				location;
 	// private:
 };
 

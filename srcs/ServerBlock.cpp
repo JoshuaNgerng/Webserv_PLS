@@ -149,7 +149,7 @@ void	ServerBlock::addListen( const Socket &add ) { listen.push_back(add); }
 void	ServerBlock::addLocation( const Location &add )
 {
 	// location.push_back(add);
-	location.push_back(new Location(add));
+	location.push_back(Location(add));
 
 }
 

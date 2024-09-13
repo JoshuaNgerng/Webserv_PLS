@@ -12,9 +12,9 @@
 
 #include "Parse.hpp"
 
-Parse::Parse( void ) : filename("default.conf"), server() {}
+// Parse::Parse( void ) : filename("default.conf"), server() {}
 
-Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_){
+Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_), loc_ptr(){
 	location_flag = false;
 	std::cout << "block_level: " << block_level << "\n";
 }
@@ -300,21 +300,21 @@ void	Parse::pushtoDirective(std::vector<std::string>& directive){
 void	Parse::processLocation( const std::string &keyw ) {
 	// std::cout << "processLocation for " << keyw << "\n";
 	if (keyw == "root")
-		pushtoDirective(loc_ptr->root);
+		pushtoDirective(loc_ptr.root);
 	else if (keyw == "autoindex")
-		pushtoDirective(loc_ptr->autoindex);
+		pushtoDirective(loc_ptr.autoindex);
 	else if (keyw == "return")
-		pushtoDirective(loc_ptr->return_add);
+		pushtoDirective(loc_ptr.return_add);
 	else if (keyw == "alias")
-		pushtoDirective(loc_ptr->alias);
+		pushtoDirective(loc_ptr.alias);
 	else if (keyw == "index")
-		pushtoDirective(loc_ptr->index);
+		pushtoDirective(loc_ptr.index);
 	else if (keyw == "cgi_path")
-		pushtoDirective(loc_ptr->cgi_path);
+		pushtoDirective(loc_ptr.cgi_path);
 	else if (keyw == "cgi_ext")
-		pushtoDirective(loc_ptr->cgi_ext);
+		pushtoDirective(loc_ptr.cgi_ext);
 	else if (keyw == "allow_methods")
-		pushtoDirective(loc_ptr->allow_methods);
+		pushtoDirective(loc_ptr.allow_methods);
 	else{
 		std::cout << "ParsingError token: " << keyw << "\n";
 		throw ParsingError(unknown_option);
@@ -372,7 +372,7 @@ void	Parse::processToken( const std::string &token ) {
 	if (location_flag == true)
 	{
 		location_flag = false;
-		loc_ptr = new Location(token);
+		loc_ptr = Location(token);
 	}
 	else if (bracket_no == 1 && block_level == 1)
 			processServer(token);
@@ -463,56 +463,56 @@ ServerBlock	Parse::getServerBlock( void ) const {
 
 // end of getters
 
-void Parse::printLocations(const std::vector<Location*>& locations) {
+void Parse::printLocations(const std::vector<Location>& locations) {
 	for (size_t i = 0; i < locations.size(); ++i) {
-        Location* loc = locations[i];
+        Location loc = locations[i];
         std::cout << "\nLocation " << i + 1 << ":\n";
-        std::cout << "Path: " << loc->path << "\n";
+        std::cout << "Path: " << loc.path << "\n";
 
         std::cout << "Root: ";
-        for (std::vector<std::string>::const_iterator it = loc->root.begin(); it != loc->root.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.root.begin(); it != loc.root.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
         std::cout << "Autoindex: ";
-        for (std::vector<std::string>::const_iterator it = loc->autoindex.begin(); it != loc->autoindex.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.autoindex.begin(); it != loc.autoindex.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
         std::cout << "Index: ";
-        for (std::vector<std::string>::const_iterator it = loc->index.begin(); it != loc->index.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.index.begin(); it != loc.index.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
         std::cout << "Return Address: ";
-        for (std::vector<std::string>::const_iterator it = loc->return_add.begin(); it != loc->return_add.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.return_add.begin(); it != loc.return_add.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
         std::cout << "Alias: ";
-        for (std::vector<std::string>::const_iterator it = loc->alias.begin(); it != loc->alias.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.alias.begin(); it != loc.alias.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
         std::cout << "Allow Methods: ";
-        for (std::vector<std::string>::const_iterator it = loc->allow_methods.begin(); it != loc->allow_methods.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.allow_methods.begin(); it != loc.allow_methods.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
         std::cout << "CGI Paths: ";
-        for (std::vector<std::string>::const_iterator it = loc->cgi_path.begin(); it != loc->cgi_path.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.cgi_path.begin(); it != loc.cgi_path.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n";
 
         std::cout << "CGI Extensions: ";
-        for (std::vector<std::string>::const_iterator it = loc->cgi_ext.begin(); it != loc->cgi_ext.end(); ++it) {
+        for (std::vector<std::string>::const_iterator it = loc.cgi_ext.begin(); it != loc.cgi_ext.end(); ++it) {
             std::cout << *it << " ";
         }
         std::cout << "\n\n";

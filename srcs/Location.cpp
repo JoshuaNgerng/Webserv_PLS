@@ -12,6 +12,10 @@
 
 #include "../includes/Parse.hpp"
 
+Location::Location() : path() {
+    std::cout << "Location contructor for path: " << path << "\n";
+}
+
 Location::Location(const std::string &path){
     std::cout << "Location contructor for path: " << path << "\n";
     this->path = path;

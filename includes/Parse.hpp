@@ -53,7 +53,7 @@ class Parse
 		ServerBlock			getServerBlock( void ) const;
 
 		Location			getlocation(); // have make yet
-		void 				printLocations(const std::vector<Location*>& locations);
+		void 				printLocations(const std::vector<Location>& locations);
 		bool				location_flag;
 		void				pushtoDirective(std::vector<std::string>& directive);
 		
@@ -96,7 +96,7 @@ class Parse
 		Server				*server;
 		ServerBlock			serverblock;
 		
-		Location			*loc_ptr; // have make yet
+		Location			loc_ptr;
 };
 
 #endif
