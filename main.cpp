@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/17 03:18:59 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/17 05:27:20 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,8 @@ int main()
 		std::string request = "GET /index.html HTTP/1.1\r\nHost: www.example.com\r\n\r\n";
 		Http http(request);
 
-		http.print_request_line();
+		http.parse_request_headers("    content-type      : text/html  \nhost: www.example.com\nuser-agent: TestAgent   ");
+		std::cout << http.get_content_type();
 	}
 	catch (const std::exception& e)
 	{
