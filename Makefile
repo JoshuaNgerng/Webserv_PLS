@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+         #
+#    By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/13 16:47:15 by jngerng           #+#    #+#              #
-#    Updated: 2024/09/05 15:41:42 by jngerng          ###   ########.fr        #
+#    Updated: 2024/09/17 02:24:28 by ychng            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME = webserv
 SRC_DIR = srcs
 INC_DIR = includes
 OBJ_DIR = obj
-FILES = Const CheckFile Parse ParsingError Socket Server ServerBlock Client Location
+FILES = Const CheckFile Parse ParsingError Socket Server ServerBlock Client Location Http HttpError
 SRC = $(foreach item, $(FILES), $(SRC_DIR)/$(item).cpp)
 M_SRC = main
 OBJ = $(foreach item, $(FILES) $(M_SRC), $(OBJ_DIR)/$(item).o)
