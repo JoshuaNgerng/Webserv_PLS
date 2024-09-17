@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/17 17:59:28 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 00:34:32 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,9 @@ void Http::parse_request_line(const std::string& request)
 
 void Http::validate_method(const std::string& method) const
 {
-	const std::set<std::string> valid_methods = {"GET", "POST"};
+	std::set<std::string> valid_methods;
+	valid_methods.insert("GET");
+	valid_methods.insert("POST");
 	if (valid_methods.find(method) == valid_methods.end())
 		throw HttpError(wrong_request_method);
 }
@@ -162,6 +164,120 @@ void Http::parse_request_headers(const std::string& headers)
 		}
 		else
 			throw HttpError(incomplete_header_format);
+	}
+	validate_headers();
+}
+
+void Http::validate_headers()
+{
+	// Function: State the domain name of the server
+	// Validate: Must be present in HTTP/1.1 request.
+	if (got_host)
+	{
+		if (host.empty())
+			throw HttpError(invalid_host);
+
+		// validate if the host contain valid domain name or ip
+		// Check if the host has a colon (':') and a valid port number after the domain
+		std::string::size_type colon_pos = host.find(':');
+		if (colon_pos != std::string::npos)
+		{
+			std::string port = host.substr(colon_pos + 1);
+			for (std::string::size_type i = 0; i < port.length(); i++)
+			{
+				if (!std::isdigit(port[i]))
+					throw HttpError(invalid_host);
+			}
+		}
+	}
+
+	// Function: State the size of the request body in bytes
+	// Validate: Must be a positive ineteger, if present the body should match this length
+	if (got_content_length)
+	{
+		try
+		{
+			std::stringstream stream(content_length);
+			int len;
+			stream >> len;
+			if (stream.fail() || len < 0)
+				throw HttpError(invalid_content_length);
+		}
+		catch (const std::exception& e)
+		{
+			throw HttpError(invalid_content_length);
+		}
+	}
+	
+	// Function:: State the media type of the request body
+	// validate: Must be a valid MIME type (e.g., "text/html", "application/json")
+	if (got_content_type)
+	{
+		if (content_type.empty() || content_type.find('/') == std::string::npos)
+			throw HttpError(invalid_content_type);
+	}
+
+	// Function: Gives info about the client that made the request
+	// Validate: No strict format, but should not be empty
+	if (got_user_agent)
+	{
+		if (user_agent.empty())
+			throw HttpError(invalid_user_agent);
+	}
+
+	// Function: State the media types that the client is willing to accept
+	// Validate: Must be a valid MIME type or a list of MIME types
+	if (got_accept)
+	{
+		if (accept.empty() || accept.find('/') == std::string::npos)
+			throw HttpError(invalid_accept);
+	}
+
+	// Function: Store credentials for authetication between the client to the server
+	// Validate: Not empty if present, format vary
+	if (got_authorization)
+	{
+		if (authorization.empty())
+			throw HttpError(invalid_authorization);
+	}
+
+	// Function: Control whether the network connection stays open or close after the request
+	// Validate: Common values like "keep-alive" and "close"
+	if (got_connection)
+	{
+		std::set<std::string> valid_values;
+		valid_values.insert("keep-alive");
+		valid_values.insert("close");
+		if (valid_values.find(connection) == valid_values.end())
+			throw HttpError(invalid_connection);
+	}
+
+	// Function: state the content encoding the client can understand (e.g., gzip, deflate)
+	// Validate: should list valid encodign types
+	if (got_accept_encoding)
+	{
+		std::set<std::string> valid_encodings;
+		valid_encodings.insert("gzip");
+		valid_encodings.insert("deflate");
+		valid_encodings.insert("br");
+		std::stringstream stream(accept_encoding);
+		std::string encoding;
+		while (std::getline(stream, encoding, ','))
+		{
+			trim(encoding);
+			if (encoding.empty())
+				throw HttpError(invalid_accept_encoding);
+			if (valid_encodings.find(encoding) == valid_encodings.end())
+				throw HttpError(invalid_accept_encoding);
+		}
+	}
+
+	// Function: the preferred language for the response
+	// Validate: Should list valid language tags
+	if (got_accept_language)
+	{
+		if (accept_language.empty() || accept_language.find('-') == std::string::npos)
+			throw HttpError(invalid_accept_language);
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/17 17:49:53 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 00:02:51 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ private:
 	bool got_request_headers;
 
 	void parse_request_headers(const std::string& headers);
+	void validate_headers();
 	void trim(std::string& str);
 	void to_lowercase(std::string& str);
 public:

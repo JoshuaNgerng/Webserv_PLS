@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/17 01:57:33 by ychng             #+#    #+#             */
-/*   Updated: 2024/09/17 17:59:24 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 00:20:12 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,17 @@ enum httperrorval
 	wrong_request_uri,
 	wrong_request_http_version,
 	incomplete_header_format,
-	wrong_header_format
+	wrong_header_format,
+	invalid_host,
+	invalid_content_length,
+	invalid_content_type,
+	invalid_user_agent,
+	invalid_accept,
+	invalid_authorization,
+	invalid_connection,
+	invalid_accept_encoding,
+	invalid_accept_language
+
 };
 
 class HttpError : public std::exception
@@ -31,7 +41,7 @@ class HttpError : public std::exception
 public:
 	HttpError();
 	HttpError(const HttpError& src);
-	~HttpError();
+	virtual ~HttpError() throw();
 	HttpError& operator=(const HttpError& src);
 	virtual const char* what() const throw();
 
