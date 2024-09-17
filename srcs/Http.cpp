@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/17 05:30:12 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/17 17:59:28 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,18 @@
 
 Http::Http(const std::string& request) : got_request_line(false), got_content_type(false), got_content_length(false), got_host(false), got_user_agent(false), got_accept(false), got_authorization(false), got_connection(false), got_accept_encoding(false), got_accept_language(false), got_request_headers(false)
 {
-	parse_request_line(request);
+	std::string::size_type request_line_end = request.find("\r\n");
+	std::string::size_type headers_end = request.find("\r\n\r\n");
+	if (request_line_end == std::string::npos || headers_end == std::string::npos || request_line_end >= headers_end)
+		throw HttpError(incomplete_request_format);
+	
+	std::string request_line = request.substr(0, request_line_end);
+	std::string headers = request.substr(request_line_end + 2, headers_end - (request_line_end + 2));
+	std::string body = request.substr(headers_end + 4);
+
+	parse_request_line(request_line);
+	parse_request_headers(headers);
+	// parse_request_body(body);
 }
 
 void Http::parse_request_line(const std::string& request)
@@ -24,6 +35,10 @@ void Http::parse_request_line(const std::string& request)
 
 	if (std::getline(request_stream, line))
 	{
+		size_t last_non_space = line.find_last_not_of(" \t");
+		if (last_non_space != std::string::npos && last_non_space != (line.length() - 1))
+			throw HttpError(wrong_request_line_format);
+
 		std::stringstream line_stream(line);
 		if (!(line_stream >> method >> uri >> http_version))
 			throw HttpError(incomplete_request_line);
@@ -35,7 +50,7 @@ void Http::parse_request_line(const std::string& request)
 		got_request_line = true;
 	}
 	else
-		throw HttpError(missing_request_line);
+		throw HttpError(wrong_request_line_format);
 }
 
 void Http::validate_method(const std::string& method) const
@@ -85,7 +100,11 @@ void Http::parse_request_headers(const std::string& headers)
 			got_request_headers = true;
 			break ;
 		}
-		// Process each header line (simple example)
+		// If there are spaces before \r\n, give an error
+		size_t last_non_space = line.find_last_not_of(" \t");
+		if (last_non_space != std::string::npos && last_non_space != (line.length() - 1))
+			throw HttpError(wrong_header_format);
+		
 		std::string name;
 		std::string value;
 		std::stringstream header_stream(line);
