@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/17 01:59:21 by ychng             #+#    #+#             */
-/*   Updated: 2024/09/18 00:39:00 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 01:22:18 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,12 @@ void HttpError::msgInit(int val)
 			break ;
 		case invalid_accept_language:
 			msg += "Invalid accept language";
+			break ;
+		case method_shouldnt_have_body:
+			msg += "Method shouldn't have body";
+			break ;
+		case not_matching_body_length:
+			msg += "Body length does not match";
 			break ;
 		default:
 			msg += "Unkwown error";

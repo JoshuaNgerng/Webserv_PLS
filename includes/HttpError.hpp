@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/17 01:57:33 by ychng             #+#    #+#             */
-/*   Updated: 2024/09/18 00:20:12 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 01:21:37 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,9 @@ enum httperrorval
 	invalid_authorization,
 	invalid_connection,
 	invalid_accept_encoding,
-	invalid_accept_language
-
+	invalid_accept_language,
+	not_matching_body_length,
+	method_shouldnt_have_body
 };
 
 class HttpError : public std::exception

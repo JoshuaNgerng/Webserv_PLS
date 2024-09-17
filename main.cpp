@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/18 00:35:31 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 01:26:39 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,12 @@ int main()
 {
 	try
 	{
-		std::string request = "GET /index.html HTTP/1.1\r\nHost: www.example.com\r\n\r\n";
-		Http http("GET /index.html HTTP/1.1\r\nHost: www.example.com\r\nContent-Type: text/html\r\n\r\n\r");
+		std::string request = "POST / HTTP/1.1\r\nContent-Type: application/json\r\nContent-Length: 15\r\n\r\n       {\"key\":\"value\"}";
+        Http http(request);
 
-		std::cout << http.get_content_type();
-		std::cout << http.has_content_type();
+        std::cout << "Content-Type: " << http.get_content_type() << std::endl;
+        std::cout << "Content-Length: " << http.get_content_length() << std::endl;
+        std::cout << "Body: " << http.get_body() << std::endl;
 	}
 	catch (const std::exception& e)
 	{

@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/18 00:02:51 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 01:20:11 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,10 @@ private:
 	void validate_headers();
 	void trim(std::string& str);
 	void to_lowercase(std::string& str);
+
+	std::string body;
+	bool got_body;
+	void parse_request_body(const std::string& body);
 public:
 	Http(const std::string& msg);
 	bool has_request_line() const;
@@ -85,6 +89,9 @@ public:
     std::string get_connection() const;
     std::string get_accept_encoding() const;
     std::string get_accept_language() const;
+
+	bool has_body() const;
+	std::string get_body() const;
 };
 
 // class Http

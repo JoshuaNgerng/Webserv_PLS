@@ -6,13 +6,13 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/18 00:34:32 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/18 01:31:10 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Http.hpp"
 
-Http::Http(const std::string& request) : got_request_line(false), got_content_type(false), got_content_length(false), got_host(false), got_user_agent(false), got_accept(false), got_authorization(false), got_connection(false), got_accept_encoding(false), got_accept_language(false), got_request_headers(false)
+Http::Http(const std::string& request) : got_request_line(false), got_content_type(false), got_content_length(false), got_host(false), got_user_agent(false), got_accept(false), got_authorization(false), got_connection(false), got_accept_encoding(false), got_accept_language(false), got_request_headers(false), got_body(false)
 {
 	std::string::size_type request_line_end = request.find("\r\n");
 	std::string::size_type headers_end = request.find("\r\n\r\n");
@@ -25,7 +25,7 @@ Http::Http(const std::string& request) : got_request_line(false), got_content_ty
 
 	parse_request_line(request_line);
 	parse_request_headers(headers);
-	// parse_request_body(body);
+	parse_request_body(body);
 }
 
 void Http::parse_request_line(const std::string& request)
@@ -312,3 +312,51 @@ std::string Http::get_authorization() const { return authorization; }
 std::string Http::get_connection() const { return connection; }
 std::string Http::get_accept_encoding() const { return accept_encoding; }
 std::string Http::get_accept_language() const { return accept_language; }
+
+
+void Http::parse_request_body(const std::string& body)
+{
+	std::string trimmed_body = body;
+	trimmed_body.erase(0, trimmed_body.find_first_not_of(" \t\r\n"));
+	trimmed_body.erase(trimmed_body.find_last_not_of(" \t\r\n") + 1);
+	if (got_content_length)
+	{
+		std::stringstream stream(content_length);
+		int len;
+		stream >> len;
+		if (stream.fail() || len < 0)
+			throw HttpError(invalid_content_length);
+		// std::cout << body.length() << ", " << len << std::endl;
+		if (trimmed_body.length() != static_cast<std::string::size_type>(len))
+			throw HttpError(not_matching_body_length);
+		this->body = trimmed_body;
+		got_body = true;
+	}
+	else
+	{
+		// when content-length is not present
+		if (method == "POST")
+		{
+			this->body = trimmed_body; // body is expected for post
+			got_body = true;
+		}
+		else
+		{
+			// methods like get should not have body when no content length
+			if (!body.empty())
+				throw HttpError(method_shouldnt_have_body);
+		}
+	}
+}
+
+bool Http::has_body() const
+{
+	return got_body;
+}
+
+std::string Http::get_body() const
+{
+	if (!has_body())
+		return "";
+	return body;
+}
