@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/06 01:10:09 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/18 02:14:29 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,38 +92,72 @@ void	Server::setupSocketfds( void ) {
 	buffer_new_fd.insert(buffer_new_fd.end(), server_no * 2, socket_fd);
 }
 
-void	Server::resetFds( void ) {
-	nfds_t	i = 0;
-	nfds_t	buffer_index = 0;
-	for (i = 0; i < poll_tracker; i ++) {
-		if (socket_fds[i].fd > -1) {
-			continue ;
-		}
-		if (buffer_index < buffer_counter) {
-			std::swap(buffer_new_fd[buffer_index], socket_fds[i]);
-			buffer_index ++;
-		}
-		else {
-			for (nfds_t empty = i; empty < poll_tracker; empty ++) {
-				if (socket_fds[empty].fd > -1) {
-					std::swap(socket_fds[empty], socket_fds[i]);
-					break ;
-				}
-			}
-		}		
-	}
-	for (; buffer_index < buffer_counter; buffer_index ++) {
-		while (i < server_limit)
+void	Server::resetFds( void )
+{
+	// Move valid fds to the front
+	nfds_t i = 0; // use this to loop through socket_fds array
+	nfds_t valid_index = 0; // use this to place it at the front
+	while (i < poll_tracker)
+	{
+		if (socket_fds[i].fd > -1)
 		{
-			if (socket_fds[i].fd == -1)
-				break ;
-			i ++;
+			if (i != valid_index)
+				std::swap(socket_fds[i], socket_fds[valid_index]);
+			valid_index++;
 		}
-		std::swap(socket_fds[i], buffer_new_fd[buffer_index]);
+		i++;
 	}
+
+	// Add new fds from buffer to the end of socket_fds
+	nfds_t buffer_index = 0; // use this to loop through buffer array
+	while (buffer_index < buffer_counter && valid_index < socket_fds.size())
+	{
+		if (buffer_new_fd[buffer_index].fd > -1)
+		{
+			socket_fds[valid_index] = buffer_new_fd[buffer_index];
+			valid_index++;
+		}
+		buffer_index++;
+	}
+
+
+	// Reset buffer counter and poll tracker
 	buffer_counter = 0;
 	poll_tracker = fd_counter;
 }
+
+// void	Server::resetFds( void ) {
+// 	nfds_t	i = 0;
+// 	nfds_t	buffer_index = 0;
+// 	for (i = 0; i < poll_tracker; i ++) {
+// 		if (socket_fds[i].fd > -1) {
+// 			continue ;
+// 		}
+// 		if (buffer_index < buffer_counter) {
+// 			std::swap(buffer_new_fd[buffer_index], socket_fds[i]);
+// 			buffer_index ++;
+// 		}
+// 		else {
+// 			for (nfds_t empty = i; empty < poll_tracker; empty ++) {
+// 				if (socket_fds[empty].fd > -1) {
+// 					std::swap(socket_fds[empty], socket_fds[i]);
+// 					break ;
+// 				}
+// 			}
+// 		}		
+// 	}
+// 	for (; buffer_index < buffer_counter; buffer_index ++) {
+// 		while (i < server_limit)
+// 		{
+// 			if (socket_fds[i].fd == -1)
+// 				break ;
+// 			i ++;
+// 		}
+// 		std::swap(socket_fds[i], buffer_new_fd[buffer_index]);
+// 	}
+// 	buffer_counter = 0;
+// 	poll_tracker = fd_counter;
+// }
 
 void	Server::setupServer( void ) {
 	setupSocketfds();
