@@ -1,0 +1,6 @@
+focus on http request
+
+change constructor (empty constructor only)
+make a public member functions to add to request ex addRequestHeader
+then refactor validation into add functions
+refactor names
