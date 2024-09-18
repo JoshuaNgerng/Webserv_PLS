@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/06 01:10:09 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/15 14:41:12 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,26 @@
 
 Server::Server( void ) { }
 
-// Server::Server( const Server &src ) :
+Server::Server( const Server &src ) { *this = src; }
 // 	server_no(src.server_no), client_limit(src.client_limit),
 // 	server_fds(src.server_fds), client_fds(src.client_fds),
 // 	server_info(src.server_info) { }
 
 Server::~Server( void ) { }
 
-// Server&	Server::operator=( const Server &src )
-// {
-// 	if (this == &src)
-// 		return (*this);
-// 	server_no = src.server_no;
-// 	client_limit = src.client_limit;
-// 	server_fds = src.server_fds;
-// 	client_fds = src.client_fds;
-// 	server_info = src.server_info;
-// 	return (*this);
-// }
+Server&	Server::operator=( const Server &src )
+{
+	if (this == &src)
+		return (*this);
+	server_no = src.server_no;
+	socket_fds = src.socket_fds;
+	buffer_new_fd = src.buffer_new_fd;
+	server_mapping = src.server_mapping;
+	client_mapping = src.client_mapping;
+	server_info = src.server_info;
+	client_info = src.client_info;
+	return (*this);
+}
 
 int	Server::setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol ) {
 	int	fd = socket(addr.sin_family, socket_type, socket_protocol);
@@ -428,4 +430,22 @@ std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
 	o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
 	o << "Servers info\n" << ref.displayServerInfo(o) << '\n';
 	return (o);
+}
+
+void	Server::resetServer( void )
+{
+	swap_clear(socket_fds);
+	swap_clear(buffer_new_fd);
+	swap_clear(server_mapping);
+	swap_clear(client_mapping);
+	swap_clear(server_info);
+	swap_clear(client_info);
+}
+
+void	Server::testAlloc( void )
+{
+	socket_fds.reserve(10);
+	buffer_new_fd.reserve(100);
+	ServerBlock	server;
+	server_info.insert(server_info.end(), 10, server);
 }

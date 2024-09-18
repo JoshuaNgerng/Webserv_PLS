@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/06 01:10:09 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/13 11:27:41 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ void	Server::addBufferfds( int fd ) {
 }
 
 void	Server::setupSocketfds( void ) {
-	typedef std::vector<ServerBlock>::iterator iter;
+	typedef std::vector<ServerInfo>::iterator iter;
 	server_no = 0;
 	for (iter it = server_info.begin(); it != server_info.end(); it ++) {
 		server_no += it->listen.size();
@@ -127,7 +127,7 @@ void	Server::resetFds( void ) {
 
 void	Server::setupServer( void ) {
 	setupSocketfds();
-	typedef std::vector<ServerBlock>::iterator ServerIter;
+	typedef std::vector<ServerInfo>::iterator ServerIter;
 	typedef std::vector<Socket>::iterator SocketIter;
 	size_t	index = 0;
 	for (ServerIter it = server_info.begin(); it != server_info.end(); it ++) {
@@ -147,7 +147,7 @@ void	Server::setupServer( void ) {
 	}
 }
 
-void	Server::getNewConnection( int fd, serverblock_ptr &it ) {
+void	Server::getNewConnection( int fd, ServerInfo_ptr &it ) {
 	if (!checkBufferfds())
 		return ;
 	Client	buffer(it);
@@ -339,7 +339,7 @@ void	Server::startServerLoop( void ) {
 	startServerLoop(&fix);
 }
 
-void	Server::addServerBlock( ServerBlock &ref ) {
+void	Server::addServerInfo( ServerInfo &ref ) {
 	server_info.push_back(ref);
 }
 

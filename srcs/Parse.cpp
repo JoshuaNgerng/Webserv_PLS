@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/24 01:07:35 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/15 14:10:20 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,16 +248,16 @@ void	Parse::processServer( const std::string &keyw ) {
 	switch (option)
 	{
 		case 0:		process = &Parse::processListen; break ;
-		case 1: 	process = &Parse::processServerName; break ;
-		case 2: 	process = &Parse::processErrorPage; break ;
-		case 3: 	process = &Parse::processAccessLog; break ;
-		case 4: 	process = &Parse::processErrorLog; break ;
-		case 5: 	process = &Parse::processSSLCertificate; break ;
-		case 6: 	process = &Parse::processSSLCertificateKey; break ;
-		case 7: 	process = &Parse::processClientLimit; break ;
-		case 8: 	process = &Parse::processIndex; break ;
-		case 9: 	process = &Parse::processHostname; break ;
-		case 10: 	process = &Parse::processRoot; break ;
+		// case 1: 	process = &Parse::processServerName; break ;
+		// case 2: 	process = &Parse::processErrorPage; break ;
+		// case 3: 	process = &Parse::processAccessLog; break ;
+		// case 4: 	process = &Parse::processErrorLog; break ;
+		// case 5: 	process = &Parse::processSSLCertificate; break ;
+		// case 6: 	process = &Parse::processSSLCertificateKey; break ;
+		// case 7: 	process = &Parse::processClientLimit; break ;
+		// case 8: 	process = &Parse::processIndex; break ;
+		// case 9: 	process = &Parse::processHostname; break ;
+		// case 10: 	process = &Parse::processRoot; break ;
 		
 		default: 	std::cout << "*************************\n"
 						<< "Keyword: " << keyw << '\n';
@@ -344,7 +344,7 @@ void	Parse::processToken( const std::string &token ) {
 		block_level --;
 		if (!bracket_no && !block_level) {
 			// std::cout << "\nParsing ServerBlock info\n" << serverblock << '\n';
-			printLocations(serverblock.location); // Prints locations blokcs saved
+			// printLocations(serverblock.location); // Prints locations blokcs saved
 			server->addServerBlock(serverblock);
 			serverblock.reset();
 			// std::cout << "test adding\n" << *server << '\n';
@@ -355,7 +355,7 @@ void	Parse::processToken( const std::string &token ) {
 			// location is vertor of location pointers to location data
 			// remember to free.
 			// std::cout << "Pushing location: " << loc_ptr->path << "\n";
-			serverblock.location.push_back(loc_ptr);
+			serverblock.location.push_back(*loc_ptr);
 			location_flag = false;
 			// loc.reset();
 		}
@@ -372,7 +372,8 @@ void	Parse::processToken( const std::string &token ) {
 	if (location_flag == true)
 	{
 		location_flag = false;
-		loc_ptr = new Location(token);
+		Location	temp(token);
+		loc_ptr = &temp;
 	}
 	else if (bracket_no == 1 && block_level == 1)
 			processServer(token);

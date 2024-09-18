@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/12 12:59:22 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/13 12:16:42 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,14 @@ void	CheckFile::checking( int check_flags ) {
 	if (stat(filename.c_str(), &stat_info) < 0)
 		return ;
 	switch (stat_info.st_mode & S_IFMT) {
-		case (S_IFBLK): type = block_device; break;
-		case (S_IFCHR): type = char_device; break;
-		case (S_IFDIR): type = directory; break;
-		case (S_IFIFO): type = fifo_pipe; break;
-		case (S_IFLNK): type = symlink; break;
-		case (S_IFREG): type = file; break;
-		case (S_IFSOCK): type = sock; break;
-		default : type = unknown; break;
+		case (S_IFBLK): 	type = block_device;	break;
+		case (S_IFCHR): 	type = char_device;		break;
+		case (S_IFDIR): 	type = directory;		break;
+		case (S_IFIFO): 	type = fifo_pipe;		break;
+		case (S_IFLNK): 	type = symlink;			break;
+		case (S_IFREG): 	type = file;			break;
+		case (S_IFSOCK): 	type = sock;			break;
+		default: 			type = unknown;			break;
 	}
 	filesize = stat_info.st_size;
 }
@@ -54,20 +54,20 @@ bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file 
 	return (true);
 }
 
-uint8_t	CheckFile::getFileContent( std::string &dst ) const {
+bool	CheckFile::getFileContent( std::string &dst ) const {
 	std::ifstream		config_file(filename.c_str());
 	std::stringstream	fileStream;
 	if (!fileToStringStream(fileStream, config_file))
-		return (open_);
+		return (false);
 	fileStream << config_file.rdbuf();
 	dst = fileStream.str();
-	return (success);
+	return (true);
 }
 
-uint8_t	CheckFile::getFileContent( std::stringstream &dst ) const {
+bool	CheckFile::getFileContent( std::stringstream &dst ) const {
 	std::ifstream		config_file(filename.c_str());
 	std::stringstream	fileStream;
 	if (!fileToStringStream(dst, config_file))
-		return (open_);
-	return (success);
+		return (false);
+	return (true);
 }

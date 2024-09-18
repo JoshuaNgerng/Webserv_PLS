@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/09 15:09:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/15 14:19:17 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ class Server
 		std::ostream&	displayServerInfo( std::ostream &o ) const;
 		std::ostream&	displayClientInfo( std::ostream &o ) const;
 
+		void		resetServer( void );
+		void		testAlloc( void );
 	private:
 		typedef std::list<Client>::iterator client_ptr;
 		static const socklen_t			socklen = sizeof(sockaddr_in_t);
@@ -101,7 +103,6 @@ class Server
 		// bool		clientReponseStatus( Client &ptr ) const;
 		// bool		fetchReponseData( Client &client ) ;
 		// void		getReponseDataFd( Client &client );
-
 };
 
 std::ostream&	operator<<( std::ostream &o, std::ostream &o_ );

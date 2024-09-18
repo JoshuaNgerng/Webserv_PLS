@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Const.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/06 14:22:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/15 14:34:46 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <string>
 # include <cstring>
 # include <cstdlib>
+# include <ctime>
 # include <exception>
 # include <list>
 # include <vector>
@@ -117,6 +118,13 @@ std::ostream&	displayContainer( std::ostream &o, const T &ref, const char *end )
 		o << *it << end;
 	}
 	return (o);
+}
+
+template <typename T>
+void	swap_clear(T &a)
+{
+	T	buffer;
+	std::swap(a, buffer);
 }
 
 int		ft_strncpy(const char *s1, const char *s2, size_t n);

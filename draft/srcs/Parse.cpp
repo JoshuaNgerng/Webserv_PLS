@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/24 01:07:35 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/13 11:27:41 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ bool	Parse::getNextLine( void ) {
  * 			line_stream is replaced if new line if line have no token leftover
  * 			and `;' char is not met
  * 
- * @param	process the function pointer to store the token (string) into the serverblock
+ * @param	process the function pointer to store the token (string) into the ServerInfo
  * 					or the location block, the dev will implement the function
  *
  * @throws	whatever error the function passed into will throw
@@ -171,60 +171,60 @@ void	Parse::processListen( std::string &token ) {
 	// check if str is all digits
 	uint16_t	port = std::atoi(token.c_str());//ft_stoi(token);
 	socket.changeAddress().sin_port = htons(port);
-	if (serverblock.checkDupSocket(socket))
+	if (ServerInfo.checkDupSocket(socket))
 		throw ParsingError(repeated_port);
-	serverblock.addListen(socket);
+	ServerInfo.addListen(socket);
 }
 
 void	Parse::processServerName( std::string &token ) {
-	serverblock.addServerName(token);
+	ServerInfo.addServerName(token);
 }
 
 void	Parse::processRoot( std::string &token ) {
-	serverblock.addRoot(token);
+	ServerInfo.addRoot(token);
 }
 
 void	Parse::processIndex( std::string &token ) {
-	serverblock.addIndex(token);
+	ServerInfo.addIndex(token);
 }
 
 void	Parse::processErrorPage( std::string &token ){
 	// Not yet decided
-	// serverblock.addErrorPage(
+	// ServerInfo.addErrorPage(
 	(void)token;
 }
 
 void	Parse::processAccessLog( std::string &token ){
-	serverblock.addAccessLog(token);
+	ServerInfo.addAccessLog(token);
 }
 
 void	Parse::processErrorLog( std::string &token ){
-	serverblock.addErrorLog(token);
+	ServerInfo.addErrorLog(token);
 }
 
 void	Parse::processSSLCertificate( std::string &token ){
-	serverblock.addSSLCertificate(token);
+	ServerInfo.addSSLCertificate(token);
 }
 
 void	Parse::processSSLCertificateKey( std::string &token ){
-	serverblock.addSSLCertificateKey(token);
+	ServerInfo.addSSLCertificateKey(token);
 }
 
 void	Parse::processClientLimit( std::string &token ){
-	serverblock.setClientMax(static_cast<uint64_t>(std::atoll(token.c_str())));
+	ServerInfo.setClientMax(static_cast<uint64_t>(std::atoll(token.c_str())));
 }
 
 void	Parse::processHostname( std::string &token ){
-	serverblock.addHostname(token);
+	ServerInfo.addHostname(token);
 }
 
 /**
  * @brief	check keyword in the server block the func will loop through all known
  * 			keyword and assign the proper function pointer to pass it into
  * 			processParameter to futher tokenize the arugment for the keyword and
- * 			store it into the serverblock
+ * 			store it into the ServerInfo
  * 
- * @param	keyw the keyword in the serverblock being process
+ * @param	keyw the keyword in the ServerInfo being process
  * 
  * @todo	testing listen, server_name, root, index for now
  * 			index can take multiple arug idk how that works
@@ -324,7 +324,7 @@ void	Parse::processLocation( const std::string &keyw ) {
 /**
  * @brief	check the token for important block indentifier such as `server'
  * 			and `location' then search for brackets to determine which keyword to process
- * 			whether it is within the serverblock or the location 
+ * 			whether it is within the ServerInfo or the location 
  * 
  * @param	token	the token to check for block indentifier or pass into further processing
  * 					as keywords of the certain block
@@ -343,19 +343,19 @@ void	Parse::processToken( const std::string &token ) {
 		bracket_no --;
 		block_level --;
 		if (!bracket_no && !block_level) {
-			// std::cout << "\nParsing ServerBlock info\n" << serverblock << '\n';
-			printLocations(serverblock.location); // Prints locations blokcs saved
-			server->addServerBlock(serverblock);
-			serverblock.reset();
+			// std::cout << "\nParsing ServerInfo info\n" << ServerInfo << '\n';
+			printLocations(ServerInfo.location); // Prints locations blokcs saved
+			server->addServerInfo(ServerInfo);
+			ServerInfo.reset();
 			// std::cout << "test adding\n" << *server << '\n';
-			// std::cout << "\nParsing ServerBlock info after transfer\n" << serverblock << '\n';
+			// std::cout << "\nParsing ServerInfo info after transfer\n" << ServerInfo << '\n';
 			// std::cout << "\ntest parsed block\n"; server.displayServerInfo(std::cout); std::cout << '\n';
 		}
 		if (bracket_no == 1 && block_level == 1) {
 			// location is vertor of location pointers to location data
 			// remember to free.
 			// std::cout << "Pushing location: " << loc_ptr->path << "\n";
-			serverblock.location.push_back(loc_ptr);
+			ServerInfo.location.push_back(loc_ptr);
 			location_flag = false;
 			// loc.reset();
 		}
@@ -453,8 +453,8 @@ const std::string&	Parse::getFilename( void ) const {
 // 	return (this->server);
 // }
 
-ServerBlock	Parse::getServerBlock( void ) const {
-	return (this->serverblock);
+ServerInfo	Parse::getServerInfo( void ) const {
+	return (this->ServerInfo);
 }
 
 // Location	Parse::getlocation( void ) const{

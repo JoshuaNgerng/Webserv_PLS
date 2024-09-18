@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerBlock.hpp                                    :+:      :+:    :+:   */
+/*   ServerInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 13:51:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/18 10:28:42 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVERBLOCK_HPP
-# define SERVERBLOCK_HPP
+#ifndef SERVERINFO_HPP
+# define SERVERINFO_HPP
 # include "Socket.hpp"
 
 class Location
@@ -26,8 +26,6 @@ class Location
 		std::vector<std::string>	index;
 		std::vector<std::string>	return_add;
 		std::vector<std::string>	alias;
-
-
 		std::vector<std::string>	allow_methods;
 		std::vector<std::string>	cgi_path;
 		std::vector<std::string>	cgi_ext;
@@ -35,14 +33,14 @@ class Location
 		Location(const std::string &path);
 };
 
-class ServerBlock
+class ServerInfo
 {
 	public:
-		ServerBlock( void );
-		ServerBlock( const ServerBlock &src );
-		~ServerBlock( void );
+		ServerInfo( void );
+		ServerInfo( const ServerInfo &src );
+		~ServerInfo( void );
 
-		ServerBlock&	operator=( const ServerBlock &src );
+		ServerInfo&	operator=( const ServerInfo &src );
 
 		std::string	testHTML( void );
 
@@ -51,6 +49,7 @@ class ServerBlock
 		void	toggleAutoIndex( void );
 
 		// Add
+		void	addListen( std::stringstream &stream );
 		void	setClientMax( uint64_t add );
 		void	addIndex( const std::string &add );
 		void	addErrorPage( uint16_t error_code, const std::string &path );
@@ -65,38 +64,32 @@ class ServerBlock
 		// void	addClientLimit( const std::string &add );
 		void	addHostname( const std::string &add );
 
-		// Process
-		void	processListen( std::stringstream &stream );
-		void	processSingleToken( std::string &dst, std::stringstream &stream );
-		void	processServerName( std::stringstream &stream );
-		void	processRoot( std::stringstream &stream );
+		const std::string&	getRoot( void ) const;	
 
+	private:
 		// keys/options
 		std::vector<Socket>				listen;
 		std::string						server_name;
 		std::string						root;
 		std::string						access_log;
 		std::string						error_log;
-		std::string						ssl_certificate;
-		std::string						ssl_certificate_key;
-		// std::string						client_limit;
 		std::string						index;
-		std::string						hostname;
 
+		uint64_t						client_;
 		uint64_t						client_max_body_size;
 		bool							autoindex;
+		bool							chunk_encoding;
 		std::map<uint16_t, std::string>	error_page;
 		/*
-		known error pages
+		known error pages 브이페스때 큐붕배터리행만큼은!!!!
 		301 302
 		400 401 402 403 404 405 406
 		500 501 502 503 505
 		*/
 
-		std::vector<Location*>				location;
-	// private:
+		std::vector<Location>				location;
 };
 
-std::ostream&	operator<<( std::ostream &o, const ServerBlock &ref );
+std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref );
 
 #endif

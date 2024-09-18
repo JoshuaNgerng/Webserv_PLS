@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerBlock.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 13:51:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/15 14:06:31 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ class ServerBlock
 		500 501 502 503 505
 		*/
 
-		std::vector<Location*>				location;
+		std::vector<Location>				location;
 	// private:
 };
 

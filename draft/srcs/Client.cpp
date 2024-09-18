@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/09 15:18:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/14 01:03:24 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ Client::Client( void ) : server_ref(), socket_ref(), reponse_ref(),
 	is_data_avaliable(true), got_header(false), got_body(false),
 	finish_response(false), attempts(0) { }
 
-Client::Client( std::vector<ServerBlock>::iterator &it ) :
+Client::Client( std::vector<ServerInfo>::iterator &it ) :
 	server_ref(it), socket_ref(), reponse_ref(),
 	socket_fd(-1), reponse_fd(-1), socket(), len(0), request_header(), request_body(), response(),
 	bytes_sent(0), is_cgi(false), data_ready(false),
@@ -45,9 +45,23 @@ Client&	Client::operator=( const Client &src ) {
 }
 
 //placeholder for now
-int	Client::fetchDataFd( void ) { return (-1); }
+int	Client::fetchDataFd( void ) {
+	const std::string	*root = &server_ref->getRoot();
+	std::string			path = ""; // combine http method path -> location in server
+	// if () *root = &server_ref->getLoc(path).getRoot
+	path = *root + path;
+	int	fd = open(path.c_str(), O_RDONLY); // if static file
+	// int	pipe_fd[2]; if cgi
+	// pipe(pipe_fd);
+	// fork execve
+	// error handle and fcntl`
+	reponse_fd = fd;
+	return (fd);
+}
 
-void	Client::resetDataFd( void ) { }
+void	Client::resetDataFd( void ) {
+	if (reponse_fd > 0) { close(reponse_fd); reponse_fd = -1; }
+}
 
 sockaddr_in_t&	Client::changeAddress( void ) { return(socket.changeAddress()); }
 
@@ -92,7 +106,7 @@ bool	Client::isDataAvaliable( void ) const { return(is_data_avaliable); }
 
 bool	Client::isTimeout( void ) const { return (attempts >= max_attempt); }
 
-std::vector<ServerBlock>::iterator	Client::getServerRef( void ) const { return(server_ref); }
+std::vector<ServerInfo>::iterator	Client::getServerRef( void ) const { return(server_ref); }
 
 int	Client::getSocketFd( void ) const { return(socket_fd); }
 

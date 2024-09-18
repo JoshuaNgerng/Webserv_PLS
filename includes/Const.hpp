@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Const.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/06 14:22:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/15 14:37:40 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,12 +111,11 @@ std::ostream&	displayContainer( std::ostream &o, const T &ref, const std::string
 	return (o);
 }
 
-template< class T >
-std::ostream&	displayContainer( std::ostream &o, const T &ref, const char *end ) {
-	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
-		o << *it << end;
-	}
-	return (o);
+template< typename T >
+void	swap_clear( T &src )
+{
+	T	buffer;
+	std::swap(buffer, src);
 }
 
 int		ft_strncpy(const char *s1, const char *s2, size_t n);

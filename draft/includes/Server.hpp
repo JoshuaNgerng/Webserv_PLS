@@ -3,20 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/09 15:09:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/13 11:28:50 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
-# include "ServerBlock.hpp"
+# include "ServerInfo.hpp"
 # include "Client.hpp"
 
 class Server
 {
-	typedef std::vector<ServerBlock>::iterator serverblock_ptr;
+	typedef std::vector<ServerInfo>::iterator serverinfo_ptr;
 	public:
 		Server( void );
 		Server( const Server &src );
@@ -27,7 +27,7 @@ class Server
 		void	startServerLoop( int *signal );
 		void	startServerLoop( void );
 
-		void		addServerBlock( ServerBlock &ref );
+		void		addServerInfo( ServerInfo &ref );
 		pollfd_t*	getSocketfds( void );
 
 		static void	setNonBlockFd( int fd );
@@ -69,9 +69,9 @@ class Server
 		nfds_t							poll_tracker;
 		std::vector<pollfd_t>			socket_fds; // load all servers then only add clients (assume all fd on the same vector)
 		std::vector<pollfd_t>			buffer_new_fd; // store new fds
-		std::vector<serverblock_ptr>	server_mapping; // server_index to serverblock_index
+		std::vector<serverinfo_ptr>		server_mapping; // server_index to ServerInfo_index
 		std::map<int, client_ptr>		client_mapping; // client fd to client index
-		std::vector<ServerBlock>		server_info;
+		std::vector<ServerInfo>			server_info;
 		std::list<Client>				client_info;
 
 		void	setupServer( void );
@@ -85,7 +85,7 @@ class Server
 		void	handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index );
 		void	handleClientSent( pollfd_t &pollfd, client_ptr &ptr, size_t index );
 		
-		void	getNewConnection( int fd, serverblock_ptr &it );
+		void	getNewConnection( int fd, serverinfo_ptr &it );
 		void	clearClient( size_t index );
 		void	resetPollFd( pollfd_t &pollfd );
 		void	fetchClientData( client_ptr &ptr );

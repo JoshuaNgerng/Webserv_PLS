@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 12:27:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/13 11:27:41 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PARSE_HPP
 # define PARSE_HPP
 # include "CheckFile.hpp"
-# include "ServerBlock.hpp"
+# include "ServerInfo.hpp"
 # include "Server.hpp"
 
 // /**
@@ -38,8 +38,8 @@ class Parse
 		~Parse( void );
 
 		void	parseConfigFile( void );
-		void	parseListen( ServerBlock &dst );
-		void	parseSingleToken( ServerBlock &dst );
+		void	parseListen( ServerInfo &dst );
+		void	parseSingleToken( ServerInfo &dst );
 
 		void	setServer( Server &s );
 
@@ -50,7 +50,7 @@ class Parse
 		const std::string&	getFilename( void ) const;
 
 		// Server				&getServer( void ) const;
-		ServerBlock			getServerBlock( void ) const;
+		ServerInfo			getServerInfo( void ) const;
 
 		Location			getlocation(); // have make yet
 		void 				printLocations(const std::vector<Location*>& locations);
@@ -94,7 +94,7 @@ class Parse
 		std::istringstream	line_stream; // no
 
 		Server				*server;
-		ServerBlock			serverblock;
+		ServerInfo			ServerInfo;
 		
 		Location			*loc_ptr; // have make yet
 };
