@@ -1,0 +1,191 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ListenSocket.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
+/*   Updated: 2024/09/23 03:03:47 by joshua           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "ListenSocket.hpp"
+
+ListenSocket::ListenSocket( void ) { addr_info_tail = &addr_info_head; }
+
+ListenSocket::ListenSocket( const ListenSocket &src ) :
+	addr_info_head(src.addr_info_head), addr_info_tail(src.addr_info_tail) { }
+
+ListenSocket::~ListenSocket( void ) { freeaddrinfo(addr_info_head); }
+
+ListenSocket&	ListenSocket::operator=( const ListenSocket &src )
+{ addr_info_head = src.addr_info_head; addr_info_tail = src.addr_info_tail; return (*this); }
+
+bool	ListenSocket::addAddress(
+	const std::string &addr, const std::string &port = std::string()
+) {
+	addrinfo_t	hints = {(AI_CANONNAME | AI_PASSIVE), AF_UNSPEC, SOCK_STREAM,
+							0, sizeof(*(hints.ai_addr)), 0, 0, 0};
+	if (ipv6only)
+		hints.ai_family = AF_INET6;
+	if ((status = getaddrinfo(addr.c_str(),
+			((port.length()) ? port.c_str() : NULL), &hints, addr_info_tail)) < 0)
+		return (false);
+	addrinfo_t	*ptr = *addr_info_tail;
+	while (ptr->ai_next) {
+		len ++;
+		ptr = ptr->ai_next;
+	}
+	addr_info_tail = &(ptr->ai_next);
+	len ++;
+	return (true);
+}
+
+int	ListenSocket::addListenPollFd( std::vector<pollfd_t> &listen_v ) const {
+	uint32_t	num = 0;
+	pollfd_t	pollfd;
+	pollfd.fd = -1;
+	pollfd.events = POLLIN;
+	pollfd.revents = 0;
+	for (Iterator it = this->begin(); it != this->end(); it ++) {
+		pollfd.fd = addListenFd(it);
+		if (pollfd.fd < 0) {
+			return (-1);
+		}
+		listen_v.push_back(pollfd);
+		num ++;
+	}
+	return (num);
+}
+
+bool	ListenSocket::socketSetup( int fd ) const {
+	int	opt = 1;
+	if (reuseport) {
+		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEADDR,
+			&opt, sizeof(opt)) < 0) {
+			return (false);
+		}
+	}
+	if (sndbuf_size > 0) {
+		if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF,
+			&sndbuf_size, sizeof(sndbuf_size)) < 0) {
+			return (false);
+		}
+	}
+	if (rcvbuf_size > 0) {
+		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF,
+			&rcvbuf_size, sizeof(rcvbuf_size)) < 0) {
+			return (false);
+		}
+	}
+	if (!keepalive)
+		return (true);
+	if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt)) < 0) {
+		return (false);
+	}
+	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(keepidle)) < 0) {
+		return (false);	
+	}
+	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl)) < 0) {
+		return (false);
+	}
+	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(keepcnt)) < 0) {
+		return (false);
+	}
+	return (true);
+}
+
+int	ListenSocket::addListenFd( const Iterator &it ) const {
+	int	fd = socket(it->ai_family, it->ai_socktype, it->ai_protocol);
+	if (fd < 0) {
+		return (-1);
+	}
+	if (!socketSetup(fd)) {
+		return (-1);
+	}
+	if (bind(fd, it->ai_addr, it->ai_addrlen) < 0) {
+		return (-1);
+	}
+	if (listen(fd, backlog) < 0) {
+		return (-1);
+	}
+	return (fd);
+}
+
+void	ListenSocket::clear( void ) {
+	freeaddrinfo(addr_info_head); addr_info_head = NULL; addr_info_tail = &addr_info_head;
+}
+
+void	ListenSocket::reset( void ) {
+	clear();
+}
+
+ListenSocket::Iterator	ListenSocket::begin( void ) const {
+	return (Iterator(addr_info_head));
+}
+
+ListenSocket::Iterator	ListenSocket::end( void ) const { return (Iterator()); }
+
+uint32_t	ListenSocket::length( void ) const { return (len); }
+
+ListenSocket::Iterator::Iterator( void ) : ptr(0) { }
+
+ListenSocket::Iterator::Iterator( const Iterator &src ) : ptr(src.ptr) { }
+
+ListenSocket::Iterator::Iterator( addrinfo_t *start ) : ptr(start) { }
+
+ListenSocket::Iterator::~Iterator( void ) { }
+
+ListenSocket::Iterator&	ListenSocket::Iterator::operator=( const Iterator &src ) {
+	ptr = src.ptr; return (*this);
+}
+
+addrinfo_t&	ListenSocket::Iterator::operator*( void ) { return (*ptr); }
+
+addrinfo_t*	ListenSocket::Iterator::operator->( void ) const { return (ptr); }
+
+ListenSocket::Iterator&	ListenSocket::Iterator::operator++( void ) {
+	ptr = ptr->ai_next; return (*this);
+}
+
+ListenSocket::Iterator	ListenSocket::Iterator::operator++( int ) {
+	Iterator temp(*this);
+	++(*this);
+	return temp;
+}
+
+ListenSocket::Iterator&	ListenSocket::Iterator::operator+( size_t n ) {
+	for (size_t i = 0; i < n; i ++) {
+		++(*this);
+	}
+	return (*this);
+}
+
+bool	ListenSocket::Iterator::operator!=(const Iterator& other) const {
+	return (ptr != other.ptr);
+}
+
+bool	ListenSocket::Iterator::operator==(const Iterator& other) const {
+	return (ptr == other.ptr);
+}
+
+std::ostream&	operator<<( std::ostream &o, const ListenSocket& ref ) {
+	char	buffer[INET6_ADDRSTRLEN];
+	for(ListenSocket::Iterator it = ref.begin(); it != ref.end(); it ++) {
+		void	*addr;
+		int		port;
+		if (it->ai_family == AF_INET) {
+			struct sockaddr_in *ipv4 = (struct sockaddr_in *)it->ai_addr;
+			addr = &(ipv4->sin_addr);
+			port = ntohs(ipv4->sin_port);
+		} else {
+			struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)it->ai_addr;
+			addr = &(ipv6->sin6_addr);
+			port = ntohs(ipv6->sin6_port);
+		}
+		inet_ntop(it->ai_family, addr, buffer, sizeof(buffer));
+		std::cout << buffer << ':' << port << ' ';
+	}
+	return (o);
+}

@@ -6,16 +6,17 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/13 11:27:41 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 03:11:42 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parse.hpp"
 
-Parse::Parse( void ) : filename("default.conf"), server() {}
+Parse::Parse( void ) : semicolon(false) ,filename("default.conf"), server(), location() {}
 
 Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_){
 	location_flag = false;
+	semicolon = false;
 	std::cout << "block_level: " << block_level << "\n";
 }
 
@@ -112,7 +113,6 @@ bool	Parse::getNextLine( void ) {
  */
 void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 	std::string token;
-	std::string c_semicolon;
 	// std::cout << "line_stream: " << line_stream << "\n";
 	while (line_stream >> token)
 	{
@@ -121,12 +121,13 @@ void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 				throw ParsingError(delimitor_not_found);
 			continue ;
 		}
-		// check this
-		if (token == ";")
+		if (token == ";") {
+			semicolon = true;
 			break ;
+		}
 		if (token[token.length() - 1] == ';') {
-			c_semicolon = token;
 			token.erase(token.length() - 1);
+			semicolon = true;
 			(this->*process)(token);
 			std::cout << "token: " << token << "\n";
 			break ;
@@ -134,8 +135,8 @@ void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
 		(this->*process)(token);
 		std::cout << "token: " << token << "\n";
 	}
-	if (c_semicolon[c_semicolon.length() - 1] != ';')
-		throw ParsingError(semicolon_not_found);
+	if (!semicolon)
+		throw ParsingError(delimitor_not_found);
 }
 
 /**
@@ -153,39 +154,49 @@ static int	checkLevel( int level, const std::string &ref ) {
 	return (level);
 }
 
+//[default_server] [ssl] [http2 | quic] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 void	Parse::processListen( std::string &token ) {
-	Socket	socket(AF_INET); // assume everything is ipv4
-	std::size_t pos = token.find(':');
-	if (pos == std::string::npos) {
-			socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
+	static bool start = true;
+	static const char * const * parameter = (const char *[]){
+		"default_server", "backlog", "rcvbuf", "sndbuf",
+		"ipv6only", "reuseport", "so_keepalive", NULL
+	};
+	int i = -1;
+	if (start) {
+		start = false;
+		// listen_socket.addAddress();
+		return ;
 	}
-	else if (!token.compare(pos, 0, "[::]")) {
-		socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
+	while (parameter[++ i]) {
+		if (!token.compare(parameter[i]))
+			break ;
 	}
-	else {
-		token[pos] = '\0';
-		if (inet_pton(AF_INET, token.c_str(), &socket.changeAddress().sin_addr) != 1)
-			throw ParsingError(invalid_ip_add);
-		token.erase(0, pos);
+	switch (i)
+	{
+	case 0:
+		
+		break;
+	
+	default:
+		break;
 	}
-	// check if str is all digits
-	uint16_t	port = std::atoi(token.c_str());//ft_stoi(token);
-	socket.changeAddress().sin_port = htons(port);
-	if (ServerInfo.checkDupSocket(socket))
-		throw ParsingError(repeated_port);
-	ServerInfo.addListen(socket);
+	if (semicolon) {
+		start = true;
+		serverinfo.addListen(listen_socket);
+		listen_socket.reset();
+	}
 }
 
 void	Parse::processServerName( std::string &token ) {
-	ServerInfo.addServerName(token);
+	serverinfo.addServerName(token);
 }
 
 void	Parse::processRoot( std::string &token ) {
-	ServerInfo.addRoot(token);
+	serverinfo.addRoot(token);
 }
 
 void	Parse::processIndex( std::string &token ) {
-	ServerInfo.addIndex(token);
+	serverinfo.addIndex(token);
 }
 
 void	Parse::processErrorPage( std::string &token ){
@@ -195,27 +206,23 @@ void	Parse::processErrorPage( std::string &token ){
 }
 
 void	Parse::processAccessLog( std::string &token ){
-	ServerInfo.addAccessLog(token);
+	serverinfo.addAccessLog(token);
 }
 
 void	Parse::processErrorLog( std::string &token ){
-	ServerInfo.addErrorLog(token);
+	serverinfo.addErrorLog(token);
 }
 
 void	Parse::processSSLCertificate( std::string &token ){
-	ServerInfo.addSSLCertificate(token);
+	serverinfo.addSSLCertificate(token);
 }
 
 void	Parse::processSSLCertificateKey( std::string &token ){
-	ServerInfo.addSSLCertificateKey(token);
+	serverinfo.addSSLCertificateKey(token);
 }
 
 void	Parse::processClientLimit( std::string &token ){
-	ServerInfo.setClientMax(static_cast<uint64_t>(std::atoll(token.c_str())));
-}
-
-void	Parse::processHostname( std::string &token ){
-	ServerInfo.addHostname(token);
+	serverinfo.setClientMax(static_cast<uint64_t>(std::atoll(token.c_str())));
 }
 
 /**
@@ -232,7 +239,7 @@ void	Parse::processHostname( std::string &token ){
 void	Parse::processServer( const std::string &keyw ) {
 	const char	*ref[] = {"listen", "server_name", "error_page", "access_log",
 							"error_log", "ssl_certificate", "ssl_certificate_key",
-							"client_max_body_size", "index", "hostname", "root", NULL};
+							"client_max_body_size", "index", "root", NULL};
 	int			option = -1; // illiterator
 	while (ref[++ option])
 	{
@@ -300,21 +307,21 @@ void	Parse::pushtoDirective(std::vector<std::string>& directive){
 void	Parse::processLocation( const std::string &keyw ) {
 	// std::cout << "processLocation for " << keyw << "\n";
 	if (keyw == "root")
-		pushtoDirective(loc_ptr->root);
+		pushtoDirective(location.root);
 	else if (keyw == "autoindex")
-		pushtoDirective(loc_ptr->autoindex);
+		pushtoDirective(location.autoindex);
 	else if (keyw == "return")
-		pushtoDirective(loc_ptr->return_add);
+		pushtoDirective(location.return_add);
 	else if (keyw == "alias")
-		pushtoDirective(loc_ptr->alias);
+		pushtoDirective(location.alias);
 	else if (keyw == "index")
-		pushtoDirective(loc_ptr->index);
+		pushtoDirective(location.index);
 	else if (keyw == "cgi_path")
-		pushtoDirective(loc_ptr->cgi_path);
+		pushtoDirective(location.cgi_path);
 	else if (keyw == "cgi_ext")
-		pushtoDirective(loc_ptr->cgi_ext);
+		pushtoDirective(location.cgi_ext);
 	else if (keyw == "allow_methods")
-		pushtoDirective(loc_ptr->allow_methods);
+		pushtoDirective(location.allow_methods);
 	else{
 		std::cout << "ParsingError token: " << keyw << "\n";
 		throw ParsingError(unknown_option);
@@ -344,35 +351,31 @@ void	Parse::processToken( const std::string &token ) {
 		block_level --;
 		if (!bracket_no && !block_level) {
 			// std::cout << "\nParsing ServerInfo info\n" << ServerInfo << '\n';
-			printLocations(ServerInfo.location); // Prints locations blokcs saved
-			server->addServerInfo(ServerInfo);
-			ServerInfo.reset();
+			//printLocations(ServerInfo.location); // Prints locations blokcs saved
+			server->addServerInfo(serverinfo);
+			serverinfo.reset();
 			// std::cout << "test adding\n" << *server << '\n';
 			// std::cout << "\nParsing ServerInfo info after transfer\n" << ServerInfo << '\n';
 			// std::cout << "\ntest parsed block\n"; server.displayServerInfo(std::cout); std::cout << '\n';
 		}
 		if (bracket_no == 1 && block_level == 1) {
-			// location is vertor of location pointers to location data
-			// remember to free.
-			// std::cout << "Pushing location: " << loc_ptr->path << "\n";
-			ServerInfo.location.push_back(loc_ptr);
+			// std::cout << "Pushing location: " << location.path << "\n";
+			serverinfo.addLocation(location);
+			location.reset();
 			location_flag = false;
 			// loc.reset();
 		}
 		return ;
 	}
 	block_level = checkLevel(block_level, token);
-	if (block_level == 2 && token == "location")
-	{
+	if (block_level == 2 && token == "location") {
 		location_flag = true;
 		return;
 	}
 	// std::cout << "test level: " << block_level << ", and bracket " << bracket_no << '\n';
 	// std::cout << "test: " << token << '\n';
-	if (location_flag == true)
-	{
-		location_flag = false;
-		loc_ptr = new Location(token);
+	if (location_flag == true) {
+		location_flag = false;	
 	}
 	else if (bracket_no == 1 && block_level == 1)
 			processServer(token);
@@ -454,7 +457,7 @@ const std::string&	Parse::getFilename( void ) const {
 // }
 
 ServerInfo	Parse::getServerInfo( void ) const {
-	return (this->ServerInfo);
+	return (this->serverinfo);
 }
 
 // Location	Parse::getlocation( void ) const{

@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/13 11:27:41 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 01:56:15 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,24 +72,34 @@ void	Server::addBufferfds( int fd ) {
 }
 
 void	Server::setupSocketfds( void ) {
-	typedef std::vector<ServerInfo>::iterator iter;
+	typedef std::vector<ServerInfo>::iterator			iter;
+	typedef std::vector<ListenSocket>::const_iterator	iter2;
+	pollfd_t	pollfd;
+	pollfd.fd = -1;
+	pollfd.events = POLLIN;
+	pollfd.revents = 0;
 	server_no = 0;
 	for (iter it = server_info.begin(); it != server_info.end(); it ++) {
-		server_no += it->listen.size();
+		int	counter = 0;
+		for (iter2 it2 = it->listenBegin(); it2 != it->listenEnd(); it2 ++) {
+			for (addrinfo_ptr it3 = it2->begin(); it3 != it2->end(); it3 ++) {
+				pollfd.fd = it2->addListenFd(it3);
+				if (pollfd.fd < 0) {
+					return ; // error?
+				}
+				socket_fds.push_back(pollfd);
+				socketfd_mapping.push_back(it3);
+				counter ++;
+			}	
+		}
+		server_mapping.insert(server_mapping.end(), counter, it);
+		server_no += counter;
 	}
 	fd_counter = server_no;
-	poll_tracker = fd_counter;
-	long	upper_limit = (server_no + 1) * backlog_limit + server_no;
-	if (upper_limit > UINT_MAX)
-		server_limit = UINT_MAX;
-	else
-		server_limit = upper_limit;
-	poll_tracker = server_no;
-	pollfd_t	socket_fd;
-	socket_fd.fd = -1;
-	socket_fd.events = POLLIN;
-	socket_fds.insert(socket_fds.end(), server_limit, socket_fd);
-	buffer_new_fd.insert(buffer_new_fd.end(), server_no * 2, socket_fd);
+	poll_tracker = fd_counter;	
+	server_limit = socket_fds.max_size();
+	if (server_limit > ULONG_MAX)
+		server_limit = ULONG_MAX;
 }
 
 void	Server::resetFds( void ) {
@@ -125,29 +135,7 @@ void	Server::resetFds( void ) {
 	poll_tracker = fd_counter;
 }
 
-void	Server::setupServer( void ) {
-	setupSocketfds();
-	typedef std::vector<ServerInfo>::iterator ServerIter;
-	typedef std::vector<Socket>::iterator SocketIter;
-	size_t	index = 0;
-	for (ServerIter it = server_info.begin(); it != server_info.end(); it ++) {
-		// std::cout << "huh"<< it->listen.size() << "\n";
-		for (SocketIter addr_it = it->listen.begin();
-			addr_it != it->listen.end(); addr_it ++) {
-			socket_fds[index].fd = setListeningSocket(addr_it->refAddress(),
-						socket_type, socket_protocol);
-			// std::cout << "check server fd: " << socket_fds[index].fd;
-			if (fcntl(socket_fds[index].fd, F_SETFL, fcntl_flag) < 0) {
-				close(socket_fds[index].fd);
-				return ; // error cant set fl for fd
-			}
-			server_mapping.push_back(it);
-			index ++;
-		}
-	}
-}
-
-void	Server::getNewConnection( int fd, ServerInfo_ptr &it ) {
+void	Server::getNewConnection( int fd, serverinfo_ptr &it ) {
 	if (!checkBufferfds())
 		return ;
 	Client	buffer(it);
@@ -323,7 +311,7 @@ void	Server::loopServer( void ) {
 
 void	Server::startServerLoop( int *signal ) {
 	if (!socket_fds.size()) {
-		setupServer();
+		setupSocketfds();
 	}
 	if (!server_no) {
 		// std::cout << "no servers lulz\n";

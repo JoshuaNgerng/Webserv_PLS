@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/13 13:43:59 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/21 01:34:20 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,32 +43,30 @@ ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) { (void)src; return (
  * @throws	ParsingError class , options: invalid_ip_add, repeated_port
 */
 void	ServerInfo::addListen( std::stringstream &stream ) {
-	std::string token;
-	while (stream >> token) {
-		if (token == ";")
-			break ;
-		Socket	socket(AF_INET);// assume everything is ipv4
-		std::size_t pos = token.find(':');
-		if (pos == std::string::npos) {
-			socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
-		}
-		else if (!token.compare(pos, 0, "[::]")) {
-			socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
-		}
-		else {
-			token[pos] = '\0';
-			if (inet_pton(AF_INET, token.c_str(), &socket.changeAddress().sin_addr) != 1)
-				throw ParsingError(invalid_ip_add);
-			token.erase(0, pos);
-		}
-		uint16_t	port = std::atoi(token.c_str());//ft_stoi(token);
-		socket.changeAddress().sin_port = htons(port);
-		if (checkDupSocket(socket))
-			throw ParsingError(repeated_port);
-		listen.push_back(socket);
-		if (token[token.length() - 1] == ';')
-			break ;
-	}
+	// std::string token;
+	// while (stream >> token) {
+	// 	if (token == ";")
+	// 		break ;
+	// 	Socket	socket;// assume everything is ipv4
+	// 	std::size_t pos = token.find(':');
+	// 	if (pos == std::string::npos) {
+	// 		socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
+	// 	}
+	// 	else if (!token.compare(pos, 0, "[::]")) {
+	// 		socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
+	// 	}
+	// 	else {
+	// 		token[pos] = '\0';
+	// 		if (inet_pton(AF_INET, token.c_str(), &socket.changeAddress().sin_addr) != 1)
+	// 			throw ParsingError(invalid_ip_add);
+	// 		token.erase(0, pos);
+	// 	}
+	// 	uint16_t	port = std::atoi(token.c_str());//ft_stoi(token);
+	// 	socket.changeAddress().sin_port = htons(port);
+	// 	listen.push_back(socket);
+	// 	if (token[token.length() - 1] == ';')
+	// 		break ;
+	// }
 	// std::cout << "process end token: " << token << '\n';
 }
 
@@ -83,11 +81,11 @@ void	ServerInfo::reset( void ) {
 	location.clear();
 }
 
-void	ServerInfo::addListen( const Socket &add ) { listen.push_back(add); }
+void	ServerInfo::addListen( const ListenSocket &add ) { listen.push_back(add); }
 
 void	ServerInfo::addLocation( const Location &add ) { location.push_back(add); }
 
-void	ServerInfo::addServerName( const std::string &add ) { server_name = add; }
+void	ServerInfo::addServerName( const std::string &add ) { server_name.push_back(add); }
 
 void	ServerInfo::addRoot( const std::string &add ) { root = add; }
 
@@ -101,18 +99,9 @@ void	ServerInfo::addErrorPage( uint16_t error_code, const std::string &path ) {
 	error_page[error_code] = path;
 }
 
-bool	ServerInfo::checkDupSocket( const Socket &ref ) {
-	typedef std::vector<Socket>::iterator iter;
-	for (iter it = listen.begin(); it != listen.end(); it ++) {
-		if (*it == ref)
-			return (true);
-	}
-	return (false);
-}
-
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
-	typedef std::vector<Socket>::const_iterator sock_iter;
-	typedef std::map<uint16_t, std::string>::const_iterator error_iter;
+	// typedef std::vector<ListenSocket>::const_iterator		sock_iter;
+	// typedef std::map<uint16_t, std::string>::const_iterator	error_iter;
 	o << "Listening on: ";
 	// for (sock_iter it = ref.listen.begin(); it != ref.listen.end(); it ++) {
 	// 	o << *it << ' ';
@@ -132,11 +121,11 @@ std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
 	return (o);
 }
 
-std::string	ServerInfo::testHTML( void ) {
-	std::string	msg = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
-	std::string	html = "<html><h1>Hello world</h1></html?";
-	msg.append(to_String(html.size()));
-	msg.append("\n\n");
-	msg.append(html);
-	return (msg);
-}
+// std::string	ServerInfo::testHTML( void ) {
+// 	std::string	msg = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
+// 	std::string	html = "<html><h1>Hello world</h1></html?";
+// 	msg.append(to_String(html.size()));
+// 	msg.append("\n\n");
+// 	msg.append(html);
+// 	return (msg);
+// }

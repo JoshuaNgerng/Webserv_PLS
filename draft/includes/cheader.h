@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cheader.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 18:28:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/16 00:56:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/23 02:50:45 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,21 @@
 # include <stdint.h>
 # include <stdlib.h>
 # include <sys/socket.h>
+# include <sys/socketvar.h>
 # include <sys/select.h>
 # include <poll.h>
 # include <sys/time.h>
 # include <arpa/inet.h>
 # include <netinet/in.h>
+# include <netinet/tcp.h>
+# include <netdb.h>
 # include <fcntl.h>
+# include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include <limits.h>
+
 
 # ifndef UCHAR_MAX
 #  define UCHAR_MAX 255
@@ -68,7 +73,24 @@ typedef signed long ssize_t;
 typedef struct pollfd pollfd_t;
 
 /**
- * sin_family domain name for ipv4 its AF_INET
+ * int			ai_flags;
+ * int			ai_family;
+ * int			ai_socktype;
+ * int			ai_protocol;
+ * socklen_t	ai_addrlen;
+ * struct sockaddr	*ai_addr;
+ * char				*ai_canonname;
+ * struct addrinfo	*ai_next;
+ */
+typedef struct addrinfo addrinfo_t;
+
+/**
+ * 
+ */
+typedef struct sockaddr_storage sockaddr_storage_t;
+
+/**
+ * sin_family domain name for ipv4 is AF_INET
  * sin_port port info example htons(port)
  * sin_addr.s_addr ip add info
  * sin_len exist on imac but not linux

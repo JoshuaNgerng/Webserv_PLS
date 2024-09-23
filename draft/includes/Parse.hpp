@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/13 11:27:41 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 03:01:20 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,15 +88,16 @@ class Parse
 		uint64_t			line_counter;
 		uint16_t			block_level; // 1 == server, 2 == location
 		uint16_t			bracket_no;
+		bool				semicolon;
 		std::string			filename;
 
 		std::istringstream	content_stream; // no
 		std::istringstream	line_stream; // no
 
 		Server				*server;
-		ServerInfo			ServerInfo;
-		
-		Location			*loc_ptr; // have make yet
+		ServerInfo			serverinfo;
+		Location			location; // have make yet
+		ListenSocket		listen_socket;
 };
 
 #endif

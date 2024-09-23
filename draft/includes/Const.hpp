@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/15 14:34:46 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/21 19:02:50 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,6 +129,25 @@ void	swap_clear(T &a)
 
 int		ft_strncpy(const char *s1, const char *s2, size_t n);
 size_t	ft_strstr(const char *haystack, const char *needle);
+
+template< class C >
+class Display {
+	typedef std::ostream& (C::*display_func)( std::ostream &o ) const; 
+	public:
+		Display( const C &src, display_func display_ ) : class_ptr(&src), display(display_) { }
+		~Display( void ) { }
+		const C			*class_ptr;
+		display_func	display;
+	private:
+		Display( void ) { }
+		Display( const Display &src ) : class_ptr(src.class_ptr) { }
+		Display&	operator=( const Display &src ) { class_ptr = src.class_ptr; return (*this); }
+};
+
+template< class C >
+std::ostream&	operator<<( std::ostream &o, const Display<C> &d ) {
+	return (d->class_ptr->*d->display(o));
+}
 
 // class out_of_range : public std::exception {
 // 	private:

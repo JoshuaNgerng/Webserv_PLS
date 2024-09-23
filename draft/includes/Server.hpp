@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/13 11:28:50 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 01:45:40 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 
 class Server
 {
-	typedef std::vector<ServerInfo>::iterator serverinfo_ptr;
+	typedef std::vector<ServerInfo>::iterator	serverinfo_ptr;
+	typedef ListenSocket::Iterator				addrinfo_ptr;
 	public:
 		Server( void );
 		Server( const Server &src );
@@ -70,11 +71,11 @@ class Server
 		std::vector<pollfd_t>			socket_fds; // load all servers then only add clients (assume all fd on the same vector)
 		std::vector<pollfd_t>			buffer_new_fd; // store new fds
 		std::vector<serverinfo_ptr>		server_mapping; // server_index to ServerInfo_index
+		std::vector<addrinfo_ptr>		socketfd_mapping;
 		std::map<int, client_ptr>		client_mapping; // client fd to client index
 		std::vector<ServerInfo>			server_info;
 		std::list<Client>				client_info;
 
-		void	setupServer( void );
 		void	setupSocketfds( void );
 		void	loopServer( void );
 		void	resetFds( void );

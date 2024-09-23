@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/15 13:53:47 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/21 01:32:27 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 # define CLIENT_HPP
 # include "Const.hpp"
 # include "ServerInfo.hpp"
-# include "Socket.hpp"
 
 class Client {
 	typedef std::list<Client>::iterator	client_ptr;
@@ -73,7 +72,7 @@ class Client {
 		std::map<int, client_ptr>::iterator	reponse_ref;
 		int									socket_fd;
 		int									reponse_fd;
-		Socket								socket;
+		sockaddr_storage_t					socket_addr;
 		socklen_t							len;
 
 		/* http related info + data info */

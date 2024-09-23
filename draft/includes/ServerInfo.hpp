@@ -6,19 +6,18 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/18 10:28:42 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 02:57:52 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERINFO_HPP
 # define SERVERINFO_HPP
-# include "Socket.hpp"
+# include "ListenSocket.hpp"
 
 class Location
 {
 	public:
-		std::string					path;
-		
+		std::string					path;		
 	// reason why I put those one method directives as vector is to
 	// accomodate the pushDirective function. I don't have to copy again for string..
 		std::vector<std::string>	root;
@@ -30,7 +29,20 @@ class Location
 		std::vector<std::string>	cgi_path;
 		std::vector<std::string>	cgi_ext;
 
-		Location(const std::string &path);
+		Location( void ) { }
+		Location( const std::string &path ) : path(path) { }
+		~Location( void ) { }
+		void	reset( void ) {
+			path.clear();
+			root.clear();
+			autoindex.clear();
+			index.clear();
+			return_add.clear();
+			alias.clear();
+			allow_methods.clear();
+			cgi_path.clear();
+			cgi_ext.clear();
+		}
 };
 
 class ServerInfo
@@ -42,18 +54,15 @@ class ServerInfo
 
 		ServerInfo&	operator=( const ServerInfo &src );
 
-		std::string	testHTML( void );
-
-		bool	checkDupSocket( const Socket &ref );
 		void	reset( void );
-		void	toggleAutoIndex( void );
 
+		void	toggleAutoIndex( void );
 		// Add
-		void	addListen( std::stringstream &stream );
 		void	setClientMax( uint64_t add );
 		void	addIndex( const std::string &add );
 		void	addErrorPage( uint16_t error_code, const std::string &path );
-		void	addListen( const Socket &add );
+		void	addListen( const ListenSocket &add );
+		
 		void	addServerName( const std::string &add );
 		void	addLocation( const Location &add );
 		void	addRoot( const std::string &add );
@@ -66,10 +75,15 @@ class ServerInfo
 
 		const std::string&	getRoot( void ) const;	
 
+		size_t	getListenSize( void ) const;
+		std::vector<ListenSocket>::const_iterator&	listenBegin( void ) const;
+		std::vector<ListenSocket>::const_iterator&	listenEnd( void ) const;
+
 	private:
 		// keys/options
-		std::vector<Socket>				listen;
-		std::string						server_name;
+		std::vector<ListenSocket>		listen;
+		std::map<short, std::string>	error_page;	
+		std::vector<std::string>		server_name;
 		std::string						root;
 		std::string						access_log;
 		std::string						error_log;
@@ -79,13 +93,7 @@ class ServerInfo
 		uint64_t						client_max_body_size;
 		bool							autoindex;
 		bool							chunk_encoding;
-		std::map<uint16_t, std::string>	error_page;
-		/*
-		known error pages 브이페스때 큐붕배터리행만큼은!!!!
-		301 302
-		400 401 402 403 404 405 406
-		500 501 502 503 505
-		*/
+
 
 		std::vector<Location>				location;
 };

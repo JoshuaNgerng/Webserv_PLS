@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/13 11:22:08 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/21 19:02:10 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ enum filetype {
 	char_device = 2,
 	directory = 3,
 	fifo_pipe = 4,
-	symlink = 5,
+	systemlink = 5,
 	file = 6,
 	sock = 7,
 	unknown = 8,

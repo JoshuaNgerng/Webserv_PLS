@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/13 12:16:42 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/21 19:02:29 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void	CheckFile::checking( int check_flags ) {
 		case (S_IFCHR): 	type = char_device;		break;
 		case (S_IFDIR): 	type = directory;		break;
 		case (S_IFIFO): 	type = fifo_pipe;		break;
-		case (S_IFLNK): 	type = symlink;			break;
+		case (S_IFLNK): 	type = systemlink;		break;
 		case (S_IFREG): 	type = file;			break;
 		case (S_IFSOCK): 	type = sock;			break;
 		default: 			type = unknown;			break;

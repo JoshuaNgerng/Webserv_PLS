@@ -6,30 +6,30 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/14 01:03:24 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/21 01:41:57 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
 Client::Client( void ) : server_ref(), socket_ref(), reponse_ref(),
-	socket_fd(-1), reponse_fd(-1), socket(), len(0), request_header(), request_body(), response(),
+	socket_fd(-1), reponse_fd(-1), socket_addr(), len(0), request_header(), request_body(), response(),
 	bytes_sent(0), is_cgi(false), data_ready(false),
-	is_data_avaliable(true), got_header(false), got_body(false),
+	got_header(false), got_body(false),
 	finish_response(false), attempts(0) { }
 
 Client::Client( std::vector<ServerInfo>::iterator &it ) :
 	server_ref(it), socket_ref(), reponse_ref(),
-	socket_fd(-1), reponse_fd(-1), socket(), len(0), request_header(), request_body(), response(),
+	socket_fd(-1), reponse_fd(-1), socket_addr(), len(0), request_header(), request_body(), response(),
 	bytes_sent(0), is_cgi(false), data_ready(false),
-	is_data_avaliable(true), got_header(false), got_body(false),
+	got_header(false), got_body(false),
 	finish_response(false), attempts(0) { }
 
 Client::Client( const Client &src ) : // help me fill in with src T_T or else have bug
 	server_ref(src.server_ref), socket_ref(), reponse_ref(),
-	socket_fd(-1), reponse_fd(-1), socket(), len(0), request_header(), request_body(), response(),
+	socket_fd(-1), reponse_fd(-1), socket_addr(), len(0), request_header(), request_body(), response(),
 	bytes_sent(0), is_cgi(false), data_ready(false),
-	is_data_avaliable(true), got_header(false), got_body(false),
+	got_header(false), got_body(false),
 	finish_response(false), attempts(0) { }
 
 Client::~Client( void ) { }
@@ -38,7 +38,7 @@ Client&	Client::operator=( const Client &src ) {
 	if (this == &src)
 		return (*this);
 	server_ref = src.server_ref; socket_fd = src.socket_fd;
-	socket = src.socket; len = src.len; request_header = src.request_header;
+	socket_addr = src.socket_addr; len = src.len; request_header = src.request_header;
 	request_body = src.request_body; response = src.response; bytes_sent = src.bytes_sent;
 	got_header = src.got_header; got_body = src.got_body; finish_response = src.finish_response;
 	return (*this);
@@ -63,11 +63,11 @@ void	Client::resetDataFd( void ) {
 	if (reponse_fd > 0) { close(reponse_fd); reponse_fd = -1; }
 }
 
-sockaddr_in_t&	Client::changeAddress( void ) { return(socket.changeAddress()); }
+// sockaddr_in_t&	Client::changeAddress( void ) { return(socket.changeAddress()); }
 
-socklen_t&	Client::getSocklen( void ) { return(len); }
+// socklen_t&	Client::getSocklen( void ) { return(len); }
 
-void	Client::setSocketFd( int fd ) { socket_fd = fd; }
+// void	Client::setSocketFd( int fd ) { socket_fd = fd; }
 
 void	Client::setReponseFd( int fd ) { reponse_fd = fd; }
 
@@ -102,7 +102,7 @@ bool	Client::checkResponse( void ) const { return(finish_response); }
 
 bool	Client::isDataReady( void ) const { return(data_ready); }
 
-bool	Client::isDataAvaliable( void ) const { return(is_data_avaliable); }
+// bool	Client::isDataAvaliable( void ) const { return(is_data_avaliable); }
 
 bool	Client::isTimeout( void ) const { return (attempts >= max_attempt); }
 
