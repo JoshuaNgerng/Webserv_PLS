@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 03:01:20 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 14:38:19 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,13 +64,17 @@ class Parse
 		void	removeWhitespace( std::string &content ) const;
 		void	processContent( void );
 		void	processToken( const std::string &token );
-		void	processParameters( void (Parse::*process)(std::string &) );
+		void	processDirective( void (Parse::*process)(std::string &) );
 		void	processServer( const std::string &keyw );
 		void	processLocation( const std::string &keyw );
 		bool	getNextLine( void );
 
 		// processes for Key Value for Server Block
 		void	processListen( std::string &token );
+		void	processListenAddress( std::string &token );
+		bool	processListenPara1( std::string &token );
+		bool	processListenPara2( std::string &token, size_t pos );
+		void	processListenKeepAlive( std::string &token, size_t pos );
 		void	processServerName( std::string &token );
 		void	processRoot( std::string &token );
 		void	processIndex( std::string &token );
@@ -80,7 +84,10 @@ class Parse
 		void	processSSLCertificate( std::string &token );
 		void	processSSLCertificateKey( std::string &token );
 		void	processClientLimit( std::string &token );
-		void	processHostname( std::string &token );
+
+		uint64_t	stol( std::string::iterator start, std::string::iterator end ) const;
+		uint64_t	checkTime( std::string::iterator start, std::string::iterator end ) const;
+		uint64_t	checkSize( std::string::iterator start, std::string::iterator end ) const;
 
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );

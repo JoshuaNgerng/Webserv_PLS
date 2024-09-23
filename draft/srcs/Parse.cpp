@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 03:11:42 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 17:32:24 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,32 +111,26 @@ bool	Parse::getNextLine( void ) {
  *
  * @throws	whatever error the function passed into will throw
  */
-void	Parse::processParameters( void (Parse::*process)(std::string &) ) {
+void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 	std::string token;
 	// std::cout << "line_stream: " << line_stream << "\n";
-	while (line_stream >> token)
+	while (line_stream >> token && semicolon == false)
 	{
 		if (!token.length()) {
 			if (!getNextLine())
 				throw ParsingError(delimitor_not_found);
 			continue ;
 		}
-		if (token == ";") {
-			semicolon = true;
-			break ;
-		}
 		if (token[token.length() - 1] == ';') {
 			token.erase(token.length() - 1);
 			semicolon = true;
-			(this->*process)(token);
-			std::cout << "token: " << token << "\n";
-			break ;
 		}
 		(this->*process)(token);
 		std::cout << "token: " << token << "\n";
 	}
 	if (!semicolon)
 		throw ParsingError(delimitor_not_found);
+	semicolon = false;
 }
 
 /**
@@ -154,32 +148,196 @@ static int	checkLevel( int level, const std::string &ref ) {
 	return (level);
 }
 
-//[default_server] [ssl] [http2 | quic] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
-void	Parse::processListen( std::string &token ) {
-	static bool start = true;
-	static const char * const * parameter = (const char *[]){
-		"default_server", "backlog", "rcvbuf", "sndbuf",
-		"ipv6only", "reuseport", "so_keepalive", NULL
-	};
-	int i = -1;
-	if (start) {
-		start = false;
-		// listen_socket.addAddress();
-		return ;
+uint64_t	Parse::stol( std::string::iterator start, std::string::iterator end ) const {
+	uint64_t	num = 0;
+	while (start != end) {
+		num = num * 10 + *start - '0';
+		start ++;
 	}
-	while (parameter[++ i]) {
-		if (!token.compare(parameter[i]))
+	return (num);
+}
+
+uint64_t	Parse::checkTime( std::string::iterator start, std::string::iterator end ) const {
+	static const char	*suffix = "smhd";
+	static const int	*time = (int []){1, 60, 60 * 60, 60 * 60 * 24};
+	if (!all_of(start, end - 2, ::isdigit)) {
+		throw std::invalid_argument("checkTime");
+	}
+	std::string::iterator last = end - 1;
+	if (::isdigit(*last)) {
+		return (stol(start, end));
+	}
+	int	i = -1;
+	while (suffix[++ i]) {
+		if (*last == suffix[i])
 			break ;
 	}
-	switch (i)
-	{
-	case 0:
-		
-		break;
-	
-	default:
-		break;
+	if (i == 4) {
+		throw std::invalid_argument("checkTime");
 	}
+	return (stol(start, end - 1) * time[i]);
+}
+
+uint64_t	Parse::checkSize( std::string::iterator start, std::string::iterator end ) const {
+	static const char	*suffix = "km";
+	static const int	*time = (int []){1000, 1000000};
+	if (!all_of(start, end - 2, ::isdigit)) {
+		throw std::invalid_argument("checkSize");
+	}
+	std::string::iterator last = end - 2;
+	if (::isdigit(*last)) {
+		return (stol(start, end));
+	}
+	int	i = -1;
+	while (suffix[++ i]) {
+		if (*last == suffix[i])
+			break ;
+	}
+	if (i == 3) {
+		throw std::invalid_argument("checkSize");
+	}
+	return (stol(start, end - 1) * time[i]);
+}
+
+// check for ipv6
+// assume that ':' after ] is port
+void	Parse::processListenAddress( std::string &token ) {
+	std::string	addr;
+	std::string	port;
+	size_t		check1, check2;
+
+	if (all_of(token.begin(), token.end(), ::isdigit)) {
+		port = token;
+		addr = "::";
+		goto addrinit;
+	}
+	check1 = addr.find('[');
+	check2 = addr.find(']');
+	if (check1 != std::string::npos || check2 != std::string::npos) {
+		addr = token.substr(check1, check2);
+		if (check2 != token.length() && token[check2 + 1] != ':')
+			return ; // invalid host
+		port = token.substr(check2, token.length());
+	} else {
+		check2 = token.find(':');
+		addr = token.substr(0, check2);
+		if (check2 != std::string::npos) {
+			port = token.substr(check2 + 1, token.length());
+		}
+	}
+	if (addr == "*")
+		addr = "::";
+	if (!all_of(port.begin(), port.end(), ::isdigit)) {
+		return ; // invalid port
+	}
+	if (!port.length()) {
+		port = "80";
+	}
+	addrinit:
+	listen_socket.addAddress(addr, port);
+	if (listen_socket.getStatus())
+		return ;//error T_T
+}
+
+bool	Parse::processListenPara1( std::string &token ) {
+	typedef void (ListenSocket::*setPara)( void );
+	static const char * const * parameter = (const char *[]){
+		"default_server", "ipv6only", "reuseport", NULL
+	};
+	static setPara	func[] = {
+		&ListenSocket::setDefaultServer, &ListenSocket::setIpv6, &ListenSocket::setReusePort
+	};
+	int	i = -1;
+	while (parameter[++ i]) {
+		if (!token.compare(parameter[i])) {
+			(listen_socket.*func[i])();
+			return (true);
+		}
+	}
+	return (false);
+}
+
+bool	Parse::processListenPara2( std::string &token, size_t pos ) {
+	typedef void (ListenSocket::*setPara)( uint64_t );
+	static const char * const * parameter = (const char *[]){
+		"backlog", "rcvbuf", "sndbuf", NULL
+	};
+	static setPara	func[] = {
+		&ListenSocket::setBackLog, &ListenSocket::setRcvBuf, &ListenSocket::setSndBuf
+	};
+	int i = -1;
+	while (parameter[++ i]) {
+		if (!token.compare(parameter[i])) {
+			try {
+				(listen_socket.*func[i])(checkSize(token.begin() + pos, token.end()));
+			}
+			catch (std::invalid_argument &e) {
+				throw std::invalid_argument(parameter[i]);
+			}
+			return (true);
+		}
+	}
+	return (false);
+}
+
+void	Parse::processListenKeepAlive( std::string &token, size_t pos ) {
+	if (!token.compare(pos + 1, token.length(), "off")) {
+		return ;
+	}
+	if (!token.compare(pos + 1, token.length(), "on")) {
+		listen_socket.setKeepalive();
+		return ;
+	}
+	int		i = -1;
+	long	val[3] = {-1, -1, -1};
+	size_t	check = pos;
+	while (++ i < 2) {
+		size_t	delim = token.find(':', pos);
+		if (delim == std::string::npos) {
+			throw std::invalid_argument("delim not found");
+		}
+		val[i] = checkSize(token.begin() + check, token.begin() + delim);
+		check += delim;
+	}
+	val[i] = checkSize(token.begin() + check, token.end());
+	listen_socket.setKeepalive(val[0], val[1], val[2]);
+}
+
+void	Parse::processListen( std::string &token ) {
+	static bool start = true;
+	size_t	pos;
+	if (!token.length()) {
+		goto add;
+	}
+	if (start) {
+		start = false;
+		processListenAddress(token);
+		return ;
+	} else {
+		if (processListenPara1(token))
+			goto add;
+		size_t	pos = token.find('=');
+		if (pos == std::string::npos) {
+			return ; //error invalid para
+		}
+		try {
+			if (processListenPara2(token, pos))
+				goto add;
+		}
+		catch (std::invalid_argument &e) {
+			return ; // error invalid "para"
+		}
+		if (token.compare(0, pos, "so_keepalive")) {
+			return ; // error invalid para
+		}
+		try {
+			processListenKeepAlive(token, pos);
+		}
+		catch (std::invalid_argument &e) {
+			return ; // error invalid "para"
+		}
+	}
+	add:
 	if (semicolon) {
 		start = true;
 		serverinfo.addListen(listen_socket);
@@ -228,7 +386,7 @@ void	Parse::processClientLimit( std::string &token ){
 /**
  * @brief	check keyword in the server block the func will loop through all known
  * 			keyword and assign the proper function pointer to pass it into
- * 			processParameter to futher tokenize the arugment for the keyword and
+ * 			processDirective to futher tokenize the arugment for the keyword and
  * 			store it into the ServerInfo
  * 
  * @param	keyw the keyword in the ServerInfo being process
@@ -263,15 +421,14 @@ void	Parse::processServer( const std::string &keyw ) {
 		case 6: 	process = &Parse::processSSLCertificateKey; break ;
 		case 7: 	process = &Parse::processClientLimit; break ;
 		case 8: 	process = &Parse::processIndex; break ;
-		case 9: 	process = &Parse::processHostname; break ;
-		case 10: 	process = &Parse::processRoot; break ;
+		case 9: 	process = &Parse::processRoot; break ;
 		
 		default: 	std::cout << "*************************\n"
 						<< "Keyword: " << keyw << '\n';
 					throw ParsingError(unknown_option);
 					break;
 	}
-	processParameters(process);
+	processDirective(process);
 }
 
 // check for ';', if don't have throw exception, else remove it and overwrite token

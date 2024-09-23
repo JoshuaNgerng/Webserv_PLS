@@ -24,9 +24,17 @@ class ListenSocket {
 
 		bool	addAddress( const std::string &addr, const std::string &port );
 		int		addListenPollFd( std::vector<pollfd_t> &listen ) const;
+		void	setDefaultServer( void );
+		void	setBackLog( uint64_t num );
+		void	setRcvBuf( uint64_t num );
+		void	setSndBuf( uint64_t num );
+		void	setIpv6( void );
+		void	setReusePort( void );
+		void	setKeepalive( long idle, long intvl, long cnt );
+		void	setKeepalive( void );
 		void	clear( void );
 		void	reset( void );
-		
+
 		class Iterator {
 			public:
 				Iterator( void );
@@ -50,6 +58,7 @@ class ListenSocket {
 		Iterator	begin( void ) const;
 		Iterator	end( void ) const;
 		uint32_t	length( void ) const;
+		int			getStatus( void ) const;
 		int			addListenFd( const Iterator &it ) const;
 
 	private:

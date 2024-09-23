@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ListenSocket.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 03:03:47 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 15:02:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ bool	ListenSocket::addAddress(
 	if (ipv6only)
 		hints.ai_family = AF_INET6;
 	if ((status = getaddrinfo(addr.c_str(),
-			((port.length()) ? port.c_str() : NULL), &hints, addr_info_tail)) < 0)
+			((port.length()) ? port.c_str() : "80"), &hints, addr_info_tail)) < 0)
 		return (false);
 	addrinfo_t	*ptr = *addr_info_tail;
 	while (ptr->ai_next) {
@@ -84,15 +84,29 @@ bool	ListenSocket::socketSetup( int fd ) const {
 	if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt)) < 0) {
 		return (false);
 	}
+	if (keepcnt < 0) {
+		if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT,
+			&keepcnt, sizeof(keepcnt)) < 0) {
+			return (false);
+		}
+	}
+	if (keepintvl > 0) {
+		if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPINTVL,
+			&keepintvl, sizeof(keepintvl)) < 0) {
+			return (false);
+		}
+	}
+	if (keepidle < 0)
+		return (true);
+	#ifdef __APPLE__
+	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPALIVE, &keepidle, sizeof(keepidle)) < 0) {
+		return (false);	
+	}
+	#else
 	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(keepidle)) < 0) {
 		return (false);	
 	}
-	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl)) < 0) {
-		return (false);
-	}
-	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(keepcnt)) < 0) {
-		return (false);
-	}
+	#endif
 	return (true);
 }
 
@@ -113,12 +127,57 @@ int	ListenSocket::addListenFd( const Iterator &it ) const {
 	return (fd);
 }
 
+void	ListenSocket::setDefaultServer( void ) { default_server = true; }
+
+void	ListenSocket::setBackLog( uint64_t num ) {
+	uint16_t	check = static_cast<uint16_t>(num);
+	if (check > SOMAXCONN)
+		throw std::invalid_argument("backlog");
+	backlog = check;
+}
+
+void	ListenSocket::setRcvBuf( uint64_t num ) { rcvbuf_size = num; }
+
+void	ListenSocket::setSndBuf( uint64_t num ) { sndbuf_size = num; }
+
+void	ListenSocket::setIpv6( void ) { ipv6only = true; }
+
+void	ListenSocket::setReusePort( void ) { reuseport = true; }
+
+void	ListenSocket::setKeepalive( void ) { keepalive = true; }
+
+void	ListenSocket::setKeepalive( long idle, long intvl, long cnt ) {
+	keepalive = true;
+	if (idle > 0)
+		keepidle = idle;
+	if (intvl > 0)
+		keepintvl = intvl;
+	if (cnt > 0)
+		keepcnt = cnt;
+}
+
 void	ListenSocket::clear( void ) {
-	freeaddrinfo(addr_info_head); addr_info_head = NULL; addr_info_tail = &addr_info_head;
+	addr_info_tail = &addr_info_head;
+	if (!addr_info_head)
+		return ;
+	freeaddrinfo(addr_info_head);
+	addr_info_head = NULL; 
 }
 
 void	ListenSocket::reset( void ) {
 	clear();
+	default_server = false;
+	backlog = SOMAXCONN;
+	rcvbuf_size = 65536;
+	sndbuf_size = 65536;
+	ipv6only = false;
+	reuseport = false;
+	keepalive = false;
+	keepidle = 30 * 60;
+	keepintvl = -1;
+	keepcnt = 10;
+	len = 0;
+	status = 0;
 }
 
 ListenSocket::Iterator	ListenSocket::begin( void ) const {
@@ -128,6 +187,8 @@ ListenSocket::Iterator	ListenSocket::begin( void ) const {
 ListenSocket::Iterator	ListenSocket::end( void ) const { return (Iterator()); }
 
 uint32_t	ListenSocket::length( void ) const { return (len); }
+
+int	ListenSocket::getStatus( void ) const { return (status); }
 
 ListenSocket::Iterator::Iterator( void ) : ptr(0) { }
 

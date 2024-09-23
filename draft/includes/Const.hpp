@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Const.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/21 19:02:50 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/23 13:27:33 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # include <cstdlib>
 # include <ctime>
 # include <exception>
+# include <stdexcept>
 # include <list>
 # include <vector>
 # include <map>
