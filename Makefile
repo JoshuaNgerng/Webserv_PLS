@@ -6,7 +6,7 @@
 #    By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/13 16:47:15 by jngerng           #+#    #+#              #
-#    Updated: 2024/09/17 02:24:28 by ychng            ###   ########.fr        #
+#    Updated: 2024/09/24 19:24:02 by ychng            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME = webserv
 SRC_DIR = srcs
 INC_DIR = includes
 OBJ_DIR = obj
-FILES = Const CheckFile Parse ParsingError Socket Server ServerBlock Client Location Http HttpError
+FILES = Const CheckFile Parse ParsingError Socket Server ServerBlock Client Location HttpRequest HttpRequestError
 SRC = $(foreach item, $(FILES), $(SRC_DIR)/$(item).cpp)
 M_SRC = main
 OBJ = $(foreach item, $(FILES) $(M_SRC), $(OBJ_DIR)/$(item).o)

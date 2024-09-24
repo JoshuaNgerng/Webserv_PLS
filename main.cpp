@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/18 01:26:39 by ychng            ###   ########.fr       */
+/*   Updated: 2024/09/24 19:39:26 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,20 +31,41 @@
 // 	return (0);
 // }
 
-#include "Http.hpp"
+// #include "Http.hpp"
+
+// int main()
+// {
+// 	try
+// 	{
+// 		std::string request = "POST / HTTP/1.1\r\nContent-Type: application/json\r\nContent-Length: 15\r\n\r\n       {\"key\":\"value\"}";
+//         Http http(request);
+
+//         std::cout << "Content-Type: " << http.get_content_type() << std::endl;
+//         std::cout << "Content-Length: " << http.get_content_length() << std::endl;
+//         std::cout << "Body: " << http.get_body() << std::endl;
+// 	}
+// 	catch (const std::exception& e)
+// 	{
+// 		std::cout << e.what() << std::endl;
+// 	}
+// }
+
+#include "HttpRequest.hpp"
 
 int main()
 {
+	HttpRequest request;
+
 	try
 	{
-		std::string request = "POST / HTTP/1.1\r\nContent-Type: application/json\r\nContent-Length: 15\r\n\r\n       {\"key\":\"value\"}";
-        Http http(request);
-
-        std::cout << "Content-Type: " << http.get_content_type() << std::endl;
-        std::cout << "Content-Length: " << http.get_content_length() << std::endl;
-        std::cout << "Body: " << http.get_body() << std::endl;
+		request.addRequestHeader("Content-Type: application/json");
+		request.addRequestHeader("Host: example.com");
+		request.addRequestHeader("user-Agent: MyHttpClient");
+		std::cout << request.getContentType() << "\n";
+		std::cout << request.getHost() << "\n";
+		std::cout << request.getUserAgent() << "\n";
 	}
-	catch (const std::exception& e)
+	catch (const HttpRequestError& e)
 	{
 		std::cout << e.what() << std::endl;
 	}
