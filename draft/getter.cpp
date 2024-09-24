@@ -7,18 +7,20 @@
 #include <vector>
 
 class Parse {
-	typedef std::vector<std::pair<std::string, std::string>>::iterator it;
+	typedef std::vector<std::pair<std::string, std::string> >::iterator it;
 	private:
 		std::string											header_file;
 		std::string											source_file;
 		std::string											class_name;
-		std::vector<std::pair<std::string, std::string>>	private_variables;
-		std::vector<std::pair<std::string, std::string>>	private_variables_compound;
+		std::vector<std::pair<std::string, std::string> >	private_variables;
+		std::vector<std::pair<std::string, std::string> >	private_variables_compound;
+		bool	class_defined;
 		bool	class_found;
 		bool	private_found;
+		bool	comments;
 
 		bool	checkCompoundType( const std::string &token ) {
-			static const char** stl = (char *[]){"vector", "map", "list", "deque", NULL};
+			static const char* stl[] = {"vector", "map", "list", "deque", NULL};
 			for (int i = 0; stl[i]; i ++) {
 				if (token.find(stl[i], 0) != std::string::npos)
 					return (true);
@@ -27,6 +29,7 @@ class Parse {
 		}
 
 		bool	processTokens( const std::string &token ) {
+			// std::cout << token << "?\n";
 			if (token == "class") {
 				class_found = true;
 				return (false);
@@ -76,26 +79,32 @@ class Parse {
 			std::ifstream	file(header_file.c_str());
 			if (!file.is_open())
 				return (false);
-			while (std::getline(file, line)) {
-				std::istringstream	tokens(line);
-				if (line.find('(') != std::string::npos && line.find(')') != std::string::npos) {
-					continue ;
-				}
-				else {
-					std::getline(tokens, token1, '\t');
-					std::getline(tokens, token2, '\t');
+			while (std::getline(file, line, '\n')) {
+				std::cout << line << '\n';
+				if (line.find('(') == std::string::npos && line.find(')') == std::string::npos) {
+					size_t pos = line.find_first_not_of('\t');
+					if (pos != std::string::npos) {
+						line.erase(0, pos);
+					}
+					std::istringstream	tokens(line);
+					std::getline(tokens, token1, ((class_defined) ? '\t' : ' '));
+					std::getline(tokens, token2, ((class_defined) ? '\t' : ' '));
+					// std::cout << "testing " << token1 << ' ' << token2 << '\n';
 					if (!processTokens(token1)) {
 						if (class_found) {
 							class_found = false;
 							class_name = token1;
+							class_defined = true;
+							// std::cout << "test\n";
 						}
-						continue ;
 					}
-					if (checkCompoundType(token1)) {
-						private_variables_compound.push_back(std::make_pair(token1, token2));
+					else {
+						if (checkCompoundType(token1)) {
+							private_variables_compound.push_back(std::make_pair(token1, token2));
+						}
+						else
+							private_variables.push_back(std::make_pair(token1, token2));
 					}
-					else
-						private_variables.push_back(std::make_pair(token1, token2));
 				}
 			}
 			return (true);

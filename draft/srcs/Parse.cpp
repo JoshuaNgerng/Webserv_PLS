@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/24 01:08:02 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/24 15:44:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -361,24 +361,16 @@ void	Parse::processErrorPage( std::string &token ){
 	(void)token;
 }
 
-void	Parse::processAccessLog( std::string &token ){
-	serverinfo.addAccessLog(token);
-}
+// void	Parse::processAccessLog( std::string &token ){
+	// serverinfo.addAccessLog(token);
+// }
 
-void	Parse::processErrorLog( std::string &token ){
-	serverinfo.addErrorLog(token);
-}
-
-void	Parse::processSSLCertificate( std::string &token ){
-	serverinfo.addSSLCertificate(token);
-}
-
-void	Parse::processSSLCertificateKey( std::string &token ){
-	serverinfo.addSSLCertificateKey(token);
-}
+// void	Parse::processErrorLog( std::string &token ){
+	// serverinfo.addErrorLog(token);
+// }
 
 void	Parse::processClientLimit( std::string &token ){
-	serverinfo.setClientMax(static_cast<uint64_t>(std::atoll(token.c_str())));
+	serverinfo.setClientMaxBodySize(static_cast<uint64_t>(std::atoll(token.c_str())));
 }
 
 /**
@@ -589,7 +581,7 @@ void Parse::parseConfigFile( void ) {
 	removeComments(content);
 	// std::cout << "test str len: " << content.length() << '\n';
 	// std::cout << "test cleaned content\n" << content << '\n';
-	removeWhitespace(content);
+	// removeWhitespace(content);
 	// std::cout << "test cleaned content\n" << content << '\n';
 	content_stream.str(content);
 	processContent();

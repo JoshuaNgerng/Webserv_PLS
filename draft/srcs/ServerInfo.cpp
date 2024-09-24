@@ -3,24 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/21 01:34:20 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/24 15:44:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerInfo.hpp"
 
-ServerInfo::ServerInfo( void ) : listen(), server_name(),
-	root(), client_max_body_size(ULONG_MAX), index(),
-	autoindex(false), error_page() { }
+// ServerInfo::ServerInfo( void ) : listen(), server_name(),
+// 	root(), client_max_body_size(ULONG_MAX), index(),
+// 	autoindex(false), error_page() { }
 
-ServerInfo::ServerInfo( const ServerInfo &src ) : listen(src.listen),
-	server_name(src.server_name), root(src.root),
-	client_max_body_size(src.client_max_body_size), index(src.index),
-	autoindex(src.autoindex), error_page(src.error_page), location(src.location)
-	{ }
+// ServerInfo::ServerInfo( const ServerInfo &src ) : listen(src.listen),
+// 	server_name(src.server_name), root(src.root),
+// 	client_max_body_size(src.client_max_body_size), index(src.index),
+// 	autoindex(src.autoindex), error_page(src.error_page), location(src.location)
+// 	{ }
 
 ServerInfo::~ServerInfo( void ) { }
 
@@ -42,62 +42,20 @@ ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) { (void)src; return (
  * 
  * @throws	ParsingError class , options: invalid_ip_add, repeated_port
 */
-void	ServerInfo::addListen( std::stringstream &stream ) {
-	// std::string token;
-	// while (stream >> token) {
-	// 	if (token == ";")
-	// 		break ;
-	// 	Socket	socket;// assume everything is ipv4
-	// 	std::size_t pos = token.find(':');
-	// 	if (pos == std::string::npos) {
-	// 		socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
-	// 	}
-	// 	else if (!token.compare(pos, 0, "[::]")) {
-	// 		socket.changeAddress().sin_addr.s_addr = htonl(INADDR_ANY);
-	// 	}
-	// 	else {
-	// 		token[pos] = '\0';
-	// 		if (inet_pton(AF_INET, token.c_str(), &socket.changeAddress().sin_addr) != 1)
-	// 			throw ParsingError(invalid_ip_add);
-	// 		token.erase(0, pos);
-	// 	}
-	// 	uint16_t	port = std::atoi(token.c_str());//ft_stoi(token);
-	// 	socket.changeAddress().sin_port = htons(port);
-	// 	listen.push_back(socket);
-	// 	if (token[token.length() - 1] == ';')
-	// 		break ;
-	// }
-	// std::cout << "process end token: " << token << '\n';
-}
+void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add); }
 
 void	ServerInfo::reset( void ) {
-	listen.clear();
+	InfoBlock::reset();
+	listen_sockets.clear();
 	server_name.clear();
-	root.clear();
-	client_max_body_size = ULONG_MAX;
-	index.clear();
-	autoindex = false;
-	error_page.clear();
 	location.clear();
 }
 
-void	ServerInfo::addListen( const ListenSocket &add ) { listen.push_back(add); }
+void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add); }
 
 void	ServerInfo::addLocation( const Location &add ) { location.push_back(add); }
 
 void	ServerInfo::addServerName( const std::string &add ) { server_name.push_back(add); }
-
-void	ServerInfo::addRoot( const std::string &add ) { root = add; }
-
-void	ServerInfo::setClientMax( uint64_t add ) { client_max_body_size = add; }
-
-void	ServerInfo::addIndex( const std::string &add ) { index = add; }
-
-void	ServerInfo::toggleAutoIndex( void ) { autoindex = !autoindex; }
-
-void	ServerInfo::addErrorPage( uint16_t error_code, const std::string &path ) {
-	error_page[error_code] = path;
-}
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
 	// typedef std::vector<ListenSocket>::const_iterator		sock_iter;
