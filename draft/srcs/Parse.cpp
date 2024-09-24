@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 17:32:24 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/24 01:08:02 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,8 +199,6 @@ uint64_t	Parse::checkSize( std::string::iterator start, std::string::iterator en
 	return (stol(start, end - 1) * time[i]);
 }
 
-// check for ipv6
-// assume that ':' after ] is port
 void	Parse::processListenAddress( std::string &token ) {
 	std::string	addr;
 	std::string	port;
@@ -395,9 +393,14 @@ void	Parse::processClientLimit( std::string &token ){
  * 			index can take multiple arug idk how that works
  */
 void	Parse::processServer( const std::string &keyw ) {
-	const char	*ref[] = {"listen", "server_name", "error_page", "access_log",
-							"error_log", "ssl_certificate", "ssl_certificate_key",
-							"client_max_body_size", "index", "root", NULL};
+	const char	*ref[] = {
+		"listen", "client_header_buffer_size", "client_header_timeout", "merge_slash", "server_name", "try_files",
+		"chunked_transfer_encoding", "client_body_buffer_size", "client_body_temp_path",
+		"client_body_timeout", "client_max_body_size", "disable_symlinks", "error_page",
+		"etag", "if_modified_since", "ignore_invalid_headers", "error_page", "root",
+		"autoindex", "autoindex_exact_size", "autoindex_format", "autoindex_localtime",
+		"access_log", "error_log", NULL
+	};
 	int			option = -1; // illiterator
 	while (ref[++ option])
 	{
@@ -501,7 +504,7 @@ void	Parse::processToken( const std::string &token ) {
 		bracket_no ++;
 		return ;
 	}
-	else if (token == "}" || token == "};")
+	else if (token == "}")
 	{
 		std::cout << "token is }\n";
 		bracket_no --;
@@ -535,7 +538,7 @@ void	Parse::processToken( const std::string &token ) {
 		location_flag = false;	
 	}
 	else if (bracket_no == 1 && block_level == 1)
-			processServer(token);
+		processServer(token);
 	else if (bracket_no == 2 && block_level == 2)
 		processLocation(token);
 }

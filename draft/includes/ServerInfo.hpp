@@ -6,13 +6,14 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 02:57:52 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/24 01:36:05 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERINFO_HPP
 # define SERVERINFO_HPP
 # include "ListenSocket.hpp"
+# include "InfoBlock.hpp"
 
 class Location
 {
@@ -45,8 +46,8 @@ class Location
 		}
 };
 
-class ServerInfo
-{
+// "listen", "client_header_buffer_size", "client_header_timeout", "merge_slash", "server_name", "try_files",
+class ServerInfo : public InfoBlock {
 	public:
 		ServerInfo( void );
 		ServerInfo( const ServerInfo &src );
@@ -56,22 +57,9 @@ class ServerInfo
 
 		void	reset( void );
 
-		void	toggleAutoIndex( void );
-		// Add
-		void	setClientMax( uint64_t add );
-		void	addIndex( const std::string &add );
-		void	addErrorPage( uint16_t error_code, const std::string &path );
-		void	addListen( const ListenSocket &add );
-		
+		void	addListen( const ListenSocket &add );		
 		void	addServerName( const std::string &add );
 		void	addLocation( const Location &add );
-		void	addRoot( const std::string &add );
-		void	addAccessLog( const std::string &add );
-		void	addErrorLog( const std::string &add );
-		void	addSSLCertificate( const std::string &add );
-		void	addSSLCertificateKey( const std::string &add );
-		// void	addClientLimit( const std::string &add );
-		void	addHostname( const std::string &add );
 
 		const std::string&	getRoot( void ) const;	
 
@@ -81,21 +69,10 @@ class ServerInfo
 
 	private:
 		// keys/options
-		std::vector<ListenSocket>		listen;
-		std::map<short, std::string>	error_page;	
-		std::vector<std::string>		server_name;
-		std::string						root;
-		std::string						access_log;
-		std::string						error_log;
-		std::string						index;
+		std::vector<ListenSocket>	listen;
+		std::vector<std::string>	server_name;
 
-		uint64_t						client_;
-		uint64_t						client_max_body_size;
-		bool							autoindex;
-		bool							chunk_encoding;
-
-
-		std::vector<Location>				location;
+		std::vector<Location>		location;
 };
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref );
