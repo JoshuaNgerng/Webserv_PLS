@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/30 22:45:17 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 22:57:23 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,10 +165,11 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 		if (checkValue(buffer_value)) {
 			return (false);
 		}
-		if (!addHeaderFields(buffer_field, buffer_value)) {
+		if (token[token.length() - 1] != '\r') {
 			return (false);
 		}
-		if (token[token.length() - 1] != '\r') {
+		token.erase(-- token.end());
+		if (!addHeaderFields(buffer_field, buffer_value)) {
 			return (false);
 		}
 	}
