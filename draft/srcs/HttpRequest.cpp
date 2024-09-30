@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/30 22:57:23 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 23:07:22 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 // use for header
 static bool	normalizeString( std::string &str ) {
 	static int diff = 'a' - 'A';
-	static const char *invalid_char = "()<>@,;:\"/[]?={} ~";
+	static const char *invalid_char = "()<>@,;:\'\"/[]?={} ~";
 	for (size_t i = 0; i < str.length(); i ++) {
 		if ((::isupper(str[i]))) {
 			str[i] += diff;
