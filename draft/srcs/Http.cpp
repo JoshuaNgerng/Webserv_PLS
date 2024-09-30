@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/30 22:48:48 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 23:32:16 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ const char *const *Http::fields = (char *[]) {
 };
 
 const char *const *Http::types = (char *[]) {
-	"text/plain", "application/octet-stream", NULL
+	"text/plain", "text/html", "application/octet-stream", NULL
 };
 
 Http::Http( void ) { }
@@ -41,5 +41,5 @@ int	Http::checkField( const std::string &str ) const {
 }
 
 int	Http::checkType( const std::string &str ) const {
-	return (iterEnumStrcmp(GET, DELETE, str, methods));
+	return (iterEnumStrcmp(TEXT, HTML, str, methods));
 }

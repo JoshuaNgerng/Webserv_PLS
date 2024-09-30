@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/28 06:12:19 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 23:25:35 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class Http {
 		};
 		enum type {
 			TEXT, HTML, JS, CSS,
-			JPEG, PNG
+			JPEG, PNG, OCTECT
 		};
 		Http( void );
 		Http( const Http &src );

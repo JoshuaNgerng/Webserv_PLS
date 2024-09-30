@@ -6,15 +6,13 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/30 23:07:22 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 23:31:12 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
 HttpRequest::HttpRequest( void ) { }
-
-HttpRequest::HttpRequest( const std::string &str, size_t pos ) {}
 
 HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {}
 
