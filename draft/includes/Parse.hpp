@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 14:38:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/27 03:19:33 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,31 +16,30 @@
 # include "ServerInfo.hpp"
 # include "Server.hpp"
 
-// /**
-//  * @todo havent start processing location block
-//  */
-// class Location
-// {
-// 	private:
-// 		std::string	path;
-// 	public:
-// 		Location(std::string &path);
-// };
+enum fileerror {
+	file_extent,
+	file_open,
+	file_empty
+};
 
-// class Parse;
-// typedef void (Parse::* processFunc) (std::string &);
+enum parsingerrorval {
+	unknown_directive,
+	invalid_parameter,
+	invalid_no_parameter,
+	excepted_delimitor,
+	extra_delimitor
+};
 
 // assume regex dont exist lulz
 class Parse
 {
 	public:
+		static const char	*prog_name;
+		static const char	*fname;
 		Parse( const char *config, Server &ref );
 		~Parse( void );
 
 		void	parseConfigFile( void );
-		void	parseListen( ServerInfo &dst );
-		void	parseSingleToken( ServerInfo &dst );
-
 		void	setServer( Server &s );
 
 		// getters
@@ -54,8 +53,6 @@ class Parse
 
 		Location			getlocation(); // have make yet
 		void 				printLocations(const std::vector<Location*>& locations);
-		bool				location_flag;
-		void				pushtoDirective(std::vector<std::string>& directive);
 		
 	private:
 		Parse( void );
@@ -65,46 +62,96 @@ class Parse
 		void	processContent( void );
 		void	processToken( const std::string &token );
 		void	processDirective( void (Parse::*process)(std::string &) );
-		void	processServer( const std::string &keyw );
-		void	processLocation( const std::string &keyw );
+		bool	processInfoBlock( const std::string &directive );
+		void	processServer( const std::string &directive );
+		void	processLocation( const std::string &directive );
 		bool	getNextLine( void );
 
-		// processes for Key Value for Server Block
+		/* generic process function */
+		boolean		processBoolParameter( const std::string &token, const char *directive );
+		uint64_t	processSizeParameter( std::string &token, const char *directive );
+		uint64_t	processTimeParameter( std::string &token, const char *directive );
+
+		/* process Generic InfoBlock */
+		void	processClientBodyTempPath( std::string &token );
+		void	processClientBodyTimeout( std::string &token );
+		void	processClientLimitMaxBody( std::string &token );
+		void	processErrorPage( std::string &token );
+		void	processEtag( std::string &token );
+		void	processIfModifiedSince( std::string &token );
+		void	processIgnoreInvalidHeader( std::string &token );
+		void	processDisableSymlink( std::string &token );
+		void	processRoot( std::string &token );
+		void	processIndex( std::string &token );
+		void	processAutoIndex( std::string &token );
+		void	processAutoIndexExactSize( std::string &token );
+		void	processAutoFormat( std::string &token );
+		void	processAutoIndexLocalTime( std::string &token );
+		void	processAccessLog( std::string &token );
+		void	processErrorLog( std::string &token );
+		
+		/* process Server specfic directive */
 		void	processListen( std::string &token );
 		void	processListenAddress( std::string &token );
 		bool	processListenPara1( std::string &token );
 		bool	processListenPara2( std::string &token, size_t pos );
 		void	processListenKeepAlive( std::string &token, size_t pos );
+		void	processClientHeaderBufferSize( std::string &token );
+		void	processClientHeaderTimeout( std::string &token );
+		void	processMergeSlash( std::string &token );
 		void	processServerName( std::string &token );
-		void	processRoot( std::string &token );
-		void	processIndex( std::string &token );
-		void	processErrorPage( std::string &token );
-		void	processAccessLog( std::string &token );
-		void	processErrorLog( std::string &token );
-		void	processSSLCertificate( std::string &token );
-		void	processSSLCertificateKey( std::string &token );
-		void	processClientLimit( std::string &token );
+		void	processTryFiles( std::string &token );
 
-		uint64_t	stol( std::string::iterator start, std::string::iterator end ) const;
-		uint64_t	checkTime( std::string::iterator start, std::string::iterator end ) const;
-		uint64_t	checkSize( std::string::iterator start, std::string::iterator end ) const;
+		/* process Location specfic directive */
+		void	processAlias( std::string &token );
+		void	processInternal( std::string &token );
 
 		Parse( const Parse &src );
 		Parse&	operator=( const Parse &src );
 
-		uint64_t			line_counter;
-		uint16_t			block_level; // 1 == server, 2 == location
-		uint16_t			bracket_no;
-		bool				semicolon;
-		std::string			filename;
-
 		std::istringstream	content_stream; // no
 		std::istringstream	line_stream; // no
 
-		Server				*server;
-		ServerInfo			serverinfo;
-		Location			location; // have make yet
-		ListenSocket		listen_socket;
+		uint64_t		line_counter;
+		short			block_level; // 1 == server, 2 == location
+		short			bracket_no;
+		bool			semicolon;
+		uint16_t		no_para;
+		const char		*directive_ptr;
+		std::string		filename;
+
+		Server			*server;
+		InfoBlock		*ptr;
+		ServerInfo		serverinfo;
+		Location		location; // have make yet
+		ListenSocket	listen_socket;
+		// use errorvalue in exception class construction
+
+		class ParsingFileError : public std::exception {
+			public:
+				static const char *type;
+				ParsingFileError( int val );
+				~ParsingFileError( void ) throw();
+				virtual const char *what() const throw();
+			private:
+				void	msgInit( int val );
+				std::string	msg;
+		};
+		class ParsingConfError : public std::exception {
+			public:
+				static const char		*type;
+				static const uint64_t	*line_no;
+				ParsingConfError( int type, const char *directive );
+				ParsingConfError( const char *para, const std::string &token );
+				ParsingConfError( const std::string &token, const char *directive );
+				~ParsingConfError( void ) throw();
+				virtual const char *what() const throw();
+			private:
+				void	msgInit( int type, const char *directive );
+				void	msgInit( const char *para, const std::string &token );
+				void	msgInit( const std::string &token, const char *directive );
+				std::string	msg;	
+		};
 };
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/24 15:44:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/26 04:58:44 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,24 +26,6 @@ ServerInfo::~ServerInfo( void ) { }
 
 ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) { (void)src; return (*this); }
 
-/**
- * @brief	iter through the token till `;' special char is found
- * 			there a few different possible entry
- * 			only port number (assume any ip add)
- * 			[::]:7000 (special for any ip add) , bind to a port number
- * 			127.0.0.1:8080, a specfic ip add , bind to a port number
- * 			it will add the map, port as key and address info as value
- * 
- * @attention	assume our subject only need us to handle ipv4 (ipv6 is a pain lulz)
- * 				if need to add ipv6 then need to edit this sht lulz
- * 				assume https dont exist for now
- * 
- * @param	stream : the stringstream that from Parse class
- * 
- * @throws	ParsingError class , options: invalid_ip_add, repeated_port
-*/
-void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add); }
-
 void	ServerInfo::reset( void ) {
 	InfoBlock::reset();
 	listen_sockets.clear();
@@ -51,11 +33,17 @@ void	ServerInfo::reset( void ) {
 	location.clear();
 }
 
-void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add); }
-
 void	ServerInfo::addLocation( const Location &add ) { location.push_back(add); }
 
+void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add); }
+
 void	ServerInfo::addServerName( const std::string &add ) { server_name.push_back(add); }
+
+void	ServerInfo::setClientHeaderBufferSize( uint64_t size ) { client_header_buffer_size = size;}
+
+void	ServerInfo::setClientHeaderTimeout( uint64_t time ) { client_header_timeout = time; }
+
+void	ServerInfo::setMergeSlash( bool opt ) { merge_slash = opt; }
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
 	// typedef std::vector<ListenSocket>::const_iterator		sock_iter;

@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/07 16:56:56 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/28 06:12:19 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,45 +14,60 @@
 # define HTTP_HPP
 # include "Const.hpp"
 
-enum methods {
-	GET,
-	POST,
-	DELETE
+// int for size of requ
+// int for size of req field
+// int for clientbodymax
+class Http {
+	public:
+		enum http_method { GET, POST, PUT, DELETE };
+		enum field {
+			HOST, USER_AGENT,
+			ACCEPT, LANG, ENCODE,
+			CONNECTION, REFERER, COOKIE, CACHE,
+			C_TYPE, C_LEN
+		};
+		enum type {
+			TEXT, HTML, JS, CSS,
+			JPEG, PNG
+		};
+		Http( void );
+		Http( const Http &src );
+		virtual ~Http( void );
+
+	protected:
+		static const char *const *methods;
+
+		int	checkMethods( const std::string &str ) const;
+		int	checkField( const std::string &str ) const;
+		int	checkType( const std::string &str ) const;
+
+		template < typename E >
+		int	iterEnum( E start, E end, int val ) const {
+			for (int i = static_cast<int>(start);
+				 i <= static_cast<int>(end); i ++) {
+				if (val == i) {
+					return (i);
+				}
+			}
+			return (-1);
+		}
+
+		template < typename E >
+		int	iterEnumStrcmp( E start, E end,
+			const std::string &str, const char *const *ref ) const {
+			for (int i = static_cast<int>(start);
+				 i <= static_cast<int>(end); i ++) {
+				if (str == ref[i]) {
+					return (i);
+				}
+			}
+			return (-1);	
+		}
+
+	private:
+		static const char *const *fields;
+		static const char *const *types;
+
 };
-
-class Http
-{
-private:
-	std::string	request_header; // /r/n/r/n is end of header so after if got info its added into body
-	std::string	request_body;
-	std::string	reponse_header;
-	std::string	reponse_body;
-	bool		got_request_header;
-	bool		got_request_body;
-	bool		got_reponse_body;
-
-	/* break down header */
-	int			method; // GET, POST, DELETE
-	std::string	path;
-
-	std::string	host; // what this suppose to do
-	std::vector<std::string>	user_agent;
-
-	std::vector<std::string>	mutli_data;
-
-public:
-	Http(/* args */);
-	~Http();
-};
-
-Http::Http(/* args */)
-{
-}
-
-Http::~Http()
-{
-}
-
 
 #endif
-

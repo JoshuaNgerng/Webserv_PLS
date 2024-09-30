@@ -6,11 +6,13 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 23:01:23 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 17:16:54 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListenSocket.hpp"
+
+int	ListenSocket::fcntl_flag = O_NONBLOCK;
 
 ListenSocket::ListenSocket( void ) { addr_info_tail = &addr_info_head; }
 
@@ -61,6 +63,7 @@ int	ListenSocket::addListenPollFd( std::vector<pollfd_t> &listen_v ) const {
 
 bool	ListenSocket::socketSetup( int fd ) const {
 	int	opt = 1;
+	if (fcntl(fd, F_SETFL, fcntl_flag) < 0)
 	if (reuseport) {
 		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEADDR,
 			&opt, sizeof(opt)) < 0) {
@@ -84,7 +87,7 @@ bool	ListenSocket::socketSetup( int fd ) const {
 	if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt)) < 0) {
 		return (false);
 	}
-	if (keepcnt < 0) {
+	if (keepcnt > 0) {
 		if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT,
 			&keepcnt, sizeof(keepcnt)) < 0) {
 			return (false);
@@ -96,7 +99,7 @@ bool	ListenSocket::socketSetup( int fd ) const {
 			return (false);
 		}
 	}
-	if (keepidle < 0)
+	if (keepidle <= 0)
 		return (true);
 	#ifdef __APPLE__
 	if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPALIVE, &keepidle, sizeof(keepidle)) < 0) {
@@ -132,7 +135,7 @@ void	ListenSocket::setDefaultServer( void ) { default_server = true; }
 void	ListenSocket::setBackLog( uint64_t num ) {
 	uint16_t	check = static_cast<uint16_t>(num);
 	if (check > SOMAXCONN)
-		throw std::invalid_argument("backlog");
+		throw std::invalid_argument("backlog number too big");
 	backlog = check;
 }
 
@@ -173,9 +176,9 @@ void	ListenSocket::reset( void ) {
 	ipv6only = false;
 	reuseport = false;
 	keepalive = false;
-	keepidle = 30 * 60;
+	keepidle = -1;
 	keepintvl = -1;
-	keepcnt = 10;
+	keepcnt = -1;
 	len = 0;
 	status = 0;
 }
@@ -223,11 +226,11 @@ ListenSocket::Iterator&	ListenSocket::Iterator::operator+( size_t n ) {
 	return (*this);
 }
 
-bool	ListenSocket::Iterator::operator!=(const Iterator& other) const {
+bool	ListenSocket::Iterator::operator!=( const Iterator& other ) const {
 	return (ptr != other.ptr);
 }
 
-bool	ListenSocket::Iterator::operator==(const Iterator& other) const {
+bool	ListenSocket::Iterator::operator==( const Iterator& other ) const {
 	return (ptr == other.ptr);
 }
 

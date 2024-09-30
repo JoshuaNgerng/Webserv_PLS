@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 01:45:40 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 18:56:36 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,12 +57,8 @@ class Server
 		static const socklen_t			socklen = sizeof(sockaddr_in_t);
 		static const int				socket_type = SOCK_STREAM;
 		static const int				socket_protocol = 0;
-		static const int				backlog_limit = 10;
 		static const int				fcntl_flag = (O_NONBLOCK );
-		static const int				recv_flag = 0;
-		static const int				send_flag = 0;
 		static const int				timeout = (3 * 60 * 1000);
-		static const int				buffer_limit = 1024;
 		nfds_t							server_no;
 		nfds_t							server_limit;
 		nfds_t							fd_counter;

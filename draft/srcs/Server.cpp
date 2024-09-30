@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 01:56:15 by joshua           ###   ########.fr       */
+/*   Updated: 2024/09/30 17:13:27 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,16 +139,9 @@ void	Server::getNewConnection( int fd, serverinfo_ptr &it ) {
 	if (!checkBufferfds())
 		return ;
 	Client	buffer(it);
-	int fd_client = accept(fd, (sockaddr_t *)&buffer.changeAddress(),
-			&buffer.getSocklen());
-	if (fd_client < 0) {
+	if (buffer.clientSocketFd(fd) < 0) {
 		return ; // cant get
 	}
-	if (fcntl(fd_client, F_SETFL, fcntl_flag) < 0) {
-		close(fd_client);
-		return ; // error cant set fl for fd
-	}
-	buffer.setSocketFd(fd);
 	client_info.push_back(buffer);
 	client_mapping[fd] = -- client_info.end();
 	addBufferfds(fd);

@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Const.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 13:27:33 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/09/28 23:53:50 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONST_HPP
 # define CONST_HPP
 # include <iostream>
-// # include <ostream>
 # include <fstream>
 # include <istream>
 # include <sstream>
@@ -25,10 +24,10 @@
 # include <stdexcept>
 # include <list>
 # include <vector>
+# include <queue>
 # include <map>
 # include <utility>
 # include "cheader.h"
-# include "ParsingError.hpp"
 
 #define RESET		"\033[0m"
 #define BOLDCYAN	"\033[1m\033[36m"
