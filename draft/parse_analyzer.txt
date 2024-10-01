@@ -1,8 +1,0 @@
-1)
-why ptr new?
-
-rewrite the processPara to take a delim from var
-then switch the var between ; and {
-
-so that same function can work for directive listen: ... ;
-and location path location ... { ... }

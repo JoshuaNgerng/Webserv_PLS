@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/27 15:03:02 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 15:50:40 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,31 @@ InfoBlock::InfoBlock( const InfoBlock &src ) {}
 
 InfoBlock::~InfoBlock( void ) {}
 
-void	reset( void );
+void	InfoBlock::reset( void ) {
+	error_page.clear();
+	try_files.clear();
+	access_log.first.clear();
+	access_log.second = 0;
+	error_log.first.clear();
+	error_log.second = 0;
+	if_modify_since = undefined;
+	root.clear();
+	client_body_timeout = 0;
+	client_max_body_size = 0;
+	index.clear();
+	autoindex = undefined;
+	autoindex_exact_size = undefined;
+	autoindex_format = undefined;
+	autoindex_localtime = undefined;
+	allow.clear();
+	deny.clear();
+	symlinks = undefined;
+	etag = undefined;	
+}
+
+void	InfoBlock::matchUri( std::string &result, const std::string &uri ) const {
+	for (size_t )
+}
 
 /* setters */
 void	InfoBlock::addIndex( const std::string &add ) { index.push_back(add); }

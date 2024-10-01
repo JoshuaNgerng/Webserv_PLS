@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/27 15:07:47 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 15:50:21 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ class InfoBlock {
 		InfoBlock( const InfoBlock &src );
 		virtual ~InfoBlock( void );
 
-		void	reset( void );
+		virtual void	matchUri( std::string &result, const std::string &uri ) const;
+		virtual void	reset( void );
 
 		/* setters */
 		void	addIndex( const std::string &add );
