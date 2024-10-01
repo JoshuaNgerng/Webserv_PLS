@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/27 03:59:11 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 12:22:42 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class ServerInfo : public InfoBlock {
 		size_t	getListenSize( void ) const;
 		std::vector<ListenSocket>::const_iterator&	listenBegin( void ) const;
 		std::vector<ListenSocket>::const_iterator&	listenEnd( void ) const;
+		int		matchUri( std::string &result, const std::string &uri ) const;
 
 	private:
 		// keys/options // try_files not implemented yet

@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/30 21:47:29 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 12:20:05 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,9 @@ Client&	Client::operator=( const Client &src ) {
 
 int	Client::clientSocketFd( int listen_fd ) {
 	socket_fd = accept(listen_fd, (sockaddr_t *)(&client_addr), &len);
-	if (socket_fd < 0)
+	if (socket_fd < 0) {
 		return (-1);
+	}
 	if (fcntl(socket_fd, F_SETFL, O_NONBLOCK) < 0) {
 		close(socket_fd);
 		return (-1);
@@ -72,18 +73,29 @@ bool	Client::clientRecv( void ) {
 	return (true);
 }
 
+int	Client::findResource( void ) {
+	const HttpRequest &req = requests.front();
+	if (!req.getValidHeader()) {
+		return (-1);
+	}
+	if (resource_name.length()) {
+		return (resource_fd);
+	}
+	server_ref->matchUri(resource_name, req.getUri());
+	return (resource_fd);
+}
+
+bool	Client::checkReponse( void ) {
+	
+}
 
 std::vector<ServerInfo>::iterator	Client::getServerRef( void ) const {
 	return(server_ref);
 }
 
-bool	Client::checkResponse( void ) const { return(finish_response); }
-
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
 
 int	Client::getResourceFd( void ) const { return(resource_fd); }
-
-size_t	Client::getBytesSent( void ) const { return(bytes_sent); }
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	o << "Client socket fd: " << ref.clientSocketFd() << '\n';
@@ -95,3 +107,5 @@ std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	o << "Reponse to Client\n" << ref.getResponse() << '\n';
 	return (o);
 }
+
+// size_t	Client::getBytesSent( void ) const { return(bytes_sent); }

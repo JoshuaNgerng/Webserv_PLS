@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/30 20:49:41 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 12:22:34 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,18 +27,18 @@ class Client {
 		Client&	operator=( const Client &src );
 
 		int					clientSocketFd( int fd );
-		int					findResource( int fd );
+		int					findResource( void );
 		bool				clientRecv( void );
+		bool				checkReponse( void );
 
 		/* getters */
 		int					clientSocketFd( void ) const;
 		int					getResourceFd( void ) const;
-		int					getDataFd( void );
-		bool				checkRequest( void ) const;
-		bool				checkResponse( void ) const;
-		const std::string&	getRequest( void ) const;
-		const std::string&	getResponse( void ) const;
-		size_t				getBytesSent( void ) const;
+		// bool				checkRequest( void ) const;
+		// bool				checkResponse( void ) const;
+		// const std::string&	getRequest( void ) const;
+		// const std::string&	getResponse( void ) const;
+		// size_t				getBytesSent( void ) const;
 
 
 		std::vector<ServerInfo>::iterator	getServerRef( void ) const;
@@ -50,12 +50,14 @@ class Client {
 		static const int	send_flag = 0;
 		static const size_t	recv_buffer_size = 8192;
 		/* server related info + data fd*/
-		std::vector<ServerInfo>::iterator	server_ref;
-		std::vector<Location>::iterator		location_ref;
-		sockaddr_storage_t					client_addr;
-		socklen_t							len;
-		int									socket_fd;
-		int									resource_fd;
+		std::vector<ServerInfo>::const_iterator	server_ref;
+
+		sockaddr_storage_t	client_addr;
+		socklen_t			len;
+		int					socket_fd;
+		int					resource_fd;
+		std::string			resource_name;
+		int					status_code;
 
 		/* http related info + data info */
 		std::queue<HttpRequest>				requests;
@@ -68,8 +70,6 @@ class Client {
 		bool								emergency_overwrite;
 		bool								is_cgi;
 		bool								finish_response;
-
-		int									attempts;
 };
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref );

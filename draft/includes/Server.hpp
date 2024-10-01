@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/30 18:56:36 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 12:14:52 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,10 @@ class Server
 
 		Server&	operator=( const Server &src );
 
-		void	startServerLoop( int *signal );
 		void	startServerLoop( void );
 
 		void		addServerInfo( ServerInfo &ref );
 		pollfd_t*	getSocketfds( void );
-
-		static void	setNonBlockFd( int fd );
-		static int	setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol );
 
 		//getters
 		socklen_t	getSocklen( void ) const;

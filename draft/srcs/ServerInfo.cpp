@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/26 04:58:44 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 14:52:17 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,16 @@ void	ServerInfo::setClientHeaderBufferSize( uint64_t size ) { client_header_buff
 void	ServerInfo::setClientHeaderTimeout( uint64_t time ) { client_header_timeout = time; }
 
 void	ServerInfo::setMergeSlash( bool opt ) { merge_slash = opt; }
+
+int	ServerInfo::matchUri( std::string &result, const std::string &uri ) const {
+	typedef std::vector<Location>::const_iterator iter;
+	for (iter it = location.begin(); it != location.end(); it ++) {
+		if (uri == it->getLocationPath()) {
+			;
+		}
+	}
+	if (!try)
+}
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
 	// typedef std::vector<ListenSocket>::const_iterator		sock_iter;

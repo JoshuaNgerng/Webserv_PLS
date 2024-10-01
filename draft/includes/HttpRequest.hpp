@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 15:25:21 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/30 23:24:19 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/01 02:30:15 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class HttpRequest : Http {
 		http_method	getMethod( void ) const;
 		const std::string&	getUri( void ) const;
 		bool		getHasBody( void ) const;
+		bool		getValidHeader( void ) const;
 		type		getContentType( void ) const;
 		uint64_t	getContentLength( void ) const;
 
