@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/30 17:13:27 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 03:02:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+const char *Server::server_name = NULL;
 
 Server::Server( void ) { }
 
@@ -32,36 +34,6 @@ Server::~Server( void ) { }
 // 	server_info = src.server_info;
 // 	return (*this);
 // }
-
-int	Server::setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol ) {
-	int	fd = socket(addr.sin_family, socket_type, socket_protocol);
-	if (fd < 0) {
-		goto error; // cant set socket
-	}
-	if (bind(fd, (sockaddr *)&addr, socklen) < 0) {
-		// std::cout << "bind failed\n";
-		goto clear_fd; // bind failed
-	}
-	if (listen(fd, backlog_limit) < 0) {
-		// std::cout << "listen failed\n";
-		goto clear_fd; // listen failed
-	}
-	return (fd);
-	clear_fd:
-		close(fd);
-	error:
-		return (-1);
-}
-
-bool	Server::checkBufferfds( void ) const {
-	if (buffer_counter == buffer_new_fd.size()) {
-		return (false); // too many fds in buffer
-	}
-	if (fd_counter == server_limit) {
-		return (false); // too many fds in server
-	}
-	return (true);
-}
 
 void	Server::addBufferfds( int fd ) {
 	if (fd < 0)

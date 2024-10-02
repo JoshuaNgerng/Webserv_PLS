@@ -6,13 +6,14 @@
 /*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:11:01 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/01 15:49:32 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/02 04:58:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EMBEDDEDVARIABLE_HPP
 # define EMBEDDEDVARIABLE_HPP
 # include "Http.hpp"
+# include "Client.hpp"
 
 enum short_form {
 	arg_name = 129,
@@ -35,7 +36,7 @@ class EmbeddedVariable {
 	public:
 		~EmbeddedVariable( void );
 		static void	shortFormString( std::string &str );
-		static void resolveString( std::string &str, ... );
+		static void resolveString( std::string &res, const std::string &ref, const Client &client );
 
 	private:
 		static const char		**variables;
@@ -43,7 +44,7 @@ class EmbeddedVariable {
 		EmbeddedVariable( void );
 		EmbeddedVariable( const EmbeddedVariable &src );
 		EmbeddedVariable&	operator=( const EmbeddedVariable &src );
-};
+}; 
 
 // int	main(void) {
 // 	std::string str("$url");

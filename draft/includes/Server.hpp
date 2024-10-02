@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/01 12:14:52 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 00:40:40 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ class Server
 	typedef std::vector<ServerInfo>::iterator	serverinfo_ptr;
 	typedef ListenSocket::Iterator				addrinfo_ptr;
 	public:
+		static const char *server_name;
 		Server( void );
 		Server( const Server &src );
 		~Server( void );

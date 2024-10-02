@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cheader.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 18:28:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/23 02:50:45 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 03:51:46 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 # include <netinet/tcp.h>
 # include <netdb.h>
 # include <fcntl.h>
+# include <dirent.h>
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <unistd.h>

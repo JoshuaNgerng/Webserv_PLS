@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EmbeddedVariable.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/27 15:25:10 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 05:07:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,26 @@ void	EmbeddedVariable::shortFormString( std::string &str ) {
 	}
 }
 
-void	EmbeddedVariable::resolveString( std::string &str, ... ) {
-	
+void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, const Client &client ) {
+	str.reserve(ref.length());
+	for (size_t i = 0; i < ref.length(); i ++) {
+		const std::string *val = NULL;
+		std::string	buffer;
+		if (ref[i] < 128) {
+			str += ref[i];
+			continue ;
+		}
+		switch (ref[i])
+		{
+		case arg_name:
+			/* code */
+			break;
+		
+		default:
+			val = &buffer;
+		}
+		str += *val;
+	}
 }
 
 // void	EmbeddedVariable::shortFormStringAllow( std::string &str, int8_t *allow ) {

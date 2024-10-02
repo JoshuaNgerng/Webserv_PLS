@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/01 15:50:40 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/02 12:13:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,23 +25,91 @@ void	InfoBlock::reset( void ) {
 	access_log.second = 0;
 	error_log.first.clear();
 	error_log.second = 0;
-	if_modify_since = undefined;
+	if_modify_since = if_modify_level::undefined;
 	root.clear();
 	client_body_timeout = 0;
 	client_max_body_size = 0;
 	index.clear();
-	autoindex = undefined;
-	autoindex_exact_size = undefined;
-	autoindex_format = undefined;
-	autoindex_localtime = undefined;
+	autoindex = boolean::undefined;
+	autoindex_exact_size = boolean::undefined; 
+	autoindex_format = boolean::undefined;
+	autoindex_localtime = boolean::undefined;
 	allow.clear();
 	deny.clear();
-	symlinks = undefined;
-	etag = undefined;	
+	symlinks = boolean::undefined;
+	etag = boolean::undefined;
 }
 
-void	InfoBlock::matchUri( std::string &result, const std::string &uri ) const {
-	for (size_t )
+bool	InfoBlock::matchUriSingle( const std::string &name ) const {
+	CheckFile	file_info(name);
+	file_info.checking(F_OK | R_OK);
+	if (file_info.getAccessbility() < 0) {
+		return (false);
+	}
+	if (file_info.getType() != file || file_info.getType() != systemlink) {
+		return (false);
+	}
+	return (true);
+}
+
+void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool autoindex_ ) const {
+	CheckFile	file_info(uri);
+	file_info.checking(F_OK | R_OK);
+	if (file_info.getAccessbility() < 0) {
+		client.addResource(404);
+		return ;
+	}
+	if (file_info.getType() == directory) {
+		if (uri[uri.length() - 1] != '/') {
+			client.addResource(308);
+			return ;
+		}
+		if (autoindex_) {
+			client.addDir(uri);
+			return;
+		}
+		for (std::vector<std::string>::const_iterator it = index.begin(); it != index.end(); it ++) {
+			std::string	buffer(uri);
+			buffer += *it;
+			if (matchUriSingle(buffer)) {
+				client.addResource(200, buffer);
+			}
+			client.addResource(403);
+		}
+	} else if (file_info.getType() != file || file_info.getType() != systemlink) {
+		client.addResource(403);
+	} else {
+		client.addResource(200, uri);
+	}
+}
+
+void	InfoBlock::matchUri( Client &client, const std::string &uri, bool autoindex_ ) const {
+	typedef std::vector<std::string>::const_iterator	iter;
+	std::string	buffer;
+	if (!try_files.size()) {
+		std::string	path(root);
+		path += client.getCurrentUri();
+		matchUriSingle(client, path, autoindex_);
+		return ;
+	}
+	iter end = -- try_files.end();
+	for (iter it = try_files.begin(); it != end; it ++) {
+		std::string	path(root);
+		EmbeddedVariable::resolveString(buffer, *it, client);
+		path += buffer;
+		matchUriSingle(client, path, autoindex_);
+		if (client.checkHttpResponse())
+			return ;
+		buffer.clear();
+	}
+	const std::string &str = *end;
+	if (str[0] == '=') {
+		client.addResource(::atoi(str.c_str() + 1));
+		return ;
+	}
+	buffer = root + '/';
+	buffer += str;
+	matchUriSingle(client, buffer, autoindex_);
 }
 
 /* setters */

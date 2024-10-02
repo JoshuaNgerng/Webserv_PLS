@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/01 14:52:17 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 11:24:20 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,14 +45,26 @@ void	ServerInfo::setClientHeaderTimeout( uint64_t time ) { client_header_timeout
 
 void	ServerInfo::setMergeSlash( bool opt ) { merge_slash = opt; }
 
-int	ServerInfo::matchUri( std::string &result, const std::string &uri ) const {
+void	ServerInfo::matchUri( Client &client ) const {
 	typedef std::vector<Location>::const_iterator iter;
+	const std::string	&uri = client.getCurrentUri();
+	iter				ptr = location.end();
+	size_t				len = 0;
 	for (iter it = location.begin(); it != location.end(); it ++) {
-		if (uri == it->getLocationPath()) {
-			;
+		size_t check = it->getLocationPath().length();
+		if (!uri.compare(0, check, it->getLocationPath())) {
+			if (check > len) {
+				len = check;
+				ptr = it;
+			}
 		}
 	}
-	if (!try)
+	client = ptr;
+	bool	b = (autoindex == on) ? true : false;
+	if (ptr != location.end()) {
+		ptr->matchUri(client, uri, b);
+	}
+	InfoBlock::matchUri(client, client.getCurrentUri(), b);
 }
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {

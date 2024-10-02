@@ -6,13 +6,16 @@
 /*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/01 15:50:21 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/02 10:46:07 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef INFOBLOCK_HPP
 # define INFOBLOCK_HPP
 # include "EmbeddedVariable.hpp"
+# include "CheckFile.hpp"
+# include "AutoIndex.hpp"
+# include "Client.hpp"
 
 enum if_modify_level {
 	undefined,
@@ -26,27 +29,13 @@ enum log_format {
 	common,
 };
 
-enum auto_index_format {
-	undefined,
-	html,
-	xml,
-	json,
-	jsonp
-};
-
-enum boolean {
-	undefined,
-	on,
-	off
-};
-
 class InfoBlock {
 	public:
 		InfoBlock( void );
 		InfoBlock( const InfoBlock &src );
 		virtual ~InfoBlock( void );
 
-		virtual void	matchUri( std::string &result, const std::string &uri ) const;
+		void	matchUri( Client &client, const std::string &uri, bool autoindex ) const;
 		virtual void	reset( void );
 
 		/* setters */
@@ -85,7 +74,7 @@ class InfoBlock {
 		bool				ifModifySince( void ) const;
 		bool				isEtag( void ) const;
 
-	private:
+	protected:
 		std::string						empty;
 		std::map<short, std::string>	error_page;
 		std::vector<std::string>		try_files;
@@ -110,6 +99,9 @@ class InfoBlock {
 
 		boolean							symlinks;
 		boolean							etag;
+
+		bool	matchUriSingle( const std::string &name ) const;
+		void	matchUriSingle( Client &client, const std::string &uri ,bool autoindex ) const;
 };
 
 #endif

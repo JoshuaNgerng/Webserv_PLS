@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/30 23:42:30 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 01:34:37 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@
 // int for clientbodymax
 class Http {
 	public:
+		typedef struct code_msg_pair {
+			int			status;
+			const char	*msg;
+		}	t_pairs;
 		enum http_method { GET, POST, PUT, DELETE };
 		enum field {
 			HOST, USER_AGENT,
@@ -33,9 +37,10 @@ class Http {
 		Http( void );
 		Http( const Http &src );
 		virtual ~Http( void );
+		static const char	*fetchMsg( int status );
 
 	protected:
-		static const char *const *methods;
+		static const char *const	*methods;
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;
@@ -65,9 +70,9 @@ class Http {
 		}
 
 	private:
-		static const char *const *fields;
-		static const char *const *types;
-
+		static const t_pairs 		*pairing;
+		static const char *const	*fields;
+		static const char *const	*types;
 };
 
 #endif

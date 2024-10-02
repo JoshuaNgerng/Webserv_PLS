@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Const.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/28 23:53:50 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 02:42:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,12 @@
 #define BOLDBLUE	"\033[1m\033[34m"
 #define BOLDRED		"\033[1m\033[31m"
 #define BOLDMAGENTA	"\033[1m\033[35m"
+
+enum boolean {
+	undefined,
+	on,
+	off
+};
 
 /**
  * @brief	creating std::to_string in c++98

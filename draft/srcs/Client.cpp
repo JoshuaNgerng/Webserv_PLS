@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/01 12:20:05 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 12:00:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,24 +73,51 @@ bool	Client::clientRecv( void ) {
 	return (true);
 }
 
-int	Client::findResource( void ) {
+void	Client::routeRequest( void ) {
 	const HttpRequest &req = requests.front();
 	if (!req.getValidHeader()) {
+		status_code = 500;
+	} else {
+		server_ref->matchUri(*this);
+	}
+	if (status_code > 399) {
+		;
+	}
+}
+
+int	Client::findResource( void ) {
+	if (finish_response) {
 		return (-1);
 	}
-	if (resource_name.length()) {
-		return (resource_fd);
-	}
-	server_ref->matchUri(resource_name, req.getUri());
-	return (resource_fd);
 }
 
 bool	Client::checkReponse( void ) {
 	
 }
 
-std::vector<ServerInfo>::iterator	Client::getServerRef( void ) const {
-	return(server_ref);
+const std::string&	Client::getCurrentUri( void ) const {
+	return (requests.front().getUri());
+}
+
+void	Client::addResource( int status_code_, const std::string &str) {
+	status_code = status_code_;
+	resource_name = str;
+}
+
+void	Client::addDir( const std::string &str ) {
+	resource_name = str;
+	status_code = 200;
+}
+
+// std::vector<ServerInfo>::iterator	Client::getServerRef( void ) const {
+// 	return(server_ref);
+// }
+
+bool	Client::checkHttpResponse( void ) const {
+	if (status_code >= 300) {
+		return (false);
+	}
+	return (true);
 }
 
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
@@ -101,10 +128,10 @@ std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	o << "Client socket fd: " << ref.clientSocketFd() << '\n';
 	o << "Client reponse fd: " << ref.getResourceFd();// <<
 		// ", reponse resource status: " << ((ref.isDataReady()) ? "ready" : "not ready") << '\n';
-	o << "Request status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
-	o << "Request from Client\n" << ref.getRequest() << '\n';
-	o << "Reponse status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
-	o << "Reponse to Client\n" << ref.getResponse() << '\n';
+	// o << "Request status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
+	// o << "Request from Client\n" << ref.getRequest() << '\n';
+	// o << "Reponse status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
+	// o << "Reponse to Client\n" << ref.getResponse() << '\n';
 	return (o);
 }
 

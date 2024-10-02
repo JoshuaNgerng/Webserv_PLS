@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/01 12:22:34 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 11:59:59 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,15 +25,23 @@ class Client {
 		~Client( void );
 
 		Client&	operator=( const Client &src );
+		Client&	operator=( const std::vector<Location>::const_iterator &it );
 
 		int					clientSocketFd( int fd );
 		int					findResource( void );
 		bool				clientRecv( void );
 		bool				checkReponse( void );
+		void				routeRequest( void );
+		void				addResource( int status_code,
+										const std::string &str = std::string());
+		void				addDir( const std::string &str );
 
 		/* getters */
 		int					clientSocketFd( void ) const;
 		int					getResourceFd( void ) const;
+		const std::string&	getCurrentUri( void ) const;
+		bool				checkHttpResponse( void ) const;
+		bool				requestReady( void ) const;
 		// bool				checkRequest( void ) const;
 		// bool				checkResponse( void ) const;
 		// const std::string&	getRequest( void ) const;
@@ -51,6 +59,7 @@ class Client {
 		static const size_t	recv_buffer_size = 8192;
 		/* server related info + data fd*/
 		std::vector<ServerInfo>::const_iterator	server_ref;
+		std::vector<Location>::const_iterator	location_ref;
 
 		sockaddr_storage_t	client_addr;
 		socklen_t			len;
@@ -68,6 +77,7 @@ class Client {
 		time_t								empty_event;
 		size_t								bytes_sent;
 		bool								emergency_overwrite;
+		bool								is_directory;
 		bool								is_cgi;
 		bool								finish_response;
 };
