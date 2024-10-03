@@ -26,13 +26,14 @@ enum if_modify_level {
 
 enum log_format {
 	combined,
-	common,
+	common
 };
 
 class InfoBlock {
 	public:
 		InfoBlock( void );
 		InfoBlock( const InfoBlock &src );
+		InfoBlock& operator=( const InfoBlock &src );
 		virtual ~InfoBlock( void );
 
 		void	matchUri( Client &client, const std::string &uri, bool autoindex ) const;

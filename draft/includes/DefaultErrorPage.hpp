@@ -17,10 +17,12 @@
 class DefaultErrorPage
 {
 public:
+	DefaultErrorPage( void );
+    DefaultErrorPage(const DefaultErrorPage &other);
+    DefaultErrorPage& operator=(const DefaultErrorPage &other);
 	~DefaultErrorPage( void );
 	static std::string	generateHtml( int status, const char *server_name );
 private:
-	DefaultErrorPage( void );
 	// put the other sht here
 	static const char 	*template_html;
 };

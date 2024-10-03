@@ -10,11 +10,36 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "InfoBlock.hpp"
+#include "../includes/InfoBlock.hpp"
 
 InfoBlock::InfoBlock( void ) {}
 
-InfoBlock::InfoBlock( const InfoBlock &src ) {}
+InfoBlock::InfoBlock( const InfoBlock &src ) {
+	*this = src;
+}
+
+InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
+	if (this != &src) {
+		error_page = src.error_page;
+		try_files = src.try_files;
+		access_log = src.access_log;
+		error_log = src.error_log;
+		if_modify_since = src.if_modify_since;
+		root = src.root;
+		client_body_timeout = src.client_body_timeout;
+		client_max_body_size = src.client_max_body_size;
+		index = src.index;
+		autoindex = src.autoindex;
+		autoindex_exact_size = src.autoindex_exact_size;
+		autoindex_format = src.autoindex_format;
+		autoindex_localtime = src.autoindex_localtime;
+		allow = src.allow;
+		deny = src.deny;
+		symlinks = src.symlinks;
+		etag = src.etag;
+	}
+	return (*this);
+}
 
 InfoBlock::~InfoBlock( void ) {}
 

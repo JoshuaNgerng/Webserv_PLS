@@ -30,6 +30,8 @@ class CheckFile {
 	public:
 		CheckFile( const char *filename_ );
 		CheckFile( const std::string &filename_ );
+    	CheckFile(const CheckFile &other);
+		CheckFile& operator=(const CheckFile &other);
 		~CheckFile( void );
 
 		void	checking( void );

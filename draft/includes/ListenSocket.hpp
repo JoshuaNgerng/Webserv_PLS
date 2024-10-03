@@ -19,9 +19,9 @@ class ListenSocket {
 		static int	fcntl_flag;
 		ListenSocket( void );
 		ListenSocket( const ListenSocket &src );
+		ListenSocket&	operator=( const ListenSocket &src );
 		~ListenSocket( void );
 
-		ListenSocket&	operator=( const ListenSocket &src );
 
 		bool	addAddress( const std::string &addr, const std::string &port );
 		int		addListenPollFd( std::vector<pollfd_t> &listen ) const;
@@ -40,10 +40,10 @@ class ListenSocket {
 			public:
 				Iterator( void );
 				Iterator( const Iterator &src );
+				Iterator& operator=( const Iterator &src );
 				Iterator( addrinfo_t *start );
 				~Iterator( void );
 
-				Iterator&	operator=( const Iterator &src );
 				addrinfo_t&	operator*( void );
 				addrinfo_t*	operator->( void ) const;
 				Iterator&	operator++( void ); 

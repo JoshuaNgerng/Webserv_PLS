@@ -10,14 +10,38 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ListenSocket.hpp"
+#include "../includes/ListenSocket.hpp"
 
 int	ListenSocket::fcntl_flag = O_NONBLOCK;
 
 ListenSocket::ListenSocket( void ) { addr_info_tail = &addr_info_head; }
 
-ListenSocket::ListenSocket( const ListenSocket &src ) :
-	addr_info_head(src.addr_info_head), addr_info_tail(src.addr_info_tail) { }
+// ListenSocket::ListenSocket( const ListenSocket &src ) :
+// 	addr_info_head(src.addr_info_head), addr_info_tail(src.addr_info_tail) { }
+
+ListenSocket::ListenSocket( const ListenSocket &src ) {
+	*this = src; 
+}
+
+ListenSocket& ListenSocket::operator=(const ListenSocket &other) {
+    if (this != &other) {
+        addr_info_head = other.addr_info_head;
+        addr_info_tail = other.addr_info_tail;
+        default_server = other.default_server;
+        backlog = other.backlog;
+        rcvbuf_size = other.rcvbuf_size;
+        sndbuf_size = other.sndbuf_size;
+        ipv6only = other.ipv6only;
+        reuseport = other.reuseport;
+        keepalive = other.keepalive;
+        keepidle = other.keepidle;
+        keepintvl = other.keepintvl;
+        keepcnt = other.keepcnt;
+        len = other.len;
+        status = other.status;
+    }
+    return *this;
+}
 
 ListenSocket::~ListenSocket( void ) { freeaddrinfo(addr_info_head); }
 
@@ -196,6 +220,10 @@ int	ListenSocket::getStatus( void ) const { return (status); }
 ListenSocket::Iterator::Iterator( void ) : ptr(0) { }
 
 ListenSocket::Iterator::Iterator( const Iterator &src ) : ptr(src.ptr) { }
+
+ListenSocket::Iterator& ListenSocket::Iterator::operator=( const Iterator &src ) {
+	ptr = src.ptr; return (*this);
+}
 
 ListenSocket::Iterator::Iterator( addrinfo_t *start ) : ptr(start) { }
 

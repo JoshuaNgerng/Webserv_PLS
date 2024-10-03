@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../incluldes/Server.hpp"
 
 const char *Server::server_name = NULL;
 
@@ -20,6 +20,22 @@ Server::Server( void ) { }
 // 	server_no(src.server_no), client_limit(src.client_limit),
 // 	server_fds(src.server_fds), client_fds(src.client_fds),
 // 	server_info(src.server_info) { }
+
+Server::Server( const Server &src ) {
+	*this = src;
+}
+
+Server&	Server::operator=( const Server &src )
+{
+	if (this == &src)
+		return (*this);
+	server_no = src.server_no;
+	client_limit = src.client_limit;
+	server_fds = src.server_fds;
+	client_fds = src.client_fds;
+	server_info = src.server_info;
+	return (*this);
+}
 
 Server::~Server( void ) { }
 

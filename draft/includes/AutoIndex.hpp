@@ -22,24 +22,20 @@ enum auto_index_format {
 	jsonp
 };
 
-class AutoIndex
-{
-	typedef enum auto_index_format format;
-	public:
-		AutoIndex( void );
-		AutoIndex( format f, boolean bt, boolean bs );
-		~AutoIndex( void );
-		std::string	generateResource( const std::string &dirname ) const;
-		std::string	generateResource( const char *dirname ) const;
+class AutoIndex {
+public:
+	AutoIndex( void );
+	AutoIndex( format f, boolean bt, boolean bs );
+	AutoIndex(const AutoIndex &other);
+	AutoIndex& operator=(const AutoIndex &other);
+	~AutoIndex( void );
+	std::string generateResource( const std::string &dirname ) const;
+	std::string generateResource( const char *dirname ) const;
 
-	private:
-		std::string	generateHtml( DIR *dir ) const;
-		std::string	generateXml( DIR *dir ) const;
-		std::string	generateJson( DIR *dir ) const;
-
-		format	autoindex_format;
-		bool	autoindex_time;
-		bool	autoindex_exact_size;
+private:
+	format autoindex_format;
+	boolean autoindex_time;
+	boolean autoindex_exact_size;
 };
 
 #endif

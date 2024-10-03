@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "EmbeddedVariable.hpp"
+#include "../includes/EmbeddedVariable.hpp"
 
 /*
 	arg_name,
@@ -115,7 +115,16 @@ void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, 
 
 EmbeddedVariable::EmbeddedVariable( void ) { }
 
-EmbeddedVariable::EmbeddedVariable( const EmbeddedVariable &src ) { (void)src; }
+EmbeddedVariable::EmbeddedVariable( const EmbeddedVariable &src ) {
+	*this = src;
+}
+
+EmbeddedVariable&	EmbeddedVariable::operator=( const EmbeddedVariable &src ) {
+	if (this != &src) {
+		(void)src;
+	}
+	return (*this);
+}
 
 EmbeddedVariable&	EmbeddedVariable::operator=( const EmbeddedVariable &src )
 { (void)src; return (*this); }

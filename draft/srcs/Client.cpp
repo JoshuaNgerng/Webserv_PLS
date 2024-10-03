@@ -10,25 +10,52 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Client.hpp"
+#include "../includes/Client.hpp"
 
 Client::Client( void ) { }
 
 // Client::Client( std::vector<ServerInfo>::iterator &it, int fd ) :
 
-// Client::Client( const Client &src ) : 
+Client::Client(const Client &src) {
+	*this = src;
+}
+
+Client& Client::operator=(const Client &other) {
+    if (this != &other) {
+        server_ref = other.server_ref;
+        location_ref = other.location_ref;
+        client_addr = other.client_addr;
+        len = other.len;
+        socket_fd = other.socket_fd;
+        resource_fd = other.resource_fd;
+        resource_name = other.resource_name;
+        status_code = other.status_code;
+        requests = other.requests;
+        reponse = other.reponse;
+        start_connection = other.start_connection;
+        no_request = other.no_request;
+        current_time = other.current_time;
+        empty_event = other.empty_event;
+        bytes_sent = other.bytes_sent;
+        emergency_overwrite = other.emergency_overwrite;
+        is_directory = other.is_directory;
+        is_cgi = other.is_cgi;
+        finish_response = other.finish_response;
+    }
+    return *this;
+}
 
 Client::~Client( void ) { }
 
-Client&	Client::operator=( const Client &src ) {
-	if (this == &src)
-		return (*this);
-	// server_ref = src.server_ref; socket_fd = src.socket_fd;
-	// socket_addr = src.socket_addr; len = src.len; request_header = src.request_header;
-	// request_body = src.request_body; response = src.response; bytes_sent = src.bytes_sent;
-	// got_header = src.got_header; got_body = src.got_body; finish_response = src.finish_response;
-	return (*this);
-}
+// Client&	Client::operator=( const Client &src ) {
+// 	if (this == &src)
+// 		return (*this);
+// 	// server_ref = src.server_ref; socket_fd = src.socket_fd;
+// 	// socket_addr = src.socket_addr; len = src.len; request_header = src.request_header;
+// 	// request_body = src.request_body; response = src.response; bytes_sent = src.bytes_sent;
+// 	// got_header = src.got_header; got_body = src.got_body; finish_response = src.finish_response;
+// 	return (*this);
+// }
 
 int	Client::clientSocketFd( int listen_fd ) {
 	socket_fd = accept(listen_fd, (sockaddr_t *)(&client_addr), &len);

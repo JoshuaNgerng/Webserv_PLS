@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Http.hpp"
+#include "../includes/Http.hpp"
 
 const Http::t_pairs	*Http::pairing = (t_pairs []) {
 	{100, "Continue"}, {101, "Switching Protocols"}, {102, "Processing"}, {103, "Early Hints"},
@@ -52,7 +52,16 @@ const char *const *Http::types = (char *[]) {
 
 Http::Http( void ) { }
 
-Http::Http( const Http &src ) { (void)src; }
+Http::Http( const Http &src ) {
+	*this = src;
+}
+
+Http&	Http::operator=( const Http &src ) {
+	if (this != &src) {
+		(void)src;
+	}
+	return (*this);
+}
 
 Http::~Http( void ) { }
 

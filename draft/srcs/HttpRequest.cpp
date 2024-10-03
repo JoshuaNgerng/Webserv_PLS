@@ -10,11 +10,30 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpRequest.hpp"
+#include "../includes/HttpRequest.hpp"
 
 HttpRequest::HttpRequest( void ) { }
 
-HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {}
+HttpRequest::HttpRequest( const HttpRequest &src ){
+	*this = src;
+}
+
+HttpRequest&	HttpRequest::operator=( const HttpRequest &src ) {
+	if (this != &src) {
+		header = src.header;
+		body = src.body;
+		header_fields = src.header_fields;
+		valid_header = src.valid_header;
+		method = src.method;
+		uri = src.uri;
+		protocol = src.protocol;
+		has_body = src.has_body;
+		content_type = src.content_type;
+		content_length = src.content_length;
+		finished_request = src.finished_request;
+	}
+	return (*this);
+}
 
 HttpRequest::~HttpRequest( void ) { }
 

@@ -25,7 +25,7 @@ class Client {
 		~Client( void );
 
 		Client&	operator=( const Client &src );
-		Client&	operator=( const std::vector<Location>::const_iterator &it );
+		// Client&	operator=( const std::vector<Location>::const_iterator &it );
 
 		int					clientSocketFd( int fd );
 		int					findResource( void );

@@ -24,6 +24,17 @@ const char *DefaultErrorPage::template_html =
 
 DefaultErrorPage::DefaultErrorPage( void ) { }
 
+DefaultErrorPage::DefaultErrorPage(const DefaultErrorPage &other) {
+	*this = other;
+}
+
+DefaultErrorPage& DefaultErrorPage::operator=(const DefaultErrorPage &other) {
+	if (this != &other) {
+		(void)other;
+	}
+	return *this;
+}
+
 DefaultErrorPage::~DefaultErrorPage( void ) { }
 
 std::string	DefaultErrorPage::generateHtml( int status, const char *server_name = NULL ) {

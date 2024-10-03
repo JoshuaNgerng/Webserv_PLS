@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Parse.hpp"
+#include "../includes/Parse.hpp"
 
 const char		*Parse::prog_name = "";
 const char		*Parse::fname = "";
@@ -22,6 +22,30 @@ Parse::Parse( void ) : semicolon(false), filename("default.conf"), server(), loc
 
 Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_){
 	semicolon = false;
+}
+
+Parse::Parse( const Parse &src ) {
+	*this = src;
+}
+
+Parse& Parse::operator=( const Parse &src ) {
+	if (this != &src) {
+		content_stream = src.content_stream;
+		line_stream = src.line_stream;
+		line_counter = src.line_counter;
+		block_level = src.block_level;
+		bracket_no = src.bracket_no;
+		semicolon = src.semicolon;
+		no_para = src.no_para;
+		directive_ptr = src.directive_ptr;
+		filename = src.filename;
+		server = src.server;
+		ptr = src.ptr;
+		serverinfo = src.serverinfo;
+		location = src.location;
+		listen_socket = src.listen_socket;
+	}
+	return (*this);
 }
 
 Parse::~Parse( void ) {

@@ -37,6 +37,8 @@ class Parse
 		static const char	*prog_name;
 		static const char	*fname;
 		Parse( const char *config, Server &ref );
+		Parse(const Parse &src);
+		Parse& operator=(const Parse &src);
 		~Parse( void );
 
 		void	parseConfigFile( void );
@@ -106,8 +108,7 @@ class Parse
 		void	processAlias( std::string &token );
 		void	processInternal( std::string &token );
 
-		Parse( const Parse &src );
-		Parse&	operator=( const Parse &src );
+
 
 		std::istringstream	content_stream; // no
 		std::istringstream	line_stream; // no

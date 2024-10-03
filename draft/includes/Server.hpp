@@ -22,9 +22,8 @@ class Server
 		static const char *server_name;
 		Server( void );
 		Server( const Server &src );
-		~Server( void );
-
 		Server&	operator=( const Server &src );
+		~Server( void );
 
 		void	startServerLoop( void );
 

@@ -10,11 +10,28 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Location.hpp"
+#include "../includes/Location.hpp"
 
 Location::Location( void ) { }
 
 // Location::Location( const Location &src ) : InfoBlock(), path(path) { }
+
+Location::Location( const Location &src ) {
+	*this = src;
+}
+
+Location& Location::operator=( const Location &src ) {
+	if (this != &src) {
+		InfoBlock::operator=(src);
+		path = src.path;
+		alias = src.alias;
+		internal = src.internal;
+		return_ = src.return_;
+		cgi_mapping = src.cgi_mapping;
+		is_cgi = src.is_cgi;
+	}
+	return (*this);
+}
 
 Location::~Location( void ) { }
 

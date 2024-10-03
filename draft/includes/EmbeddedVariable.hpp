@@ -34,6 +34,9 @@ enum short_form {
 
 class EmbeddedVariable {
 	public:
+		EmbeddedVariable( void );
+		EmbeddedVariable( const EmbeddedVariable &src );
+		EmbeddedVariable& operator=(const EmbeddedVariable &src);
 		~EmbeddedVariable( void );
 		static void	shortFormString( std::string &str );
 		static void resolveString( std::string &res, const std::string &ref, const Client &client );
@@ -41,9 +44,6 @@ class EmbeddedVariable {
 	private:
 		static const char		**variables;
 		static const uint8_t	*shortform;
-		EmbeddedVariable( void );
-		EmbeddedVariable( const EmbeddedVariable &src );
-		EmbeddedVariable&	operator=( const EmbeddedVariable &src );
 }; 
 
 // int	main(void) {

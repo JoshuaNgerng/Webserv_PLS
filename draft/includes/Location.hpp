@@ -19,6 +19,8 @@ class Location : public InfoBlock {
 	typedef std::map<std::string, std::string> CgiMapping;
 	public:
 		Location( void );
+		Location( const Location &src );
+		Location& operator=( const Location &src );
 		~Location( void );
 		void	addPath( const std::string &path );
 		void	addAlias( const std::string &path );

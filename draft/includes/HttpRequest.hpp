@@ -19,6 +19,7 @@ class HttpRequest : Http {
 		HttpRequest( void );
 		HttpRequest( const std::string &str, size_t pos );
 		HttpRequest( const HttpRequest &src );
+		HttpRequest& operator=( const HttpRequest &src );
 		~HttpRequest( void );
 		size_t		addRequest( const std::string &str );
 		size_t		addBody( const std::string &str, size_t pos );

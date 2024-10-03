@@ -10,11 +10,24 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "AutoIndex.hpp"
-#include "CheckFile.hpp"
+#include "../includes/AutoIndex.hpp"
+#include "../includes/CheckFile.hpp"
 
 AutoIndex::AutoIndex( void ) :
 	autoindex_format(html), autoindex_time(false), autoindex_exact_size(true) { }
+
+AutoIndex::AutoIndex(const AutoIndex &other){
+	*this = other;
+}
+
+AutoIndex& AutoIndex::operator=(const AutoIndex &other) {
+	if (this != &other) {
+		autoindex_format = other.autoindex_format;
+		autoindex_time = other.autoindex_time;
+		autoindex_exact_size = other.autoindex_exact_size;
+	}
+	return *this;
+}
 
 AutoIndex::AutoIndex( format f, boolean bt, boolean bs ) :
 	autoindex_format(f), autoindex_time(false), autoindex_exact_size(false) {

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "CheckFile.hpp"
+#include "../includes/CheckFile.hpp"
 
 CheckFile::CheckFile( void ) { }
 
@@ -19,6 +19,21 @@ CheckFile::CheckFile( const char *filename_ ) : filename(filename_) { }
 CheckFile::CheckFile( const std::string &filename_ ) : filename(filename_.c_str()) { }
 
 CheckFile::~CheckFile( void ) { }
+
+CheckFile::CheckFile(const CheckFile &other) {
+	*this = other;
+}
+
+CheckFile& CheckFile::operator=(const CheckFile &other) {
+	if (this != &other) {
+		filename = other.filename;
+		type = other.type;
+		acessiblity = other.acessiblity;
+		filesize = other.filesize;
+		timeinfo = other.timeinfo;
+	}
+	return *this;
+}
 
 void	CheckFile::checking( void ) {
 	checking(F_OK | W_OK | R_OK | X_OK);
