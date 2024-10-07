@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 19:15:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/08 03:13:41 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,9 @@ class InfoBlock {
 		bool				isIndex( const std::string &str ) const;
 		bool				ifModifySince( void ) const;
 		bool				isEtag( void ) const;
+		format				getAutoFormat( void ) const;
+		boolean				getAutoSize( void ) const;
+		boolean				getAutoTimeFormat( void ) const;
 
 	protected:
 		std::string						empty;

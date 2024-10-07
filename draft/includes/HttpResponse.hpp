@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 16:40:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/08 03:16:43 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ class HttpResponse : Http {
 		void	setHeader( int status, const std::string & = std::string() );
 		void	setContent( const std::string &type, uint64_t len );
 		void	addBody( const std::string &str );
+
+		size_t	getBodyLength( void ) const; // empty
 
 	private:
 		int			status;

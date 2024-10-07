@@ -3,14 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 17:57:53 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/08 03:36:45 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "Server.hpp"
+#include "AutoIndex.hpp"
+#include "DefaultErrorPage.hpp"
 
 Client::Client( void ) : socket_fd(-1), content_fd(-1) { }
 
@@ -124,10 +127,28 @@ bool	Client::fetchContentFd( void ) {
 
 void	Client::processReponseSucess( void ) {
 	if (is_directory) {
-		// make autoindex
+		AutoIndex	gen(server_ref->getAutoFormat(), server_ref->getAutoTimeFormat(), server_ref->getAutoSize());
+		reponse.addBody(gen.generateResource(content_name));
+		length = reponse.getBodyLength();
+		reponse.setContent("", length);
+		return ;
 	}
 	// check if cgi
 	// is_cgi = true;
+	content_fd = open(content_name.c_str(), O_RDONLY);
+	if (content_fd < 0) {
+		status_code = 500;
+		processReponseError();
+		return ;
+	}
+	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
+		close(content_fd);
+		content_fd = -1;
+		status_code = 500;
+		processReponseError();
+		return ;
+	}
+	reponse.setContent("", length);
 }
 
 void	Client::processReponseRedirect( void ) {
@@ -144,10 +165,21 @@ void	Client::processReponseError( void ) {
 		if (!content_name.length())
 			server_ref->findErrorPath(content_name, status_code);
 	}
-	if (!content_name.length()) {
-		fetch_content = false;
-		// add default to http
+	if (content_name.length()) {
+		CheckFile	check(content_name);
+		check.checking(F_OK | R_OK);
+		if (check.getAccessbility() < 0) {
+			goto default_html;
+			return ;
+		}
+		fetch_content = true;
+		reponse.setContent("", check.getFilesize());
+		return ;
 	}
+	default_html:
+	reponse.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
+	length = reponse.getBodyLength();
+	reponse.setContent("", length);
 }
 
 void	Client::routeRequest( void ) {

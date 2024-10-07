@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 15:17:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/08 03:22:23 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,14 +81,14 @@ void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool aut
 	CheckFile	file_info(uri);
 	file_info.checking(F_OK | R_OK);
 	if (file_info.getAccessbility() < 0) {
-		client.addResource(404);
+		client.addContent(404);
 		return ;
 	}
 	if (file_info.getType() == directory) {
 		if (uri[uri.length() - 1] != '/') {
 			std::string	buffer(uri);
 			buffer += '/';
-			client.addResource(308, buffer);
+			client.addContent(308, buffer);
 			return ;
 		}
 		if (autoindex_) {
@@ -99,17 +99,17 @@ void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool aut
 			std::string	buffer(uri);
 			buffer += *it;
 			if (matchUriSingle(buffer)) {
-				client.addResource(200, buffer);
+				client.addContent(200, buffer, file_info.getFilesize());
 			}
 		}
-		client.addResource(404);
+		client.addContent(404);
 		return ;
 	}
 	if (file_info.getType() != file || file_info.getType() != systemlink) {
-		client.addResource(403);
+		client.addContent(403);
 		return ;
 	}
-	client.addResource(200, uri);
+	client.addContent(200, uri, file_info.getFilesize());
 }
 
 void	InfoBlock::matchUri( Client &client, const std::string &uri, bool autoindex_ ) const {
@@ -134,7 +134,7 @@ void	InfoBlock::matchUri( Client &client, const std::string &uri, bool autoindex
 	}
 	const std::string &str = *end;
 	if (str[0] == '=') {
-		client.addResource(::atoi(str.c_str() + 1));
+		client.addContent(::atoi(str.c_str() + 1));
 		return ;
 	}
 	buffer = root + '/';

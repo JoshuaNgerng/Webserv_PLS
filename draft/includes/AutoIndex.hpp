@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndex.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:31:26 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 19:30:44 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/08 03:07:21 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,13 +37,12 @@ private:
 	bool	autoindex_time;
 	bool	autoindex_exact_size;
 
-	std::string	generateHtml( DIR *dir ) const;
+	std::string	generateHtml( DIR *dir, const char *dirname ) const;
 	std::string	generateXml( DIR *dir ) const;
 	std::string	generateJson( DIR *dir ) const;
 
 	static const char *template_html;
 	static const char *template_xml;
-	static const char *template_json;
 };
 
 #endif

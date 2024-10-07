@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DefaultErrorPage.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 00:09:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 01:44:47 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/08 03:27:36 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ class DefaultErrorPage
 {
 public:
 	DefaultErrorPage( void );
-    DefaultErrorPage(const DefaultErrorPage &other);
-    DefaultErrorPage& operator=(const DefaultErrorPage &other);
+    DefaultErrorPage( const DefaultErrorPage &src );
+    DefaultErrorPage& operator=( const DefaultErrorPage &src );
 	~DefaultErrorPage( void );
 	static std::string	generateHtml( int status, const char *server_name );
 private:
