@@ -3,67 +3,53 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/15 14:41:12 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 03:02:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../incluldes/Server.hpp"
+
+const char *Server::server_name = NULL;
 
 Server::Server( void ) { }
 
-Server::Server( const Server &src ) { *this = src; }
+// Server::Server( const Server &src ) :
 // 	server_no(src.server_no), client_limit(src.client_limit),
 // 	server_fds(src.server_fds), client_fds(src.client_fds),
 // 	server_info(src.server_info) { }
 
-Server::~Server( void ) { }
+Server::Server( const Server &src ) {
+	*this = src;
+}
 
 Server&	Server::operator=( const Server &src )
 {
 	if (this == &src)
 		return (*this);
 	server_no = src.server_no;
-	socket_fds = src.socket_fds;
-	buffer_new_fd = src.buffer_new_fd;
-	server_mapping = src.server_mapping;
-	client_mapping = src.client_mapping;
+	client_limit = src.client_limit;
+	server_fds = src.server_fds;
+	client_fds = src.client_fds;
 	server_info = src.server_info;
-	client_info = src.client_info;
 	return (*this);
 }
 
-int	Server::setListeningSocket( const sockaddr_in_t &addr, int socket_type, int socket_protocol ) {
-	int	fd = socket(addr.sin_family, socket_type, socket_protocol);
-	if (fd < 0) {
-		goto error; // cant set socket
-	}
-	if (bind(fd, (sockaddr *)&addr, socklen) < 0) {
-		// std::cout << "bind failed\n";
-		goto clear_fd; // bind failed
-	}
-	if (listen(fd, backlog_limit) < 0) {
-		// std::cout << "listen failed\n";
-		goto clear_fd; // listen failed
-	}
-	return (fd);
-	clear_fd:
-		close(fd);
-	error:
-		return (-1);
-}
+Server::~Server( void ) { }
 
-bool	Server::checkBufferfds( void ) const {
-	if (buffer_counter == buffer_new_fd.size()) {
-		return (false); // too many fds in buffer
-	}
-	if (fd_counter == server_limit) {
-		return (false); // too many fds in server
-	}
-	return (true);
-}
+// Server&	Server::operator=( const Server &src )
+// {
+// 	if (this == &src)
+// 		return (*this);
+// 	server_no = src.server_no;
+// 	client_limit = src.client_limit;
+// 	server_fds = src.server_fds;
+// 	client_fds = src.client_fds;
+// 	server_info = src.server_info;
+// 	return (*this);
+// }
 
 void	Server::addBufferfds( int fd ) {
 	if (fd < 0)
@@ -74,129 +60,76 @@ void	Server::addBufferfds( int fd ) {
 }
 
 void	Server::setupSocketfds( void ) {
-	typedef std::vector<ServerBlock>::iterator iter;
+	typedef std::vector<ServerInfo>::iterator			iter;
+	typedef std::vector<ListenSocket>::const_iterator	iter2;
+	pollfd_t	pollfd;
+	pollfd.fd = -1;
+	pollfd.events = POLLIN;
+	pollfd.revents = 0;
 	server_no = 0;
 	for (iter it = server_info.begin(); it != server_info.end(); it ++) {
-		server_no += it->listen.size();
+		int	counter = 0;
+		for (iter2 it2 = it->listenBegin(); it2 != it->listenEnd(); it2 ++) {
+			for (addrinfo_ptr it3 = it2->begin(); it3 != it2->end(); it3 ++) {
+				pollfd.fd = it2->addListenFd(it3);
+				if (pollfd.fd < 0) {
+					return ; // error?
+				}
+				socket_fds.push_back(pollfd);
+				socketfd_mapping.push_back(it3);
+				counter ++;
+			}	
+		}
+		server_mapping.insert(server_mapping.end(), counter, it);
+		server_no += counter;
 	}
 	fd_counter = server_no;
-	poll_tracker = fd_counter;
-	long	upper_limit = (server_no + 1) * backlog_limit + server_no;
-	if (upper_limit > UINT_MAX)
-		server_limit = UINT_MAX;
-	else
-		server_limit = upper_limit;
-	poll_tracker = server_no;
-	pollfd_t	socket_fd;
-	socket_fd.fd = -1;
-	socket_fd.events = POLLIN;
-	socket_fds.insert(socket_fds.end(), server_limit, socket_fd);
-	buffer_new_fd.insert(buffer_new_fd.end(), server_no * 2, socket_fd);
+	poll_tracker = fd_counter;	
+	server_limit = socket_fds.max_size();
+	if (server_limit > ULONG_MAX)
+		server_limit = ULONG_MAX;
 }
 
-void	Server::resetFds( void )
-{
-	// Move valid fds to the front
-	nfds_t i = 0; // use this to loop through socket_fds array
-	nfds_t valid_index = 0; // use this to place it at the front
-	while (i < poll_tracker)
-	{
-		if (socket_fds[i].fd > -1)
-		{
-			if (i != valid_index)
-				std::swap(socket_fds[i], socket_fds[valid_index]);
-			valid_index++;
+void	Server::resetFds( void ) {
+	nfds_t	i = 0;
+	nfds_t	buffer_index = 0;
+	for (i = 0; i < poll_tracker; i ++) {
+		if (socket_fds[i].fd > -1) {
+			continue ;
 		}
-		i++;
-	}
-
-	// Add new fds from buffer to the end of socket_fds
-	nfds_t buffer_index = 0; // use this to loop through buffer array
-	while (buffer_index < buffer_counter && valid_index < socket_fds.size())
-	{
-		if (buffer_new_fd[buffer_index].fd > -1)
-		{
-			socket_fds[valid_index] = buffer_new_fd[buffer_index];
-			valid_index++;
+		if (buffer_index < buffer_counter) {
+			std::swap(buffer_new_fd[buffer_index], socket_fds[i]);
+			buffer_index ++;
 		}
-		buffer_index++;
+		else {
+			for (nfds_t empty = i; empty < poll_tracker; empty ++) {
+				if (socket_fds[empty].fd > -1) {
+					std::swap(socket_fds[empty], socket_fds[i]);
+					break ;
+				}
+			}
+		}		
 	}
-
-
-	// Reset buffer counter and poll tracker
+	for (; buffer_index < buffer_counter; buffer_index ++) {
+		while (i < server_limit)
+		{
+			if (socket_fds[i].fd == -1)
+				break ;
+			i ++;
+		}
+		std::swap(socket_fds[i], buffer_new_fd[buffer_index]);
+	}
 	buffer_counter = 0;
 	poll_tracker = fd_counter;
 }
 
-// void	Server::resetFds( void ) {
-// 	nfds_t	i = 0;
-// 	nfds_t	buffer_index = 0;
-// 	for (i = 0; i < poll_tracker; i ++) {
-// 		if (socket_fds[i].fd > -1) {
-// 			continue ;
-// 		}
-// 		if (buffer_index < buffer_counter) {
-// 			std::swap(buffer_new_fd[buffer_index], socket_fds[i]);
-// 			buffer_index ++;
-// 		}
-// 		else {
-// 			for (nfds_t empty = i; empty < poll_tracker; empty ++) {
-// 				if (socket_fds[empty].fd > -1) {
-// 					std::swap(socket_fds[empty], socket_fds[i]);
-// 					break ;
-// 				}
-// 			}
-// 		}		
-// 	}
-// 	for (; buffer_index < buffer_counter; buffer_index ++) {
-// 		while (i < server_limit)
-// 		{
-// 			if (socket_fds[i].fd == -1)
-// 				break ;
-// 			i ++;
-// 		}
-// 		std::swap(socket_fds[i], buffer_new_fd[buffer_index]);
-// 	}
-// 	buffer_counter = 0;
-// 	poll_tracker = fd_counter;
-// }
-
-void	Server::setupServer( void ) {
-	setupSocketfds();
-	typedef std::vector<ServerBlock>::iterator ServerIter;
-	typedef std::vector<Socket>::iterator SocketIter;
-	size_t	index = 0;
-	for (ServerIter it = server_info.begin(); it != server_info.end(); it ++) {
-		// std::cout << "huh"<< it->listen.size() << "\n";
-		for (SocketIter addr_it = it->listen.begin();
-			addr_it != it->listen.end(); addr_it ++) {
-			socket_fds[index].fd = setListeningSocket(addr_it->refAddress(),
-						socket_type, socket_protocol);
-			// std::cout << "check server fd: " << socket_fds[index].fd;
-			if (fcntl(socket_fds[index].fd, F_SETFL, fcntl_flag) < 0) {
-				close(socket_fds[index].fd);
-				return ; // error cant set fl for fd
-			}
-			server_mapping.push_back(it);
-			index ++;
-		}
-	}
-}
-
-void	Server::getNewConnection( int fd, serverblock_ptr &it ) {
+void	Server::getNewConnection( int fd, serverinfo_ptr &it ) {
 	if (!checkBufferfds())
 		return ;
 	Client	buffer(it);
-	int fd_client = accept(fd, (sockaddr_t *)&buffer.changeAddress(),
-			&buffer.getSocklen());
-	if (fd_client < 0) {
+	if (buffer.clientSocketFd(fd) < 0) {
 		return ; // cant get
 	}
-	if (fcntl(fd_client, F_SETFL, fcntl_flag) < 0) {
-		close(fd_client);
-		return ; // error cant set fl for fd
-	}
-	buffer.setSocketFd(fd);
 	client_info.push_back(buffer);
 	client_mapping[fd] = -- client_info.end();
 	addBufferfds(fd);
@@ -359,7 +292,7 @@ void	Server::loopServer( void ) {
 
 void	Server::startServerLoop( int *signal ) {
 	if (!socket_fds.size()) {
-		setupServer();
+		setupSocketfds();
 	}
 	if (!server_no) {
 		// std::cout << "no servers lulz\n";
@@ -375,7 +308,7 @@ void	Server::startServerLoop( void ) {
 	startServerLoop(&fix);
 }
 
-void	Server::addServerBlock( ServerBlock &ref ) {
+void	Server::addServerInfo( ServerInfo &ref ) {
 	server_info.push_back(ref);
 }
 
@@ -464,22 +397,4 @@ std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
 	o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
 	o << "Servers info\n" << ref.displayServerInfo(o) << '\n';
 	return (o);
-}
-
-void	Server::resetServer( void )
-{
-	swap_clear(socket_fds);
-	swap_clear(buffer_new_fd);
-	swap_clear(server_mapping);
-	swap_clear(client_mapping);
-	swap_clear(server_info);
-	swap_clear(client_info);
-}
-
-void	Server::testAlloc( void )
-{
-	socket_fds.reserve(10);
-	buffer_new_fd.reserve(100);
-	ServerBlock	server;
-	server_info.insert(server_info.end(), 10, server);
 }

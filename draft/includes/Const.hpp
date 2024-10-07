@@ -3,30 +3,31 @@
 /*                                                        :::      ::::::::   */
 /*   Const.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/15 14:37:40 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/02 02:42:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONST_HPP
 # define CONST_HPP
 # include <iostream>
-// # include <ostream>
 # include <fstream>
 # include <istream>
 # include <sstream>
 # include <string>
 # include <cstring>
 # include <cstdlib>
+# include <ctime>
 # include <exception>
+# include <stdexcept>
 # include <list>
 # include <vector>
+# include <queue>
 # include <map>
 # include <utility>
 # include "cheader.h"
-# include "ParsingError.hpp"
 
 #define RESET		"\033[0m"
 #define BOLDCYAN	"\033[1m\033[36m"
@@ -35,6 +36,12 @@
 #define BOLDBLUE	"\033[1m\033[34m"
 #define BOLDRED		"\033[1m\033[31m"
 #define BOLDMAGENTA	"\033[1m\033[35m"
+
+enum boolean {
+	undefined,
+	on,
+	off
+};
 
 /**
  * @brief	creating std::to_string in c++98
@@ -111,15 +118,42 @@ std::ostream&	displayContainer( std::ostream &o, const T &ref, const std::string
 	return (o);
 }
 
-template< typename T >
-void	swap_clear( T &src )
+template< class T >
+std::ostream&	displayContainer( std::ostream &o, const T &ref, const char *end ) {
+	for (typename T::const_iterator it = ref.begin(); it != ref.end(); it ++) {
+		o << *it << end;
+	}
+	return (o);
+}
+
+template <typename T>
+void	swap_clear(T &a)
 {
 	T	buffer;
-	std::swap(buffer, src);
+	std::swap(a, buffer);
 }
 
 int		ft_strncpy(const char *s1, const char *s2, size_t n);
 size_t	ft_strstr(const char *haystack, const char *needle);
+
+template< class C >
+class Display {
+	typedef std::ostream& (C::*display_func)( std::ostream &o ) const; 
+	public:
+		Display( const C &src, display_func display_ ) : class_ptr(&src), display(display_) { }
+		~Display( void ) { }
+		const C			*class_ptr;
+		display_func	display;
+	private:
+		Display( void ) { }
+		Display( const Display &src ) : class_ptr(src.class_ptr) { }
+		Display&	operator=( const Display &src ) { class_ptr = src.class_ptr; return (*this); }
+};
+
+template< class C >
+std::ostream&	operator<<( std::ostream &o, const Display<C> &d ) {
+	return (d->class_ptr->*d->display(o));
+}
 
 // class out_of_range : public std::exception {
 // 	private:
