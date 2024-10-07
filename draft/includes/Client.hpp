@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 11:59:59 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 01:06:56 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Client {
 		~Client( void );
 
 		Client&	operator=( const Client &src );
-		// Client&	operator=( const std::vector<Location>::const_iterator &it );
+		Client&	operator=( const std::vector<Location>::const_iterator &it );
 
 		int					clientSocketFd( int fd );
 		int					findResource( void );
@@ -49,7 +49,8 @@ class Client {
 		// size_t				getBytesSent( void ) const;
 
 
-		std::vector<ServerInfo>::iterator	getServerRef( void ) const;
+		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;
+		std::vector<Location>::const_iterator	getLocationRef( void ) const;
 		std::map<int, client_ptr>::iterator	getSocketRef( void ) const;
 		std::map<int, client_ptr>::iterator	getReponseRef( void ) const;
 
@@ -66,6 +67,7 @@ class Client {
 		int					socket_fd;
 		int					resource_fd;
 		std::string			resource_name;
+		bool				have_resource;
 		int					status_code;
 
 		/* http related info + data info */

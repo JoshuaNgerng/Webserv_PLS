@@ -6,11 +6,11 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/30 23:31:12 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/06 23:11:07 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/HttpRequest.hpp"
+#include "HttpRequest.hpp"
 
 HttpRequest::HttpRequest( void ) { }
 
@@ -231,4 +231,11 @@ bool	HttpRequest::validateBody( void ) {
 	fail:
 		valid_header = false;
 		return (false);
+}
+
+void	HttpRequest::normalizeUri( void ) {
+    size_t pos = 0;
+    while ((pos = uri.find("//", pos)) != std::string::npos) {
+        uri.replace(pos, 2, "/");
+    }
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/02 10:46:07 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 00:58:16 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include "Client.hpp"
 
 enum if_modify_level {
-	undefined,
+	undefined_,
 	off_,
 	exact,
 	before
@@ -36,6 +36,7 @@ class InfoBlock {
 		InfoBlock& operator=( const InfoBlock &src );
 		virtual ~InfoBlock( void );
 
+		bool	findErrorPath( std::string &str, int status ) const;
 		void	matchUri( Client &client, const std::string &uri, bool autoindex ) const;
 		virtual void	reset( void );
 

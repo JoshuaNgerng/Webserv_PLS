@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 12:13:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 01:01:29 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/InfoBlock.hpp"
+#include "InfoBlock.hpp"
 
 InfoBlock::InfoBlock( void ) {}
 
@@ -50,7 +50,7 @@ void	InfoBlock::reset( void ) {
 	access_log.second = 0;
 	error_log.first.clear();
 	error_log.second = 0;
-	if_modify_since = if_modify_level::undefined;
+	if_modify_since = if_modify_level::undefined_;
 	root.clear();
 	client_body_timeout = 0;
 	client_max_body_size = 0;
@@ -137,6 +137,13 @@ void	InfoBlock::matchUri( Client &client, const std::string &uri, bool autoindex
 	matchUriSingle(client, buffer, autoindex_);
 }
 
+bool	InfoBlock::findErrorPath( std::string &str, int status ) const {
+	str = getErrorPagePath(status);
+	if (!str.length())
+		return (false);
+	return (true);
+}
+
 /* setters */
 void	InfoBlock::addIndex( const std::string &add ) { index.push_back(add); }
 
@@ -202,5 +209,3 @@ const std::string&	InfoBlock::getErrorPagePath( short status ) const {
 		return (empty);
 	return (pos->second);
 }
-
-

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 10:38:35 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 01:11:03 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,12 @@ class ServerInfo : public InfoBlock {
 		void	setMergeSlash( bool opt );
 		void	addLocation( const Location &add );
 
-		size_t	getListenSize( void ) const;
-		std::vector<ListenSocket>::const_iterator&	listenBegin( void ) const;
-		std::vector<ListenSocket>::const_iterator&	listenEnd( void ) const;
+		bool	isMergeSlash( void ) const;
+
+		// size_t	getListenSize( void ) const;
+		// std::vector<ListenSocket>::const_iterator&	listenBegin( void ) const;
+		// std::vector<ListenSocket>::const_iterator&	listenEnd( void ) const;
+		std::vector<Location>::const_iterator	getLocEnd( void ) const;
 		void	matchUri( Client &client ) const;
 
 	private:

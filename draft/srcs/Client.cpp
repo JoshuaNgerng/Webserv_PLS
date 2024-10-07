@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 12:00:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 01:16:47 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Client.hpp"
+#include "Client.hpp"
 
 Client::Client( void ) { }
 
@@ -47,15 +47,10 @@ Client& Client::operator=(const Client &other) {
 
 Client::~Client( void ) { }
 
-// Client&	Client::operator=( const Client &src ) {
-// 	if (this == &src)
-// 		return (*this);
-// 	// server_ref = src.server_ref; socket_fd = src.socket_fd;
-// 	// socket_addr = src.socket_addr; len = src.len; request_header = src.request_header;
-// 	// request_body = src.request_body; response = src.response; bytes_sent = src.bytes_sent;
-// 	// got_header = src.got_header; got_body = src.got_body; finish_response = src.finish_response;
-// 	return (*this);
-// }
+Client&	Client::operator=( const std::vector<Location>::const_iterator &it ) {
+	location_ref = it;
+	return (*this);
+}
 
 int	Client::clientSocketFd( int listen_fd ) {
 	socket_fd = accept(listen_fd, (sockaddr_t *)(&client_addr), &len);
@@ -101,14 +96,33 @@ bool	Client::clientRecv( void ) {
 }
 
 void	Client::routeRequest( void ) {
-	const HttpRequest &req = requests.front();
+	HttpRequest &req = requests.front();
+	if (server_ref->isMergeSlash()) {
+		req.normalizeUri();
+	}
 	if (!req.getValidHeader()) {
 		status_code = 500;
 	} else {
 		server_ref->matchUri(*this);
 	}
+	if (is_directory) {
+		// make default autoindex
+		have_resource = false;
+		return ;
+	} // check if cgi here
 	if (status_code > 399) {
-		;
+		if (location_ref == server_ref->getLocEnd()) {
+			server_ref->findErrorPath(resource_name, status_code);
+		}
+		else {
+			location_ref->findErrorPath(resource_name, status_code);
+			if (!resource_name.length())
+				server_ref->findErrorPath(resource_name, status_code);
+		}
+		if (!resource_name.length()) {
+			have_resource = false;
+			// add default to http
+		}
 	}
 }
 
@@ -136,9 +150,13 @@ void	Client::addDir( const std::string &str ) {
 	status_code = 200;
 }
 
-// std::vector<ServerInfo>::iterator	Client::getServerRef( void ) const {
-// 	return(server_ref);
-// }
+std::vector<ServerInfo>::const_iterator	Client::getServerRef( void ) const {
+	return (server_ref);
+}
+
+std::vector<Location>::const_iterator	Client::getLocationRef( void ) const {
+	return (location_ref);
+}
 
 bool	Client::checkHttpResponse( void ) const {
 	if (status_code >= 300) {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 11:24:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 01:11:22 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ void	ServerInfo::setClientHeaderTimeout( uint64_t time ) { client_header_timeout
 
 void	ServerInfo::setMergeSlash( bool opt ) { merge_slash = opt; }
 
+bool	ServerInfo::isMergeSlash( void ) const { return (merge_slash); }
+
 void	ServerInfo::matchUri( Client &client ) const {
 	typedef std::vector<Location>::const_iterator iter;
 	const std::string	&uri = client.getCurrentUri();
@@ -65,6 +67,10 @@ void	ServerInfo::matchUri( Client &client ) const {
 		ptr->matchUri(client, uri, b);
 	}
 	InfoBlock::matchUri(client, client.getCurrentUri(), b);
+}
+
+std::vector<Location>::const_iterator	ServerInfo::getLocEnd( void ) const {
+	return (location.end());
 }
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
@@ -88,12 +94,3 @@ std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
 	o << '\n';
 	return (o);
 }
-
-// std::string	ServerInfo::testHTML( void ) {
-// 	std::string	msg = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
-// 	std::string	html = "<html><h1>Hello world</h1></html?";
-// 	msg.append(to_String(html.size()));
-// 	msg.append("\n\n");
-// 	msg.append(html);
-// 	return (msg);
-// }
