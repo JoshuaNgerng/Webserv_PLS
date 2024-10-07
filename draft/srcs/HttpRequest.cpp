@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/06 23:11:07 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/07 20:21:07 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest( void ) { }
+HttpRequest::HttpRequest( void )
+	: valid_header(false), has_body(false), finished_request(false) {}
 
 HttpRequest::HttpRequest( const HttpRequest &src ){
 	*this = src;
@@ -127,14 +128,19 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	uri = start.substr(j, i - j);
 	i ++;
 	j = i;
-	for (; i < start.length(); i ++) {
+	for (; i < start.length() - 1; i ++) {
 		if (start[i] == ' ')
 			break ;
 	}
 	if (j == i)
 		return (false);
-	protocol = start.substr(j, i - j); // need validation
-	i ++;
+	protocol = start.substr(j, i - j); // extract protocol, validation is on line 140
+	// i ++;
+
+	// Check if the protocol is valid
+	if (protocol != "HTTP/1.1")
+		return (false);
+
 	if (start[i] != '\r' || i != start.length() - 1) {
 		return (false);
 	}
@@ -144,11 +150,16 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 bool	HttpRequest::addHeaderFields( const std::string &field, const std::string &val ) {
 	typedef std::map<std::string, std::string>::iterator iter;
 	iter it = header_fields.find(field);
+
+
 	if (it == header_fields.end()) {
 		header_fields[field] = val;
 		return (true);
+
 	}
-	if (field == methods[COOKIE] || field == methods[CACHE]) {
+	if (field == fields[COOKIE] || field == fields[CACHE]) {
+		std::cout << "hi\n";
+		std::cout << field << "\n";
 		it->second += "; ";
 		it->second += val;
 		return (true);
@@ -175,7 +186,7 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 			return (false);
 		}
 		buffer_field = token.substr(0, pos);
-		if (normalizeString(buffer_field)) {
+		if (!normalizeString(buffer_field)) {
 			return (false);
 		}
 		buffer_value = token.substr(pos + 1);
@@ -190,8 +201,8 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 			return (false);
 		}
 	}
-	token = ss.str();
-	if (token != "\r\n")
+	// token = ss.str();
+	if (token != "\r")
 		return (false);
 	return (true);
 }

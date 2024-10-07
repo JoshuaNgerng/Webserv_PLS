@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/02 01:42:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 17:18:10 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,17 +36,17 @@ const Http::t_pairs	*Http::pairing = (t_pairs []) {
 	{999, NULL}
 };
 
-const char *const *Http::methods = (char *[]) {
+const char *const *Http::methods = (const char *[]) {
 	"GET", "POST", "PUT", "DELETE", NULL
 };
 
-const char *const *Http::fields = (char *[]) {
+const char *const *Http::fields = (const char *[]) {
 	"host", "user-agent", "accept", "accept-language", "accept-encoding",
 	"connection", "referer", "cookie", "cache-control", "content-type",
 	"content-length", NULL
 };
 
-const char *const *Http::types = (char *[]) {
+const char *const *Http::types = (const char *[]) {
 	"text/plain", "text/html", "application/octet-stream", NULL
 };
 

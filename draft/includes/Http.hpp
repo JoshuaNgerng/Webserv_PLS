@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/02 01:34:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 19:16:58 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,14 @@ class Http {
 			JPEG, PNG, OCTECT
 		};
 		Http( void );
+		Http& operator=(const Http &src);
 		Http( const Http &src );
 		virtual ~Http( void );
 		static const char	*fetchMsg( int status );
 
 	protected:
 		static const char *const	*methods;
+		static const char *const	*fields;
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;
@@ -71,7 +73,7 @@ class Http {
 
 	private:
 		static const t_pairs 		*pairing;
-		static const char *const	*fields;
+		// static const char *const	*fields;
 		static const char *const	*types;
 };
 
