@@ -6,7 +6,7 @@
 /*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/07 17:03:12 by ychng             #+#    #+#             */
-/*   Updated: 2024/10/07 20:32:07 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/07 20:37:12 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ void missing_start_line();
 
 void invalid_header();
 void duplicate_headers();
+void line_continuation_header();
 
 void request_with_multiple_methods();
 void request_with_trailing_space();
@@ -42,7 +43,7 @@ void request_with_trailing_space();
 // Erros
 void missing_host_header();
 void invalid_host_header();
-void line_continuation_header();
+void valid_post_request();
 
 int main()
 {
@@ -73,6 +74,7 @@ int main()
 	// Erros
 	missing_host_header();
 	invalid_host_header();
+	valid_post_request();
 }
 
 void valid_get_request()
@@ -223,4 +225,10 @@ void invalid_host_header()
 {
     HttpRequest request;
     assert(request.addRequest("GET /index.html HTTP/1.1\r\nHost: :example.com\r\n\r\n") == std::string::npos);
+}
+
+void valid_post_request()
+{
+    HttpRequest request;
+    std::cout << request.addRequest("POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Type: text/plain\r\nContent-Length: 20\r\n\r\nThis is a test body.");
 }
