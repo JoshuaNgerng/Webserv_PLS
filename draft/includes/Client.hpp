@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 01:06:56 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/07 17:57:20 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,12 @@
 # include "HttpResponse.hpp"
 
 class Client {
-	typedef std::list<Client>::iterator	client_ptr;
+	typedef std::list<Client>::const_iterator		client_ptr;
+	typedef std::vector<ServerInfo>::const_iterator	server_ptr;
+	typedef std::vector<Location>::const_iterator	loc_ptr;
 	public:
 		Client( void );
-		Client( std::vector<ServerInfo>::iterator &it );
+		Client( server_ptr &it );
 		Client( const Client &src );
 		~Client( void );
 
@@ -28,17 +30,17 @@ class Client {
 		Client&	operator=( const std::vector<Location>::const_iterator &it );
 
 		int					clientSocketFd( int fd );
-		int					findResource( void );
 		bool				clientRecv( void );
 		bool				checkReponse( void );
 		void				routeRequest( void );
-		void				addResource( int status_code,
-										const std::string &str = std::string());
+		void				addContent( int status_code,
+										const std::string &str = std::string(),
+										size_t	content_length = 0 );
 		void				addDir( const std::string &str );
 
 		/* getters */
 		int					clientSocketFd( void ) const;
-		int					getResourceFd( void ) const;
+		int					getContentFd( void ) const;
 		const std::string&	getCurrentUri( void ) const;
 		bool				checkHttpResponse( void ) const;
 		bool				requestReady( void ) const;
@@ -58,30 +60,37 @@ class Client {
 		static const int	recv_flag = 0;
 		static const int	send_flag = 0;
 		static const size_t	recv_buffer_size = 8192;
-		/* server related info + data fd*/
-		std::vector<ServerInfo>::const_iterator	server_ref;
-		std::vector<Location>::const_iterator	location_ref;
+		/* servtrer related info + data fd*/
+		server_ptr	server_ref;
+		loc_ptr		location_ref;
 
 		sockaddr_storage_t	client_addr;
 		socklen_t			len;
 		int					socket_fd;
-		int					resource_fd;
-		std::string			resource_name;
-		bool				have_resource;
+		int					content_fd;
+		std::string			content_name;
+		bool				fetch_content;
+		uint64_t			length;
 		int					status_code;
+		bool				is_directory;
+		bool				is_cgi;
+		bool				finish_response;
 
 		/* http related info + data info */
-		std::queue<HttpRequest>				requests;
-		HttpResponse						reponse;
-		time_t								start_connection;
-		size_t								no_request;
-		time_t								current_time;
-		time_t								empty_event;
-		size_t								bytes_sent;
-		bool								emergency_overwrite;
-		bool								is_directory;
-		bool								is_cgi;
-		bool								finish_response;
+		std::queue<HttpRequest>	requests;
+		HttpResponse			reponse;
+		time_t					start_connection;
+		size_t					no_request;
+		time_t					current_time;
+		time_t					empty_event;
+		size_t					bytes_sent;
+		bool					emergency_overwrite;
+		bool					completed;
+
+		void	processReponseSucess( void );
+		void	processReponseRedirect( void );
+		void	processReponseError( void );
+		bool	fetchContentFd( void );
 };
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref );

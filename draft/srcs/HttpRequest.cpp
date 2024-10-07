@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/06 23:11:07 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/07 13:53:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,8 +234,8 @@ bool	HttpRequest::validateBody( void ) {
 }
 
 void	HttpRequest::normalizeUri( void ) {
-    size_t pos = 0;
-    while ((pos = uri.find("//", pos)) != std::string::npos) {
-        uri.replace(pos, 2, "/");
-    }
+	size_t pos = 0;
+	while ((pos = uri.find("//", pos)) != std::string::npos) {
+		uri.replace(pos, 2, "/");
+	}
 }

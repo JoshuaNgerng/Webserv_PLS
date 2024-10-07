@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/02 01:42:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 19:14:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Http.hpp"
+#include "Http.hpp"
 
 const Http::t_pairs	*Http::pairing = (t_pairs []) {
 	{100, "Continue"}, {101, "Switching Protocols"}, {102, "Processing"}, {103, "Early Hints"},
@@ -84,4 +84,15 @@ int	Http::checkField( const std::string &str ) const {
 
 int	Http::checkType( const std::string &str ) const {
 	return (iterEnumStrcmp(TEXT, HTML, str, methods));
+}
+
+bool	Http::makeReponseHeader( std::string &str, int status ) const {
+	std::string	buffer = to_String(status) + ' ';
+	for (size_t i = 0; pairing[i].msg; i ++) {
+		if (status == pairing[i].status) {
+			str = buffer + pairing[i].msg;
+			return (true);
+		}
+	}
+	return (false);
 }

@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   EmbeddedVariable.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/02 05:07:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 19:14:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/EmbeddedVariable.hpp"
+#include "EmbeddedVariable.hpp"
 
 /*
 	arg_name,

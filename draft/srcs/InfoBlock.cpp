@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 01:01:29 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/07 15:17:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,9 @@ void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool aut
 	}
 	if (file_info.getType() == directory) {
 		if (uri[uri.length() - 1] != '/') {
-			client.addResource(308);
+			std::string	buffer(uri);
+			buffer += '/';
+			client.addResource(308, buffer);
 			return ;
 		}
 		if (autoindex_) {
@@ -99,13 +101,15 @@ void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool aut
 			if (matchUriSingle(buffer)) {
 				client.addResource(200, buffer);
 			}
-			client.addResource(403);
 		}
-	} else if (file_info.getType() != file || file_info.getType() != systemlink) {
-		client.addResource(403);
-	} else {
-		client.addResource(200, uri);
+		client.addResource(404);
+		return ;
 	}
+	if (file_info.getType() != file || file_info.getType() != systemlink) {
+		client.addResource(403);
+		return ;
+	}
+	client.addResource(200, uri);
 }
 
 void	InfoBlock::matchUri( Client &client, const std::string &uri, bool autoindex_ ) const {
@@ -118,10 +122,11 @@ void	InfoBlock::matchUri( Client &client, const std::string &uri, bool autoindex
 		return ;
 	}
 	iter end = -- try_files.end();
+	std::string	path;
+	path.reserve(root.length());
 	for (iter it = try_files.begin(); it != end; it ++) {
-		std::string	path(root);
 		EmbeddedVariable::resolveString(buffer, *it, client);
-		path += buffer;
+		path = root + buffer;
 		matchUriSingle(client, path, autoindex_);
 		if (client.checkHttpResponse())
 			return ;

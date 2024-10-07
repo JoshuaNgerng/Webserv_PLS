@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   CheckFile.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 04:20:43 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 19:14:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/CheckFile.hpp"
+#include "CheckFile.hpp"
 
 CheckFile::CheckFile( void ) { }
 

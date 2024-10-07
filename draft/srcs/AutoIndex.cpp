@@ -3,28 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndex.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 04:57:05 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 19:32:19 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/AutoIndex.hpp"
-#include "../includes/CheckFile.hpp"
+#include "AutoIndex.hpp"
+#include "CheckFile.hpp"
+
+const char *AutoIndex::template_html = NULL;
+
+const char *AutoIndex::template_xml = NULL;
+
+const char *AutoIndex::template_json = NULL;
 
 AutoIndex::AutoIndex( void ) :
 	autoindex_format(html), autoindex_time(false), autoindex_exact_size(true) { }
 
-AutoIndex::AutoIndex(const AutoIndex &other){
-	*this = other;
+AutoIndex::AutoIndex(const AutoIndex &src){
+	*this = src;
 }
 
-AutoIndex& AutoIndex::operator=(const AutoIndex &other) {
-	if (this != &other) {
-		autoindex_format = other.autoindex_format;
-		autoindex_time = other.autoindex_time;
-		autoindex_exact_size = other.autoindex_exact_size;
+AutoIndex& AutoIndex::operator=( const AutoIndex &src ) {
+	if (this != &src) {
+		autoindex_format = src.autoindex_format;
+		autoindex_time = src.autoindex_time;
+		autoindex_exact_size = src.autoindex_exact_size;
 	}
 	return *this;
 }
@@ -35,29 +41,25 @@ AutoIndex::AutoIndex( format f, boolean bt, boolean bs ) :
 		autoindex_time = true;
 	if (bs == on)
 		autoindex_time = true;
-}   
+}
 
 AutoIndex::~AutoIndex( void ) { }
 
-static bool	loopDir( DIR *dir, std::string &name, std::string &time, uint64_t &size ) {
+static int	iterDir( DIR *dir, std::string &name, std::string &time, uint64_t &size ) {
 	char	buffer[64];
 	struct dirent *entry = readdir(dir);
-	if (!entry)
-		return (false);
+	name.clear();
+	if (!entry) {
+		return (0);
+	}
 	name = entry->d_name;
-	if (name == "." || name == "..") {
-		while ((entry = readdir(dir)) != NULL) {
-			name = entry->d_name;
-			if (name != "." || name != "..")
-				break ;
-		}
-		if (!entry)
-			return (false);
+	if (name[0] == '.') {
+		return (-1);
 	}
 	CheckFile	file_info(name);
 	file_info.checking();
 	if (file_info.getType() == error) {
-		return (false);
+		return (-1);
 	}
 	size = file_info.getFilesize();
 	if (file_info.getType() == directory) {
@@ -66,7 +68,7 @@ static bool	loopDir( DIR *dir, std::string &name, std::string &time, uint64_t &s
 	size_t r = std::strftime(buffer, sizeof(buffer), "%b %d %H:%M", file_info.getTime());
 	buffer[r] = '\0';
 	time = buffer;
-	return (true);
+	return (1);
 }
 
 std::string	AutoIndex::generateHtml( DIR *dir ) const {

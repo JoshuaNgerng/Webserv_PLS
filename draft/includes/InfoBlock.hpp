@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 00:58:16 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/07 19:15:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class InfoBlock {
 	public:
 		InfoBlock( void );
 		InfoBlock( const InfoBlock &src );
-		InfoBlock& operator=( const InfoBlock &src );
+		InfoBlock&	operator=( const InfoBlock &src );
 		virtual ~InfoBlock( void );
 
 		bool	findErrorPath( std::string &str, int status ) const;

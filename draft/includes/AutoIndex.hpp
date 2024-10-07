@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndex.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:31:26 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 04:57:06 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 19:30:44 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,28 +14,36 @@
 # define AUTOINDEX_HPP
 # include "Const.hpp"
 
-enum auto_index_format {
+typedef enum auto_index_format {
 	undefined,
 	html,
 	xml,
 	json,
 	jsonp
-};
+}	format;
 
 class AutoIndex {
 public:
 	AutoIndex( void );
 	AutoIndex( format f, boolean bt, boolean bs );
-	AutoIndex(const AutoIndex &other);
-	AutoIndex& operator=(const AutoIndex &other);
+	AutoIndex( const AutoIndex &src );
+	AutoIndex& operator=(const AutoIndex &src);
 	~AutoIndex( void );
 	std::string generateResource( const std::string &dirname ) const;
 	std::string generateResource( const char *dirname ) const;
 
 private:
-	format autoindex_format;
-	boolean autoindex_time;
-	boolean autoindex_exact_size;
+	format	autoindex_format;
+	bool	autoindex_time;
+	bool	autoindex_exact_size;
+
+	std::string	generateHtml( DIR *dir ) const;
+	std::string	generateXml( DIR *dir ) const;
+	std::string	generateJson( DIR *dir ) const;
+
+	static const char *template_html;
+	static const char *template_xml;
+	static const char *template_json;
 };
 
 #endif

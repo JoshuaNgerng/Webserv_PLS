@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/02 01:34:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/07 15:41:43 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ class Http {
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;
 		int	checkType( const std::string &str ) const;
+	
+		bool	makeReponseHeader( std::string &str, int status ) const;
 
 		template < typename E >
 		int	iterEnum( E start, E end, int val ) const {
