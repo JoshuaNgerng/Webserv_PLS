@@ -3,47 +3,30 @@
 /*                                                        :::      ::::::::   */
 /*   EmbeddedVariable.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 19:14:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/16 08:44:26 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EmbeddedVariable.hpp"
 
-/*
-	arg_name,
-	args,
-	query_string,
-	content_length,
-	content_type,
-	document_root,
-	document_url,
-	host,
-	url,
-	remote_addr,
-	remote_port,
-	request_method,
-	scheme,
-	status
-*/
-
-const char	**EmbeddedVariable::variables = (char *[]) {
+const char	*EmbeddedVariable::variables[] = {
 	"arg_name", "args", "query_string", "content_length", "content_type",
 	"document_root", "document_url", "host", "url",
 	"remote_addr", "remote_port", "request_method",
 	"scheme", "status", NULL
 };
 
-const uint8_t	*EmbeddedVariable::shortform = (uint8_t []) {
+const uint8_t	EmbeddedVariable::shortform[] = {
 	arg_name, args, query_string, content_length, content_type, document_root,
 	document_url, host, url, remote_addr, remote_port, request_method,
 	scheme, status
 };
 
 static size_t   find_set( std::string &str, size_t pos ) {
-	static char *special = "/$";
+	static const char *special = "/$";
 	while (pos < str.length()) {
 		size_t iter = -1;
 		while (special[++ iter]) {
@@ -74,14 +57,15 @@ void	EmbeddedVariable::shortFormString( std::string &str ) {
 
 void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, const Client &client ) {
 	str.reserve(ref.length());
+	(void)client;
 	for (size_t i = 0; i < ref.length(); i ++) {
 		const std::string *val = NULL;
 		std::string	buffer;
-		if (ref[i] < 128) {
+		if (static_cast<unsigned char>(ref[i]) < 128) {
 			str += ref[i];
 			continue ;
 		}
-		switch (ref[i])
+		switch (static_cast<unsigned char>(ref[i]))
 		{
 		case arg_name:
 			/* code */
@@ -116,14 +100,7 @@ void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, 
 EmbeddedVariable::EmbeddedVariable( void ) { }
 
 EmbeddedVariable::EmbeddedVariable( const EmbeddedVariable &src ) {
-	*this = src;
-}
-
-EmbeddedVariable&	EmbeddedVariable::operator=( const EmbeddedVariable &src ) {
-	if (this != &src) {
-		(void)src;
-	}
-	return (*this);
+	(void)src;
 }
 
 EmbeddedVariable&	EmbeddedVariable::operator=( const EmbeddedVariable &src )

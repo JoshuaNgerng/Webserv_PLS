@@ -6,21 +6,18 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 01:11:22 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/22 22:43:44 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerInfo.hpp"
+#include "Client.hpp"
 
-// ServerInfo::ServerInfo( void ) : listen(), server_name(),
-// 	root(), client_max_body_size(ULONG_MAX), index(),
-// 	autoindex(false), error_page() { }
+ServerInfo::ServerInfo( void ) : InfoBlock() {}
 
-// ServerInfo::ServerInfo( const ServerInfo &src ) : listen(src.listen),
-// 	server_name(src.server_name), root(src.root),
-// 	client_max_body_size(src.client_max_body_size), index(src.index),
-// 	autoindex(src.autoindex), error_page(src.error_page), location(src.location)
-// 	{ }
+ServerInfo::ServerInfo( const ServerInfo &src ) : InfoBlock(src) {
+	*this = src;
+}
 
 ServerInfo::~ServerInfo( void ) { }
 
@@ -64,9 +61,17 @@ void	ServerInfo::matchUri( Client &client ) const {
 	client = ptr;
 	bool	b = (autoindex == on) ? true : false;
 	if (ptr != location.end()) {
-		ptr->matchUri(client, uri, b);
+		ptr->matchUri(client, b);
 	}
-	InfoBlock::matchUri(client, client.getCurrentUri(), b);
+	InfoBlock::matchUri(client, b);
+}
+
+std::vector<ListenSocket>::const_iterator	ServerInfo::listenBegin( void ) const {
+	return (listen_sockets.begin());
+}
+
+std::vector<ListenSocket>::const_iterator	ServerInfo::listenEnd( void ) const {
+	return (listen_sockets.end());
 }
 
 std::vector<Location>::const_iterator	ServerInfo::getLocEnd( void ) const {
@@ -74,6 +79,7 @@ std::vector<Location>::const_iterator	ServerInfo::getLocEnd( void ) const {
 }
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
+	(void)ref;
 	// typedef std::vector<ListenSocket>::const_iterator		sock_iter;
 	// typedef std::map<uint16_t, std::string>::const_iterator	error_iter;
 	o << "Listening on: ";

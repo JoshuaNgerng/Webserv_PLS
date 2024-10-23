@@ -6,7 +6,7 @@
 #    By: joshua <joshua@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/13 16:47:15 by jngerng           #+#    #+#              #
-#    Updated: 2024/09/13 11:27:00 by joshua           ###   ########.fr        #
+#    Updated: 2024/10/22 23:30:55 by joshua           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,9 @@ NAME = webserv
 SRC_DIR = srcs
 INC_DIR = includes
 OBJ_DIR = obj
-FILES = Const CheckFile Parse ParsingError Socket Server ServerInfo Client
+FILES = Const CheckFile Parse Server InfoBlock ServerInfo Location Client \
+		ListenSocket Http HttpRequest HttpResponse \
+		AutoIndex DefaultErrorPage EmbeddedVariable LimitExcept
 SRC = $(foreach item, $(FILES), $(SRC_DIR)/$(item).cpp)
 M_SRC = main
 OBJ = $(foreach item, $(FILES) $(M_SRC), $(OBJ_DIR)/$(item).o)

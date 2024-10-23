@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 16:37:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/22 23:31:46 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,23 @@
 
 HttpResponse::HttpResponse( void ) { }
 
+HttpResponse::HttpResponse( const HttpResponse &src ) : Http(src) { *this = src; }
+
 HttpResponse::HttpResponse( bool proxy_ ) : proxy(proxy_) { }
+
+HttpResponse::~HttpResponse( void ) { }
+
+HttpResponse&	HttpResponse::operator=( const HttpResponse &src ) {
+	if (this == &src) {
+		return (*this);
+	}
+	status = src.status;
+	header = src.header;
+	body = src.body;
+	proxy = src.proxy;
+	final = src.final;
+	return (*this);
+}
 
 void	HttpResponse::addField( std::string &str, const char *name, const std::string &val ) const {
 	str += name;
@@ -75,3 +91,23 @@ void	HttpResponse::setContent( const std::string &type, uint64_t len ) {
 }
 
 void	HttpResponse::addBody( const std::string &str ) { body += str; }
+
+void	HttpResponse::finishResponseMsg( void ) {
+	final = header + body;
+}
+
+void	HttpResponse::reset( void ) {
+	status = 0;
+	header.clear();
+	body.clear();
+	proxy = false;
+	final.clear();
+}
+
+size_t	HttpResponse::getBodyLength( void ) const { return (body.length()); }
+
+size_t	HttpResponse::getTotalLength( void ) const { return (final.length()); }
+
+const char*	HttpResponse::getPtrPos( size_t no_bytes_send ) const {
+	return (final.c_str() + no_bytes_send);
+}

@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/08 03:07:39 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/16 08:40:11 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,14 @@ AutoIndex& AutoIndex::operator=( const AutoIndex &src ) {
 		autoindex_exact_size = src.autoindex_exact_size;
 	}
 	return *this;
+}
+
+AutoIndex::AutoIndex( const InfoBlock &src ) {
+	autoindex_format = src.getAutoFormat();
+	if (src.getAutoTimeFormat() == on)
+		autoindex_time = true;
+	if (src.getAutoSize() == on)
+		autoindex_exact_size = true;
 }
 
 AutoIndex::AutoIndex( format f, boolean bt, boolean bs ) :
@@ -95,6 +103,7 @@ static std::string	makeHtmlList( int check, const std::string &name, const std::
 	} else {
 		buffer.insert(buffer.length(), 19, ' ').append("\n");
 	}
+	return (buffer);
 }
 
 std::string	AutoIndex::generateHtml( DIR *dir, const char *dirname ) const {
@@ -151,9 +160,9 @@ std::string	AutoIndex::generateXml( DIR *dir ) const {
 			buffer += fname;
 			buffer += "</directory>\n";
 		}
-		std::string buffer = makeHtmlList(check, fname, time, size);
-		out.insert(pos, buffer);
-		pos += buffer.length();
+		std::string temp = makeHtmlList(check, fname, time, size);
+		out.insert(pos, temp);
+		pos += temp.length();
 		check = iterDir(dir, fname, time, size);
 	}
 	return (out);
@@ -210,4 +219,14 @@ std::string	AutoIndex::generateResource( const char *dirname ) const {
 
 std::string	AutoIndex::generateResource( const std::string &dirname ) const {
 	return (generateResource(dirname.c_str()));
+}
+
+const char	*AutoIndex::getExtension( void ) const {
+	if (autoindex_format == html) {
+		return ("html");
+	}
+	if (autoindex_format == xml) {
+		return ("xml");
+	}
+	return ("json");
 }

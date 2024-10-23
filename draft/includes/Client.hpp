@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 17:57:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/22 20:31:54 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,9 @@ class Client {
 		Client&	operator=( const std::vector<Location>::const_iterator &it );
 
 		int					clientSocketFd( int fd );
-		bool				clientRecv( void );
-		bool				checkReponse( void );
-		void				routeRequest( void );
+		bool				clientRecvHttp( void );
+		bool				clientRecvContent( void );
+		bool				clientSendResponse( void );
 		void				addContent( int status_code,
 										const std::string &str = std::string(),
 										size_t	content_length = 0 );
@@ -41,9 +41,11 @@ class Client {
 		/* getters */
 		int					clientSocketFd( void ) const;
 		int					getContentFd( void ) const;
+		int					getSocketFd( void ) const;
 		const std::string&	getCurrentUri( void ) const;
 		bool				checkHttpResponse( void ) const;
-		bool				requestReady( void ) const;
+		bool				checkContentFd( void ) const;
+		bool				checkResponseStatus( void ) const;
 		// bool				checkRequest( void ) const;
 		// bool				checkResponse( void ) const;
 		// const std::string&	getRequest( void ) const;
@@ -69,7 +71,7 @@ class Client {
 		int					socket_fd;
 		int					content_fd;
 		std::string			content_name;
-		bool				fetch_content;
+		bool				has_content_fd;
 		uint64_t			length;
 		int					status_code;
 		bool				is_directory;
@@ -78,7 +80,7 @@ class Client {
 
 		/* http related info + data info */
 		std::queue<HttpRequest>	requests;
-		HttpResponse			reponse;
+		HttpResponse			response;
 		time_t					start_connection;
 		size_t					no_request;
 		time_t					current_time;
@@ -87,10 +89,11 @@ class Client {
 		bool					emergency_overwrite;
 		bool					completed;
 
-		void	processReponseSucess( void );
-		void	processReponseRedirect( void );
-		void	processReponseError( void );
-		bool	fetchContentFd( void );
+		void	routeRequest( void );
+		void	processResponseSuccess( void );
+		void	processResponseRedirect( void );
+		void	processResponseError( void );
+		void	reset( void );
 };
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref );

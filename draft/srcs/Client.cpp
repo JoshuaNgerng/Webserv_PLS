@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/08 03:36:45 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/22 23:34:04 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 Client::Client( void ) : socket_fd(-1), content_fd(-1) { }
 
 Client::Client( server_ptr &it ) :
-	socket_fd(-1), content_fd(-1), server_ref(it), location_ref(it->getLocEnd()) { }
+	server_ref(it), location_ref(it->getLocEnd()), socket_fd(-1), content_fd(-1) { }
 
 Client::Client( const Client &src ) {
 	*this = src;
@@ -33,11 +33,11 @@ Client& Client::operator=( const Client &src ) {
 		socket_fd = src.socket_fd;
 		content_fd = src.content_fd;
 		content_name = src.content_name;
-		fetch_content = src.fetch_content;
+		has_content_fd = src.has_content_fd;
 		length = src.length;
 		status_code = src.status_code;
 		requests = src.requests;
-		reponse = src.reponse;
+		response = src.response;
 		start_connection = src.start_connection;
 		is_directory = src.is_directory;
 		is_cgi = src.is_cgi;
@@ -78,7 +78,23 @@ int	Client::clientSocketFd( int listen_fd ) {
 	return (socket_fd);
 }
 
-bool	Client::clientRecv( void ) {
+void	Client::reset( void ) {
+	if (requests.size() > 0)
+		requests.pop();
+	response.reset();
+	if (content_fd > 0)
+		close(content_fd);
+	content_fd = -1;
+	content_name.clear();
+	has_content_fd = true;
+	length = 0;
+	status_code = 0;
+	is_directory = false;
+	is_cgi = false;
+	finish_response = false;
+}
+
+bool	Client::clientRecvHttp( void ) {
 	char	buffer[recv_buffer_size + 1];
 	ssize_t	r = recv(socket_fd, buffer, recv_buffer_size, recv_flag);
 	if (r == 0) {
@@ -106,57 +122,86 @@ bool	Client::clientRecv( void ) {
 			return (false);
 		}
 	}
+	routeRequest();
 	return (true);
 }
 
-bool	Client::fetchContentFd( void ) {
-	if (is_cgi) {
-		return (true);
-	}
-	content_fd = open(content_name.c_str(), O_RDONLY);
-	if (content_fd < 0)
+bool	Client::clientRecvContent( void ) {
+	char	buffer[recv_buffer_size + 1];
+	ssize_t	r = recv(socket_fd, buffer, recv_buffer_size, recv_flag);
+	if (r == 0 || r < 0) {
+		if (response.getBodyLength() != length) {
+			if (status_code == 500) {
+				processResponseError(); // deafault html
+				return (false);
+			}
+			status_code = 500;
+			processResponseError();
+		}
 		return (false);
-	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(content_fd);
-		content_fd = -1;
+	}
+	buffer[r] = '\0';
+	response.addBody(buffer);
+	if (response.getBodyLength() == length) {
+		response.finishResponseMsg();
+		length = response.getTotalLength();
 		return (false);
 	}
 	return (true);
-
 }
 
-void	Client::processReponseSucess( void ) {
+bool	Client::clientSendResponse( void ) {
+	ssize_t	no_bytes = send(socket_fd,
+		response.getPtrPos(bytes_sent), length - bytes_sent, 0);
+	if (no_bytes <= 0) {
+		return (false);
+	}
+	bytes_sent += no_bytes;
+	if (bytes_sent == length) {
+		reset();
+	}
+	return (true);
+}
+
+void	Client::processResponseSuccess( void ) {
+	response.setHeader(status_code, content_name);
 	if (is_directory) {
-		AutoIndex	gen(server_ref->getAutoFormat(), server_ref->getAutoTimeFormat(), server_ref->getAutoSize());
-		reponse.addBody(gen.generateResource(content_name));
-		length = reponse.getBodyLength();
-		reponse.setContent("", length);
+		const InfoBlock	*ptr = &(*server_ref);
+		if (location_ref != server_ref->getLocEnd() && location_ref->getAutoIndex() == on) {
+			ptr = &(*location_ref);
+		}
+		AutoIndex	gen(*ptr);
+		response.addBody(gen.generateResource(content_name));
+		length = response.getBodyLength();
+		response.setContent(Http::getMimeType(gen.getExtension()), length);
 		return ;
 	}
+	const char *ext = CheckFile::fetchExtension(content_name);
 	// check if cgi
 	// is_cgi = true;
 	content_fd = open(content_name.c_str(), O_RDONLY);
 	if (content_fd < 0) {
 		status_code = 500;
-		processReponseError();
+		processResponseError();
 		return ;
 	}
 	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
 		close(content_fd);
 		content_fd = -1;
 		status_code = 500;
-		processReponseError();
+		processResponseError();
 		return ;
 	}
-	reponse.setContent("", length);
+	response.setContent(Http::getMimeType(ext), length);
 }
 
-void	Client::processReponseRedirect( void ) {
-	fetch_content = false;
-	reponse.setHeader(status_code, content_name);
+void	Client::processResponseRedirect( void ) {
+	has_content_fd = false;
+	response.setHeader(status_code, content_name);
 }
 
-void	Client::processReponseError( void ) {
+void	Client::processResponseError( void ) {
+	response.setHeader(status_code, content_name);
 	if (location_ref == server_ref->getLocEnd()) {
 		server_ref->findErrorPath(content_name, status_code);
 	}
@@ -172,14 +217,17 @@ void	Client::processReponseError( void ) {
 			goto default_html;
 			return ;
 		}
-		fetch_content = true;
-		reponse.setContent("", check.getFilesize());
+		has_content_fd = true;
+		response.setContent(
+			Http::getMimeType(CheckFile::fetchExtension(content_name)),
+			check.getFilesize()
+		);
 		return ;
 	}
 	default_html:
-	reponse.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
-	length = reponse.getBodyLength();
-	reponse.setContent("", length);
+	response.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
+	length = response.getBodyLength();
+	response.setContent(Http::getMimeType("html"), length);
 }
 
 void	Client::routeRequest( void ) {
@@ -190,25 +238,19 @@ void	Client::routeRequest( void ) {
 	if (!req.getValidHeader()) {
 		status_code = 400;
 		emergency_overwrite = true;
-		processReponseError();
+		processResponseError();
 		return ;
 	} 
 	server_ref->matchUri(*this);
 	if (status_code > 199 && status_code < 300) {
-		processReponseSucess();
+		processResponseSuccess();
 		return ;
 	}
 	if (status_code > 299 && status_code < 400) {
-		processReponseRedirect();
+		processResponseRedirect();
 		return ;
 	}
-	processReponseError();
-}
-
-int	Client::getContentFd( void ) const { return (content_fd); }
-
-bool	Client::checkReponse( void ) {
-	
+	processResponseError();
 }
 
 const std::string&	Client::getCurrentUri( void ) const {
@@ -248,13 +290,15 @@ int	Client::getContentFd( void ) const { return(content_fd); }
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	o << "Client socket fd: " << ref.clientSocketFd() << '\n';
-	o << "Client reponse fd: " << ref.getContentFd();// <<
-		// ", reponse content status: " << ((ref.isDataReady()) ? "ready" : "not ready") << '\n';
+	o << "Client response fd: " << ref.getContentFd();// <<
+		// ", response content status: " << ((ref.isDataReady()) ? "ready" : "not ready") << '\n';
 	// o << "Request status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
 	// o << "Request from Client\n" << ref.getRequest() << '\n';
-	// o << "Reponse status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
-	// o << "Reponse to Client\n" << ref.getResponse() << '\n';
+	// o << "response status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
+	// o << "response to Client\n" << ref.getResponse() << '\n';
 	return (o);
 }
+
+bool	Client::checkResponseStatus( void ) const { return (finish_response); }
 
 // size_t	Client::getBytesSent( void ) const { return(bytes_sent); }

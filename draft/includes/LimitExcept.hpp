@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 16:46:13 by joshua            #+#    #+#             */
-/*   Updated: 2024/09/29 00:08:48 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/22 23:32:14 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 class LimitExcept {
 	public:
 		LimitExcept( void );
+		LimitExcept( const LimitExcept &src );
 		~LimitExcept( void );
 		void	addMethods( const std::string& methods );
 		void	addAllow( const std::string& str );

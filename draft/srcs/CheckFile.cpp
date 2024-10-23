@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckFile.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 19:14:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/22 23:51:28 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,11 +62,29 @@ void	CheckFile::checking( int check_flags ) {
 
 uint8_t	CheckFile::getType( void ) const { return (type); }
 
-uint8_t	CheckFile::getAccessbility( void ) const { return (acessiblity); }
+int8_t	CheckFile::getAccessbility( void ) const { return (acessiblity); }
 
 size_t	CheckFile::getFilesize( void ) const { return (filesize); }
 
 const struct tm*	CheckFile::getTime( void ) const { return(timeinfo); }
+
+const char*	CheckFile::fetchExtension( void ) const {
+	for (size_t i = 0; filename[i]; i ++) {
+		if (filename[i] == '.') {
+			return (&filename[i + 1]);
+		}
+	}
+	return (NULL);
+}
+
+const char*	CheckFile::fetchExtension( const std::string &fname ) {
+	for (size_t i = 0; fname[i]; i ++) {
+		if (fname[i] == '.') {
+			return (fname.c_str() + i + 1);
+		}
+	}
+	return (NULL);
+}
 
 bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file ) {
 	if (!(file.is_open()))

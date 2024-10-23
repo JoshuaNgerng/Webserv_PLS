@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/27 03:19:33 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/16 07:20:17 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,8 +108,7 @@ class Parse
 		void	processAlias( std::string &token );
 		void	processInternal( std::string &token );
 
-
-
+		static uint64_t		buffer;
 		std::istringstream	content_stream; // no
 		std::istringstream	line_stream; // no
 

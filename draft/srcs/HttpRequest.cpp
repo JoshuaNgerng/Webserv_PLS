@@ -3,18 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 13:53:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/22 23:56:28 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest( void ) { }
+HttpRequest::HttpRequest( void ): Http() { }
 
-HttpRequest::HttpRequest( const HttpRequest &src ){
+HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {
 	*this = src;
 }
 
@@ -239,3 +239,7 @@ void	HttpRequest::normalizeUri( void ) {
 		uri.replace(pos, 2, "/");
 	}
 }
+
+bool	HttpRequest::getValidHeader( void ) const { return (valid_header); }
+
+const std::string&	HttpRequest::getUri( void ) const  { return (uri); }

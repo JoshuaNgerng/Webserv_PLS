@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 19:14:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/22 20:46:55 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Http.hpp"
 
-const Http::t_pairs	*Http::pairing = (t_pairs []) {
+const Http::t_pairs	Http::pairing[] = {
 	{100, "Continue"}, {101, "Switching Protocols"}, {102, "Processing"}, {103, "Early Hints"},
 	{200, "OK"}, {201, "Created"}, {202, "Accepted"}, {203, "Non-Authoritative Information"},
 	{204, "No Content"}, {205, "Reset Content"}, {206, "Partial Content"}, {207, "Multi-Status"},
@@ -36,39 +36,67 @@ const Http::t_pairs	*Http::pairing = (t_pairs []) {
 	{999, NULL}
 };
 
-const char *const *Http::methods = (char *[]) {
+const char *Http::methods[] = {
 	"GET", "POST", "PUT", "DELETE", NULL
 };
 
-const char *const *Http::fields = (char *[]) {
+const char *Http::fields[] = {
 	"host", "user-agent", "accept", "accept-language", "accept-encoding",
 	"connection", "referer", "cookie", "cache-control", "content-type",
 	"content-length", NULL
 };
 
-const char *const *Http::types = (char *[]) {
-	"text/plain", "text/html", "application/octet-stream", NULL
+const Http::t_types Http::mime_types[] = {
+    {"aac", "audio/aac"}, 
+    {"abw", "application/x-abiword"}, 
+    {"apng", "image/apng"},
+    {"avi", "video/x-msvideo"},
+    {"bmp", "image/bmp"},
+    {"css", "text/css"},
+    {"csv", "text/csv"},
+    {"doc", "application/msword"},
+    {"gif", "image/gif"},
+    {"html", "text/html"},
+	{"htm", "text/html"},
+    {"ico", "image/vnd.microsoft.icon"},
+    {"jpeg", "image/jpeg"},
+    {"jpg", "image/jpeg"},
+    {"js", "text/javascript"},
+    {"json", "application/json"},
+    {"mp3", "audio/mpeg"},
+    {"mp4", "video/mp4"},
+    {"pdf", "application/pdf"},
+    {"png", "image/png"},
+    {"svg", "image/svg+xml"},
+    {"txt", "text/plain"},
+    {"xml", "application/xml"},
+    // Add more MIME types as needed
+    {NULL, NULL}
 };
 
 Http::Http( void ) { }
 
-Http::Http( const Http &src ) {
-	*this = src;
-}
-
-Http&	Http::operator=( const Http &src ) {
-	if (this != &src) {
-		(void)src;
-	}
-	return (*this);
-}
+Http::Http( const Http &src ) { (void)src; }
 
 Http::~Http( void ) { }
+
+Http&	Http::operator=( const Http &src ) {
+	(void)src; return (*this);
+}
 
 const char	*Http::fetchMsg( int status ) {
 	for (size_t i = 0; pairing[i].msg; i ++) {
 		if (status == pairing[i].status) {
 			return (pairing[i].msg);
+		}
+	}
+	return (NULL);
+}
+
+const char	*Http::getMimeType( const std::string &ext ) {
+	for (size_t i = 0; mime_types[i].extension; i ++) {
+		if (ext == mime_types[i].extension) {
+			return (mime_types[i].mime_type);
 		}
 	}
 	return (NULL);

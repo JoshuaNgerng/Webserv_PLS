@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 12:41:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/23 00:03:52 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,6 @@ Server&	Server::operator=( const Server &src )
 	if (this == &src)
 		return (*this);
 	server_no = src.server_no;
-	client_limit = src.client_limit;
-	server_fds = src.server_fds;
-	client_fds = src.client_fds;
 	server_info = src.server_info;
 	return (*this);
 }
@@ -51,211 +48,132 @@ Server::~Server( void ) { }
 // 	return (*this);
 // }
 
-void	Server::addBufferfds( int fd ) {
-	if (fd < 0)
-		return ;
-	buffer_new_fd[buffer_counter].fd = fd;
+bool	Server::checkBufferfds( void ) const {
+	if (buffer_counter > server_limit) {
+		return (false);
+	}	
+	return (true);
+}
+
+// may need to revise if use std::allocator without resever
+void	Server::addBufferfds( int fd, int events ) {
+	pollfd_t	new_fd = {0, 0, 0};
+	new_fd.fd = fd;
+	new_fd.events = events;
+	buffer_new_fd.push_back(new_fd);
 	buffer_counter ++;
 	fd_counter ++;
 }
 
-void	Server::setupSocketfds( void ) {
-	typedef std::vector<ServerInfo>::iterator			iter;
-	typedef std::vector<ListenSocket>::const_iterator	iter2;
+void	Server::addBufferfds( int fd ) {
+	addBufferfds(fd, POLLIN | POLLOUT);
+}
+
+void	Server::addClientContentFd( Client &client ) {
+	if (!checkBufferfds()) {
+		return ;
+	}
+	int	fd = client.getContentFd();
+	if (fd < 0) {
+		return ;
+	}
+	addBufferfds(fd);
+}
+
+void	Server::clearClient( client_ptr client ) {
+	typedef std::vector<pollfd_t>::iterator iter;
+	nfds_t	counter = 0;
+	for (iter it = socket_fds.begin() + server_no; it != socket_fds.end(); it ++) {
+		if (it->fd == client->getContentFd()
+			|| it->fd == client->clientSocketFd()) {
+			counter ++;
+			socket_fds.erase(it);
+		}
+	}
+	poll_tracker -= counter;
+	fd_counter -= counter;
+}
+
+int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
+	int error = 1;
+	int	fd = -1;
+	while (error) {
+		fd = ptr->addListenFd(addr);
+		if (fd > 0) {
+			return (fd);
+		}
+		if (error == 4) {
+			break ;
+		}
+		error ++;
+	}
+	//maybe throw error
+	return (-1);
+}
+
+void	Server::setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer ) {
+	size_t	counter = 0;
+	for (listen_ptr it = ptr->listenBegin(); it != ptr->listenEnd(); it ++) {
+		for (addrinfo_ptr addr = it->begin(); addr != it->end(); addr ++) {
+			buffer.fd = setupSocketsCheckError(it, addr);
+			if (buffer.fd < 0) {
+				return ; // error?
+			}
+			socket_fds.push_back(buffer);
+			socketfd_mapping.push_back(addr);
+			counter ++;
+		}	
+	}
+	server_mapping.insert(server_mapping.end(), counter, ptr);
+	server_no += counter;	
+}
+
+void	Server::setupSockets( void ) {
 	pollfd_t	pollfd;
 	pollfd.fd = -1;
 	pollfd.events = POLLIN;
 	pollfd.revents = 0;
 	server_no = 0;
-	for (iter it = server_info.begin(); it != server_info.end(); it ++) {
-		int	counter = 0;
-		for (iter2 it2 = it->listenBegin(); it2 != it->listenEnd(); it2 ++) {
-			for (addrinfo_ptr it3 = it2->begin(); it3 != it2->end(); it3 ++) {
-				pollfd.fd = it2->addListenFd(it3);
-				if (pollfd.fd < 0) {
-					return ; // error?
-				}
-				socket_fds.push_back(pollfd);
-				socketfd_mapping.push_back(it3);
-				counter ++;
-			}	
-		}
-		server_mapping.insert(server_mapping.end(), counter, it);
-		server_no += counter;
+	for (serverinfo_ptr it = server_info.begin();
+		 it != server_info.end(); it ++) {
+		setupSocketsListen(it, pollfd);
 	}
 	fd_counter = server_no;
 	poll_tracker = fd_counter;	
 	server_limit = socket_fds.max_size();
-	if (server_limit > ULONG_MAX)
-		server_limit = ULONG_MAX;
+	// if (server_no > server_limit)
+		// return ;
+	uint64_t	num = server_no * 3;
+	socket_fds.reserve((num > server_limit) ? server_limit : num);
+	num = server_no * 2;
+	buffer_new_fd.reserve((num > server_limit) ? server_limit : num);
 }
 
 void	Server::resetFds( void ) {
-	nfds_t	i = 0;
-	nfds_t	buffer_index = 0;
-	for (i = 0; i < poll_tracker; i ++) {
-		if (socket_fds[i].fd > -1) {
-			continue ;
-		}
-		if (buffer_index < buffer_counter) {
-			std::swap(buffer_new_fd[buffer_index], socket_fds[i]);
-			buffer_index ++;
-		}
-		else {
-			for (nfds_t empty = i; empty < poll_tracker; empty ++) {
-				if (socket_fds[empty].fd > -1) {
-					std::swap(socket_fds[empty], socket_fds[i]);
-					break ;
-				}
-			}
-		}		
+	for (nfds_t i = 0; i < buffer_counter; i ++) {
+		socket_fds.push_back(buffer_new_fd[i]);
 	}
-	for (; buffer_index < buffer_counter; buffer_index ++) {
-		while (i < server_limit)
-		{
-			if (socket_fds[i].fd == -1)
-				break ;
-			i ++;
-		}
-		std::swap(socket_fds[i], buffer_new_fd[buffer_index]);
-	}
+	buffer_new_fd.clear();
 	buffer_counter = 0;
 	poll_tracker = fd_counter;
 }
 
-void	Server::getNewConnection( int fd, serverinfo_ptr &it ) {
-	if (!checkBufferfds())
-		return ;
-	Client	buffer(it);
-	if (buffer.clientSocketFd(fd) < 0) {
-		return ; // cant get
-	}
-	client_info.push_back(buffer);
-	client_mapping[fd] = -- client_info.end();
-	addBufferfds(fd);
-}
-
-void	Server::resetPollFd( pollfd_t &pollfd )
-{
-	pollfd.fd = -1;
-	pollfd.events = POLLIN;
-	pollfd.revents = 0;
-}
-
-void	Server::clearClient( size_t index ) {
-	int	fd = socket_fds[index].fd;
-	resetPollFd(socket_fds[index]);
-	fd_counter --;
-	std::map<int, client_ptr>::iterator it1, it2;
-	it1 = client_mapping.find(socket_fds[index].fd);
-	if (it1 == client_mapping.end()) {
+void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client, size_t index ) {
+	(void)index;
+	if (poll_fd.fd == client.clientSocketFd()) {
+		client.clientRecvHttp();
 		return ;
 	}
-	client_ptr	ptr = it1->second;
-	int			fd2 = -1;
-	close(fd);
-	it2 = client_mapping.end();
-	fd2 = (fd == ptr->getSocketFd()) ? ptr->getReponseFd() : ptr->getSocketFd();
-	if (fd2 > 0)
-	{
-		it2 = client_mapping.find(fd2);
-		close(fd2);
-	}
-	client_mapping.erase(it1);
-	if (it2 != client_mapping.end())
-		client_mapping.erase(it2);
-	client_info.erase(ptr);
+	client.clientRecvContent();
 }
 
-void	Server::fetchClientData( client_ptr &ptr ) {
-	if (!checkBufferfds())
-		return ;
-	int	fd = ptr->fetchDataFd();
-	if (fd < 0) {
-		return ;
-	}
-	if (fcntl(fd, F_SETFL, fcntl_flag) < 0) {
-		goto error;
-		return ; // error cant set fl for fd
-	}
-	// buffer.setSocketFd(fd);
-	// client_info.push_back(buffer);
-	client_mapping[fd] = ptr;
-	addBufferfds(fd);	
-	return ;
-	error:
-		close(fd);
-		ptr->resetDataFd();
-}
-
-void	Server::handleServer( size_t index ) {
-	pollfd_t	&poll_fd = socket_fds[index];
-	if (!(poll_fd.revents & POLLIN)) {
+void	Server::handleClientSent( pollfd_t &poll_fd, Client &client, size_t index ) {
+	(void)poll_fd;
+	(void)index;
+	if (!client.checkResponseStatus()) {
 		return ;
 	}
-	getNewConnection(poll_fd.fd, server_mapping[index]);
-}
-
-void	Server::handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index )
-{
-	char	buffer[buffer_limit];
-	ssize_t	bytes = recv(pollfd.fd, buffer, buffer_limit, recv_flag);
-	if (bytes < 0) {
-		clearClient(index);
-	}
-	if (pollfd.fd == ptr->getSocketFd()) {
-		if (!bytes) {
-			clearClient(index);
-		}
-		ptr->addToRequestHeader(buffer, bytes);
-		if (bytes > 4 && !ft_strncpy(&buffer[bytes - 4], "\r\n\r\n", 4)) {
-			ptr->finishReceiveHeader();
-			if (ptr->checkRequest()) {
-				pollfd.events = POLLOUT;
-				fetchClientData(ptr);
-			}
-		}
-	}
-	if (!bytes) {
-		close(pollfd.fd);
-		resetPollFd(pollfd);
-		return ;
-	}
-	ptr->addToResponse(buffer, bytes);
-}
-
-void	Server::handleClientSent( pollfd_t &pollfd, client_ptr &ptr, size_t index ){
-	if (pollfd.fd == ptr->getSocketFd()) {
-		if (ptr->isDataReady() == false) {
-			fetchClientData(ptr); // . try add fd
-		}
-		if (ptr->isDataAvaliable()) {
-			clearClient(index);
-			return ;
-		}
-		if (ptr->isTimeout()) {
-			clearClient(index);
-			return ;
-		}
-		if (ptr->isDataReady()) {
-			return ;
-		}
-		size_t	remaining_len = ptr->getResponse().length() - ptr->getBytesSent();
-		ssize_t	bytes = send(pollfd.fd,
-							(ptr->getResponse().c_str() - remaining_len),
-							remaining_len, 0);
-		if (bytes < 0) {
-			clearClient(index);
-			return ;
-		}
-		if (!bytes) {
-			clearClient(index);
-			return ;
-		}
-		ptr->addBytesSent(bytes);
-		if (ptr->checkResponse())
-			clearClient(index);
-	}
+	client.clientSendResponse();
 }
 
 void	Server::handleClient( size_t index ) {
@@ -266,15 +184,34 @@ void	Server::handleClient( size_t index ) {
 	if (!poll_fd.revents) {
 		return ;
 	}
+	client_ptr ptr = client_mapping[poll_fd.fd];
 	if (poll_fd.revents & POLLIN) {
-		handleClientRecv(poll_fd, client_mapping[poll_fd.fd], index);
+		handleClientRecv(poll_fd, *ptr, index);
 	}
-	else if (poll_fd.revents & POLLOUT) {
-		handleClientSent(poll_fd, client_mapping[poll_fd.fd], index);
+	addClientContentFd(*ptr);
+	if (poll_fd.revents & POLLOUT) {
+		handleClientSent(poll_fd, *ptr, index);
 	}
-	else if (poll_fd.revents & (POLLHUP | POLLERR)) {
-		clearClient(index);
+	if (poll_fd.revents & (POLLHUP | POLLERR)) {
+		clearClient(ptr);
 	}
+	// check timer , abort(etc invalid header) 
+}
+
+void	Server::handleServer( size_t index ) {
+	if (!(socket_fds[index].revents & POLLIN)) {
+		return ;
+	}
+	if (!checkBufferfds()) {
+		return ;
+	}
+	Client	buffer(server_mapping[index]);
+	int	fd = buffer.clientSocketFd(socket_fds[index].fd);
+	if (fd < 0) {
+		return ;
+	}
+	addBufferfds(fd);
+	client_info.push_back(buffer);
 }
 
 void	Server::loopServer( void ) {
@@ -284,28 +221,23 @@ void	Server::loopServer( void ) {
 	for (size_t index = server_no; index < fd_counter; index ++) { // handle Client first
 		handleClient(index);
 	}
-	for (size_t index = 0; index != server_limit; index ++) {
+	for (size_t index = 0; index != server_no; index ++) {
 		handleServer(index);
 	}
 	resetFds();
 }
 
-void	Server::startServerLoop( int *signal ) {
+void	Server::startServerLoop( void ) {
 	if (!socket_fds.size()) {
-		setupSocketfds();
+		setupSockets();
 	}
 	if (!server_no) {
 		// std::cout << "no servers lulz\n";
 		return ;
 	}
-	while (*signal) {
+	while (1) {
 		loopServer();
 	}
-}
-
-void	Server::startServerLoop( void ) {
-	int	fix = 1;
-	startServerLoop(&fix);
 }
 
 void	Server::addServerInfo( ServerInfo &ref ) {
@@ -329,24 +261,8 @@ int	Server::getSocketProtocol( void ) const {
 	return (this->socket_protocol);
 }
 
-int	Server::getBacklogLimit( void ) const {
-	return (this->backlog_limit);
-}
-
-int	Server::getRecvFlag( void ) const {
-	return (this->recv_flag);
-}
-
-int	Server::getSendFlag( void ) const {
-	return (this->send_flag);
-}
-
 int	Server::getTimeout( void ) const {
 	return (this->timeout);
-}
-
-int	Server::getBufferLimit( void ) const {
-	return (this->buffer_limit);
 }
 
 nfds_t	Server::getServerNo( void ) const {
@@ -376,11 +292,6 @@ std::ostream&	Server::displayClientInfo( std::ostream &o ) const {
 }
 
 //end of display
-
-std::ostream&	operator<<( std::ostream &o, std::ostream &display ) {
-	(void)o; return (display);
-}
-
 std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref ) {
 	o << "fd: " << ref.fd;
 	return (o);
@@ -388,11 +299,6 @@ std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref ) {
 
 std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
 	o << "Server Status\n";
-	o << "Const info: " << "backlog limit: " << ref.getBacklogLimit() <<
-		", recv flag: " << ref.getRecvFlag() <<
-		", send flag: " << ref.getSendFlag() <<
-		", poll timeout: " << ref.getTimeout() <<
-		", recv buffer size: " << ref.getBufferLimit() << '\n';
 	o << "Server info\n";
 	o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
 	o << "Servers info\n" << ref.displayServerInfo(o) << '\n';

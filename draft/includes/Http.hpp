@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/07 15:41:43 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/11 16:44:19 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@ class Http {
 			int			status;
 			const char	*msg;
 		}	t_pairs;
+		typedef struct mime_type_pair {
+			const char	*extension;
+			const char	*mime_type;
+		}	t_types;
 		enum http_method { GET, POST, PUT, DELETE };
 		enum field {
 			HOST, USER_AGENT,
@@ -34,13 +38,14 @@ class Http {
 			TEXT, HTML, JS, CSS,
 			JPEG, PNG, OCTECT
 		};
-		Http( void );
-		Http( const Http &src );
 		virtual ~Http( void );
 		static const char	*fetchMsg( int status );
+		static const char	*getMimeType( const std::string &ext );
 
 	protected:
-		static const char *const	*methods;
+		Http( void );
+		Http( const Http &src );
+		static const char	*methods[];
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;
@@ -68,13 +73,14 @@ class Http {
 					return (i);
 				}
 			}
-			return (-1);	
+			return (-1);
 		}
 
 	private:
-		static const t_pairs 		*pairing;
-		static const char *const	*fields;
-		static const char *const	*types;
+		Http&	operator=( const Http &src );
+		static const t_pairs 		pairing[];
+		static const char			*fields[];
+		static const t_types		mime_types[];
 };
 
 #endif

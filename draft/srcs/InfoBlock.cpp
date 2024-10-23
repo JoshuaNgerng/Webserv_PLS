@@ -6,13 +6,15 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/08 03:22:23 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/22 22:26:09 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "InfoBlock.hpp"
+#include "AutoIndex.hpp"
+#include "Client.hpp"
 
-InfoBlock::InfoBlock( void ) {}
+InfoBlock::InfoBlock( void ) { }
 
 InfoBlock::InfoBlock( const InfoBlock &src ) {
 	*this = src;
@@ -41,7 +43,7 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	return (*this);
 }
 
-InfoBlock::~InfoBlock( void ) {}
+InfoBlock::~InfoBlock( void ) { }
 
 void	InfoBlock::reset( void ) {
 	error_page.clear();
@@ -50,19 +52,19 @@ void	InfoBlock::reset( void ) {
 	access_log.second = 0;
 	error_log.first.clear();
 	error_log.second = 0;
-	if_modify_since = if_modify_level::undefined_;
+	if_modify_since = undefined_;
 	root.clear();
 	client_body_timeout = 0;
 	client_max_body_size = 0;
 	index.clear();
-	autoindex = boolean::undefined;
-	autoindex_exact_size = boolean::undefined; 
-	autoindex_format = boolean::undefined;
-	autoindex_localtime = boolean::undefined;
+	autoindex = undefined;
+	autoindex_exact_size = undefined; 
+	autoindex_format = undefined;
+	autoindex_localtime = undefined;
 	allow.clear();
 	deny.clear();
-	symlinks = boolean::undefined;
-	etag = boolean::undefined;
+	symlinks = undefined;
+	etag = undefined;
 }
 
 bool	InfoBlock::matchUriSingle( const std::string &name ) const {
@@ -100,6 +102,7 @@ void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool aut
 			buffer += *it;
 			if (matchUriSingle(buffer)) {
 				client.addContent(200, buffer, file_info.getFilesize());
+				return ;
 			}
 		}
 		client.addContent(404);
@@ -112,7 +115,7 @@ void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool aut
 	client.addContent(200, uri, file_info.getFilesize());
 }
 
-void	InfoBlock::matchUri( Client &client, const std::string &uri, bool autoindex_ ) const {
+void	InfoBlock::matchUri( Client &client, bool autoindex_ ) const {
 	typedef std::vector<std::string>::const_iterator	iter;
 	std::string	buffer;
 	if (!try_files.size()) {
@@ -157,7 +160,7 @@ void	InfoBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
 }
 
 void	InfoBlock::addTryFiles( const std::string &add ) {
-	static int8_t	allow_var[] = {};
+	// static int8_t	allow_var[] = {};
 	// try {
 	try_files.push_back(add);
 	EmbeddedVariable::shortFormString(try_files[try_files.size() - 1]);
@@ -214,3 +217,11 @@ const std::string&	InfoBlock::getErrorPagePath( short status ) const {
 		return (empty);
 	return (pos->second);
 }
+
+boolean	InfoBlock::getAutoIndex( void ) const { return (autoindex); }
+
+int	InfoBlock::getAutoFormat( void ) const { return (autoindex_format); }
+
+boolean	InfoBlock::getAutoSize( void ) const { return (autoindex_exact_size); }
+
+boolean	InfoBlock::getAutoTimeFormat( void ) const { return (autoindex_localtime); }

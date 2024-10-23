@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckFile.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 04:20:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/16 07:37:12 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,17 @@ class CheckFile {
 
 		void	checking( void );
 		void	checking( int check_flags );
-		void	checkExtension( void );
 		uint8_t	getType( void ) const;
-		uint8_t	getAccessbility( void ) const;
+		int8_t	getAccessbility( void ) const;
 		size_t	getFilesize( void ) const;
 		
 		const struct tm*	getTime( void ) const;
 	
 		bool		getFileContent( std::string &dst ) const;
 		bool		getFileContent( std::stringstream &dst ) const;
+		const char	*fetchExtension( void ) const;
+
+		static const char	*fetchExtension( const std::string &fname );
 		static bool	fileToStringStream( std::stringstream &dst, std::ifstream &file );
 
 	private:

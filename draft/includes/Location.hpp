@@ -6,7 +6,7 @@
 /*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:06:49 by jngerng           #+#    #+#             */
-/*   Updated: 2024/09/27 03:58:00 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/22 11:15:10 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Location : public InfoBlock {
 		void	reset( void );
 
 		const std::string&	getLocationPath( void ) const;
+		void	matchUri( Client &client, bool autoindex_ ) const;
 
 	private:
 		std::string	path;

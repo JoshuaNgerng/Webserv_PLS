@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 00:40:40 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/16 07:08:42 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,9 @@
 
 class Server
 {
-	typedef std::vector<ServerInfo>::iterator	serverinfo_ptr;
-	typedef ListenSocket::Iterator				addrinfo_ptr;
+	typedef std::vector<ServerInfo>::const_iterator		serverinfo_ptr;
+	typedef std::vector<ListenSocket>::const_iterator	listen_ptr;
+	typedef ListenSocket::Iterator						addrinfo_ptr;
 	public:
 		static const char *server_name;
 		Server( void );
@@ -34,14 +35,10 @@ class Server
 		socklen_t	getSocklen( void ) const;
 		int			getSocketType( void ) const;
 		int			getSocketProtocol( void ) const;
-		int			getBacklogLimit( void ) const;
-		int			getRecvFlag( void ) const;
-		int			getSendFlag( void ) const;
-		int			getTimeout( void ) const;
-		int			getBufferLimit( void ) const;
 		nfds_t		getServerNo( void ) const;
 		nfds_t		getServerLimit( void ) const;
 		nfds_t		getFdCounter( void ) const;
+		int			getTimeout( void ) const;
 
 		//display for ostream
 		std::ostream&	displaySocketFds( std::ostream &o ) const;
@@ -68,19 +65,21 @@ class Server
 		std::vector<ServerInfo>			server_info;
 		std::list<Client>				client_info;
 
-		void	setupSocketfds( void );
+		void	setupSockets( void );
+		void	setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer );
+		int		setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr );
 		void	loopServer( void );
 		void	resetFds( void );
 		bool	checkBufferfds( void ) const;
 		void	addBufferfds( int fd );
+		void	addBufferfds( int fd, int events );
 		void	handleServer( size_t index );
 		void	handleClient( size_t index );
-		void	handleClientRecv( pollfd_t &pollfd, client_ptr &ptr, size_t index );
-		void	handleClientSent( pollfd_t &pollfd, client_ptr &ptr, size_t index );
-		
-		void	getNewConnection( int fd, serverinfo_ptr &it );
-		void	clearClient( size_t index );
-		void	resetPollFd( pollfd_t &pollfd );
+		void	handleClientRecv( pollfd_t &pollfd, Client &client, size_t index );
+		void	handleClientSent( pollfd_t &pollfd, Client &client, size_t index );
+		void	addClientContentFd( Client &client );
+
+		void	clearClient( client_ptr client );
 		void	fetchClientData( client_ptr &ptr );
 
 		// bool	receiveData( int fd , std::string &output ) const;
@@ -97,7 +96,6 @@ class Server
 
 };
 
-std::ostream&	operator<<( std::ostream &o, std::ostream &o_ );
 std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref );
 std::ostream&	operator<<( std::ostream &o, const Server& ref );
 

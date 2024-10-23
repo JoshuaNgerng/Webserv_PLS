@@ -1,0 +1,22 @@
+srcs/ServerInfo.cpp: In member function ‘void ServerInfo::matchUri(Client&) const’:
+srcs/ServerInfo.cpp:64:30: error: no matching function for call to ‘Location::matchUri(Client&, const string&, bool&) const’
+   64 |                 ptr->matchUri(client, uri, b);
+      |                 ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+In file included from includes/Location.hpp:15,
+                 from includes/ServerInfo.hpp:16,
+                 from srcs/ServerInfo.cpp:13:
+includes/InfoBlock.hpp:40:25: note: candidate: ‘void InfoBlock::matchUri(Client&, bool) const’
+   40 |                 void    matchUri( Client &client, bool autoindex ) const;
+      |                         ^~~~~~~~
+includes/InfoBlock.hpp:40:25: note:   candidate expects 2 arguments, 3 provided
+srcs/ServerInfo.cpp:66:28: error: no matching function for call to ‘ServerInfo::matchUri(Client&, const string&, bool&) const’
+   66 |         InfoBlock::matchUri(client, client.getCurrentUri(), b);
+      |         ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from includes/Location.hpp:15,
+                 from includes/ServerInfo.hpp:16,
+                 from srcs/ServerInfo.cpp:13:
+includes/InfoBlock.hpp:40:25: note: candidate: ‘void InfoBlock::matchUri(Client&, bool) const’
+   40 |                 void    matchUri( Client &client, bool autoindex ) const;
+      |                         ^~~~~~~~
+includes/InfoBlock.hpp:40:25: note:   candidate expects 2 arguments, 3 provided
+make: *** [Makefile:29: obj/ServerInfo.o] Error 1

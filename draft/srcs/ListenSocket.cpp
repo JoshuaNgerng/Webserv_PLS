@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ListenSocket.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/07 19:14:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/16 08:35:27 by joshua           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,6 @@ ListenSocket& ListenSocket::operator=(const ListenSocket &other) {
 }
 
 ListenSocket::~ListenSocket( void ) { freeaddrinfo(addr_info_head); }
-
-ListenSocket&	ListenSocket::operator=( const ListenSocket &src )
-{ addr_info_head = src.addr_info_head; addr_info_tail = src.addr_info_tail; return (*this); }
 
 bool	ListenSocket::addAddress(
 	const std::string &addr, const std::string &port = std::string()
@@ -228,10 +225,6 @@ ListenSocket::Iterator& ListenSocket::Iterator::operator=( const Iterator &src )
 ListenSocket::Iterator::Iterator( addrinfo_t *start ) : ptr(start) { }
 
 ListenSocket::Iterator::~Iterator( void ) { }
-
-ListenSocket::Iterator&	ListenSocket::Iterator::operator=( const Iterator &src ) {
-	ptr = src.ptr; return (*this);
-}
 
 addrinfo_t&	ListenSocket::Iterator::operator*( void ) { return (*ptr); }
 
