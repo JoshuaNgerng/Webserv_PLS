@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/22 22:25:05 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/23 13:05:59 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,8 @@ class InfoBlock {
 		virtual ~InfoBlock( void );
 
 		bool	findErrorPath( std::string &str, int status ) const;
+		void	matchUri( Client &client, bool autoindex ) const;
 
-		virtual void	matchUri( Client &client, bool autoindex ) const;
 		virtual void	reset( void );
 
 		/* setters */

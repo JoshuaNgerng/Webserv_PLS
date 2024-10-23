@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EmbeddedVariable.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:11:01 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/16 08:05:33 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/23 13:06:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,4 @@ class EmbeddedVariable {
 		static const uint8_t	shortform[];
 }; 
 
-// int	main(void) {
-// 	std::string str("$url");
-// 	EmbeddedVariable::shortFormString(str);
-// 	std::cout << static_cast<int>(str[0]) << '\n';
-// 	std::cout << str.length() << '\n';
-// }
 #endif

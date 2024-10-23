@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckFile.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 23:51:28 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/23 13:05:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,12 @@ void	CheckFile::checking( int check_flags ) {
 		default: 			type = unknown;			break;
 	}
 	filesize = stat_info.st_size;
-	time_t	buffer = stat_info.st_mtim.tv_sec;
+	time_t	buffer;
+	#ifdef __APPLE__
+		buffer = stat_info.st_mtimespec.tv_sec;
+	#elif
+		buffer = stat_info.st_mtim.tv_sec;
+	#endif
 	timeinfo = std::localtime(&buffer);
 }
 
