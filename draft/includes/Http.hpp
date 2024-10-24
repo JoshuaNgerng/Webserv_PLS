@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/11 16:44:19 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 18:21:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,10 @@ class Http {
 		Http( void );
 		Http( const Http &src );
 		static const char	*methods[];
+		static const char	*fields[];
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;
-		int	checkType( const std::string &str ) const;
 	
 		bool	makeReponseHeader( std::string &str, int status ) const;
 
@@ -79,7 +79,6 @@ class Http {
 	private:
 		Http&	operator=( const Http &src );
 		static const t_pairs 		pairing[];
-		static const char			*fields[];
 		static const t_types		mime_types[];
 };
 

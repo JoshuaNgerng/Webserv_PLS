@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 20:31:54 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 19:14:05 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,15 +43,12 @@ class Client {
 		int					getContentFd( void ) const;
 		int					getSocketFd( void ) const;
 		const std::string&	getCurrentUri( void ) const;
-		bool				checkHttpResponse( void ) const;
-		bool				checkContentFd( void ) const;
 		bool				checkResponseStatus( void ) const;
-		// bool				checkRequest( void ) const;
-		// bool				checkResponse( void ) const;
-		// const std::string&	getRequest( void ) const;
-		// const std::string&	getResponse( void ) const;
-		// size_t				getBytesSent( void ) const;
-
+		bool				checkContentFd( void ) const;
+		bool				checkResponseReady( void ) const;
+		bool				contentFdtoServer( void ) const; // empty
+		void				errorOverwriteResponse( int status );
+		void				errorOverwriteResponse( void );
 
 		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;
 		std::vector<Location>::const_iterator	getLocationRef( void ) const;
@@ -67,16 +64,17 @@ class Client {
 		loc_ptr		location_ref;
 
 		sockaddr_storage_t	client_addr;
-		socklen_t			len;
+		socklen_t			socket_len;
 		int					socket_fd;
 		int					content_fd;
 		std::string			content_name;
 		bool				has_content_fd;
-		uint64_t			length;
+		bool				is_content_fd_in_server;
+		size_t				content_length;
 		int					status_code;
 		bool				is_directory;
 		bool				is_cgi;
-		bool				finish_response;
+		bool				response_ready;
 
 		/* http related info + data info */
 		std::queue<HttpRequest>	requests;
@@ -93,6 +91,8 @@ class Client {
 		void	processResponseSuccess( void );
 		void	processResponseRedirect( void );
 		void	processResponseError( void );
+		void	getDefaultError( void );
+		bool	getStaticFileFd( const std::string &fname );
 		void	reset( void );
 };
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/22 23:13:00 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:45:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,8 @@ class HttpResponse : Http {
 		void	finishResponseMsg( void );
 		void	reset( void );
 
-		size_t	getBodyLength( void ) const; // empty
-		size_t	getTotalLength( void ) const; // empty
+		size_t	getBodyLength( void ) const;
+		size_t	getTotalLength( void ) const;
 		const char *getPtrPos( size_t no_bytes_send ) const;
 
 	private:

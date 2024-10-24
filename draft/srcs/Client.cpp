@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 23:34:04 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 18:48:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,19 +29,19 @@ Client& Client::operator=( const Client &src ) {
 		server_ref = src.server_ref;
 		location_ref = src.location_ref;
 		client_addr = src.client_addr;
-		len = src.len;
+		socket_len = src.socket_len;
 		socket_fd = src.socket_fd;
 		content_fd = src.content_fd;
 		content_name = src.content_name;
 		has_content_fd = src.has_content_fd;
-		length = src.length;
+		content_length = src.content_length;
 		status_code = src.status_code;
 		requests = src.requests;
 		response = src.response;
 		start_connection = src.start_connection;
 		is_directory = src.is_directory;
 		is_cgi = src.is_cgi;
-		finish_response = src.finish_response;
+		response_ready = src.response_ready;
 		no_request = src.no_request;
 		current_time = src.current_time;
 		empty_event = src.empty_event;
@@ -67,7 +67,7 @@ Client&	Client::operator=( const std::vector<Location>::const_iterator &it ) {
 }
 
 int	Client::clientSocketFd( int listen_fd ) {
-	socket_fd = accept(listen_fd, (sockaddr_t *)(&client_addr), &len);
+	socket_fd = accept(listen_fd, (sockaddr_t *)(&client_addr), &socket_len);
 	if (socket_fd < 0) {
 		return (-1);
 	}
@@ -76,6 +76,21 @@ int	Client::clientSocketFd( int listen_fd ) {
 		return (-1);
 	}
 	return (socket_fd);
+}
+
+bool	Client::getStaticFileFd( const std::string &fname ) {
+	content_fd = open(fname.c_str(), O_RDONLY);
+	if (content_fd < 0) {
+		status_code = 500;
+		return (false);
+	}
+	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
+		close(content_fd);
+		content_fd = -1;
+		status_code = 500;
+		return (false);
+	}
+	return (true);
 }
 
 void	Client::reset( void ) {
@@ -87,11 +102,11 @@ void	Client::reset( void ) {
 	content_fd = -1;
 	content_name.clear();
 	has_content_fd = true;
-	length = 0;
+	content_length = 0;
 	status_code = 0;
 	is_directory = false;
 	is_cgi = false;
-	finish_response = false;
+	response_ready = false;
 }
 
 bool	Client::clientRecvHttp( void ) {
@@ -126,15 +141,12 @@ bool	Client::clientRecvHttp( void ) {
 	return (true);
 }
 
+// true fd still active false fd not active remove from Server
 bool	Client::clientRecvContent( void ) {
 	char	buffer[recv_buffer_size + 1];
 	ssize_t	r = recv(socket_fd, buffer, recv_buffer_size, recv_flag);
 	if (r == 0 || r < 0) {
-		if (response.getBodyLength() != length) {
-			if (status_code == 500) {
-				processResponseError(); // deafault html
-				return (false);
-			}
+		if (response.getBodyLength() != content_length) {
 			status_code = 500;
 			processResponseError();
 		}
@@ -142,9 +154,9 @@ bool	Client::clientRecvContent( void ) {
 	}
 	buffer[r] = '\0';
 	response.addBody(buffer);
-	if (response.getBodyLength() == length) {
+	if (response.getBodyLength() == content_length) {
 		response.finishResponseMsg();
-		length = response.getTotalLength();
+		response_ready = true;
 		return (false);
 	}
 	return (true);
@@ -152,12 +164,12 @@ bool	Client::clientRecvContent( void ) {
 
 bool	Client::clientSendResponse( void ) {
 	ssize_t	no_bytes = send(socket_fd,
-		response.getPtrPos(bytes_sent), length - bytes_sent, 0);
+		response.getPtrPos(bytes_sent), response.getTotalLength() - bytes_sent, 0);
 	if (no_bytes <= 0) {
 		return (false);
 	}
 	bytes_sent += no_bytes;
-	if (bytes_sent == length) {
+	if (bytes_sent == response.getTotalLength()) {
 		reset();
 	}
 	return (true);
@@ -172,27 +184,17 @@ void	Client::processResponseSuccess( void ) {
 		}
 		AutoIndex	gen(*ptr);
 		response.addBody(gen.generateResource(content_name));
-		length = response.getBodyLength();
-		response.setContent(Http::getMimeType(gen.getExtension()), length);
+		content_length = response.getBodyLength();
+		response.setContent(Http::getMimeType(gen.getExtension()), content_length);
 		return ;
 	}
 	const char *ext = CheckFile::fetchExtension(content_name);
-	// check if cgi
-	// is_cgi = true;
-	content_fd = open(content_name.c_str(), O_RDONLY);
-	if (content_fd < 0) {
-		status_code = 500;
+	// check if cgi, is_cgi = true;
+	if (!getStaticFileFd(content_name)) {
 		processResponseError();
 		return ;
 	}
-	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(content_fd);
-		content_fd = -1;
-		status_code = 500;
-		processResponseError();
-		return ;
-	}
-	response.setContent(Http::getMimeType(ext), length);
+	response.setContent(Http::getMimeType(ext), content_length);
 }
 
 void	Client::processResponseRedirect( void ) {
@@ -200,34 +202,56 @@ void	Client::processResponseRedirect( void ) {
 	response.setHeader(status_code, content_name);
 }
 
+void	Client::getDefaultError( void ) {
+	response.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
+	content_length = response.getBodyLength();
+	response.setContent(Http::getMimeType("html"), content_length);
+	response_ready = true;
+	has_content_fd = false;
+}
+
 void	Client::processResponseError( void ) {
 	response.setHeader(status_code, content_name);
-	if (location_ref == server_ref->getLocEnd()) {
-		server_ref->findErrorPath(content_name, status_code);
-	}
-	else {
+	content_name.clear();
+	if (location_ref != server_ref->getLocEnd()) {
 		location_ref->findErrorPath(content_name, status_code);
-		if (!content_name.length())
-			server_ref->findErrorPath(content_name, status_code);
 	}
-	if (content_name.length()) {
-		CheckFile	check(content_name);
-		check.checking(F_OK | R_OK);
-		if (check.getAccessbility() < 0) {
-			goto default_html;
-			return ;
-		}
-		has_content_fd = true;
-		response.setContent(
-			Http::getMimeType(CheckFile::fetchExtension(content_name)),
-			check.getFilesize()
-		);
+	if (!content_name.length())
+		server_ref->findErrorPath(content_name, status_code);
+	if (!content_name.length()) {
+		getDefaultError();
 		return ;
 	}
-	default_html:
-	response.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
-	length = response.getBodyLength();
-	response.setContent(Http::getMimeType("html"), length);
+	CheckFile	check(content_name);
+	check.checking(F_OK | R_OK);
+	if (check.getAccessbility() < 0) {
+		getDefaultError();
+		return ;
+	}
+	has_content_fd = true;
+	if (!getStaticFileFd(content_name)) {
+		getDefaultError();
+		return ;
+	}
+	response.setContent(
+		Http::getMimeType(CheckFile::fetchExtension(content_name)),
+		check.getFilesize()
+	);
+}
+
+void	Client::errorOverwriteResponse( void ) {
+	emergency_overwrite = true;
+	getDefaultError();
+}
+
+void	Client::errorOverwriteResponse( int status ) {
+	status_code = status;
+	if (emergency_overwrite) {
+		processResponseError();
+		emergency_overwrite = true;
+		return ;
+	}
+	getDefaultError();
 }
 
 void	Client::routeRequest( void ) {
@@ -260,7 +284,7 @@ const std::string&	Client::getCurrentUri( void ) const {
 void	Client::addContent( int status_code_, const std::string &str, size_t content_length ) {
 	status_code = status_code_;
 	content_name = str;
-	length = content_length;
+	content_length = content_length;
 }
 
 void	Client::addDir( const std::string &str ) {
@@ -277,11 +301,8 @@ std::vector<Location>::const_iterator	Client::getLocationRef( void ) const {
 	return (location_ref);
 }
 
-bool	Client::checkHttpResponse( void ) const {
-	if (status_code >= 300) {
-		return (false);
-	}
-	return (true);
+bool	Client::checkResponseStatus( void ) const {
+	return ((status_code < 300) ? true : false);
 }
 
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
@@ -299,6 +320,4 @@ std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	return (o);
 }
 
-bool	Client::checkResponseStatus( void ) const { return (finish_response); }
-
-// size_t	Client::getBytesSent( void ) const { return(bytes_sent); }
+bool	Client::checkResponseReady( void ) const { return (response_ready); }

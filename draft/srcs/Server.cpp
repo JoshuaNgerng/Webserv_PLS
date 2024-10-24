@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/23 00:03:52 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 19:14:57 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,6 @@
 const char *Server::server_name = NULL;
 
 Server::Server( void ) { }
-
-// Server::Server( const Server &src ) :
-// 	server_no(src.server_no), client_limit(src.client_limit),
-// 	server_fds(src.server_fds), client_fds(src.client_fds),
-// 	server_info(src.server_info) { }
 
 Server::Server( const Server &src ) {
 	*this = src;
@@ -36,23 +31,8 @@ Server&	Server::operator=( const Server &src )
 
 Server::~Server( void ) { }
 
-// Server&	Server::operator=( const Server &src )
-// {
-// 	if (this == &src)
-// 		return (*this);
-// 	server_no = src.server_no;
-// 	client_limit = src.client_limit;
-// 	server_fds = src.server_fds;
-// 	client_fds = src.client_fds;
-// 	server_info = src.server_info;
-// 	return (*this);
-// }
-
 bool	Server::checkBufferfds( void ) const {
-	if (buffer_counter > server_limit) {
-		return (false);
-	}	
-	return (true);
+	return ((buffer_counter > server_limit) ? false : true);
 }
 
 // may need to revise if use std::allocator without resever
@@ -67,6 +47,16 @@ void	Server::addBufferfds( int fd, int events ) {
 
 void	Server::addBufferfds( int fd ) {
 	addBufferfds(fd, POLLIN | POLLOUT);
+}
+
+void	Server::removeSingleFd( int fd ) {
+	for (size_t i = server_no; i < poll_tracker; i ++) {
+		if (socket_fds[i].fd == fd) {
+			close(fd);
+			socket_fds.erase(socket_fds.begin() + i);
+			break ;
+		}
+	}
 }
 
 void	Server::addClientContentFd( Client &client ) {
@@ -164,7 +154,12 @@ void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client, size_t index )
 		client.clientRecvHttp();
 		return ;
 	}
-	client.clientRecvContent();
+	if (!client.clientRecvContent()) {
+		removeSingleFd(poll_fd.fd);
+		client.errorOverwriteResponse(500);
+		// ping Client to reroute for error page
+		return ;
+	}
 }
 
 void	Server::handleClientSent( pollfd_t &poll_fd, Client &client, size_t index ) {
@@ -188,12 +183,14 @@ void	Server::handleClient( size_t index ) {
 	if (poll_fd.revents & POLLIN) {
 		handleClientRecv(poll_fd, *ptr, index);
 	}
-	addClientContentFd(*ptr);
 	if (poll_fd.revents & POLLOUT) {
 		handleClientSent(poll_fd, *ptr, index);
 	}
 	if (poll_fd.revents & (POLLHUP | POLLERR)) {
-		clearClient(ptr);
+		clearClient(ptr);// if fd is not client socket not full remove  ping client
+	}
+	if (!ptr->contentFdtoServer()) {
+		addClientContentFd(*ptr);
 	}
 	// check timer , abort(etc invalid header) 
 }
@@ -300,7 +297,7 @@ std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref ) {
 std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
 	o << "Server Status\n";
 	o << "Server info\n";
-	o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
-	o << "Servers info\n" << ref.displayServerInfo(o) << '\n';
+	// o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
+	// o << "Servers info\n" << ref.displayServerInfo(o) << '\n';
 	return (o);
 }

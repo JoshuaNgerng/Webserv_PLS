@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/16 07:08:42 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 19:03:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,23 +47,25 @@ class Server
 
 	private:
 		typedef std::list<Client>::iterator client_ptr;
-		static const socklen_t			socklen = sizeof(sockaddr_in_t);
-		static const int				socket_type = SOCK_STREAM;
-		static const int				socket_protocol = 0;
-		static const int				fcntl_flag = (O_NONBLOCK );
-		static const int				timeout = (3 * 60 * 1000);
-		nfds_t							server_no;
-		nfds_t							server_limit;
-		nfds_t							fd_counter;
-		nfds_t							buffer_counter;
-		nfds_t							poll_tracker;
-		std::vector<pollfd_t>			socket_fds; // load all servers then only add clients (assume all fd on the same vector)
-		std::vector<pollfd_t>			buffer_new_fd; // store new fds
-		std::vector<serverinfo_ptr>		server_mapping; // server_index to ServerInfo_index
-		std::vector<addrinfo_ptr>		socketfd_mapping;
-		std::map<int, client_ptr>		client_mapping; // client fd to client index
-		std::vector<ServerInfo>			server_info;
-		std::list<Client>				client_info;
+		static const socklen_t	socklen = sizeof(sockaddr_in_t);
+		static const int		socket_type = SOCK_STREAM;
+		static const int		socket_protocol = 0;
+		static const int		fcntl_flag = (O_NONBLOCK );
+		static const int		timeout = (3 * 60 * 1000);
+
+		nfds_t	server_no;
+		nfds_t	server_limit;
+		nfds_t	fd_counter;
+		nfds_t	buffer_counter;
+		nfds_t	poll_tracker;
+
+		std::vector<pollfd_t>		socket_fds; // load all servers then only add clients (assume all fd on the same vector)
+		std::vector<pollfd_t>		buffer_new_fd; // store new fds
+		std::vector<serverinfo_ptr>	server_mapping; // server_index to ServerInfo_index
+		std::vector<addrinfo_ptr>	socketfd_mapping;
+		std::map<int, client_ptr>	client_mapping; // client fd to client index
+		std::vector<ServerInfo>		server_info;
+		std::list<Client>			client_info;
 
 		void	setupSockets( void );
 		void	setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer );
@@ -73,6 +75,7 @@ class Server
 		bool	checkBufferfds( void ) const;
 		void	addBufferfds( int fd );
 		void	addBufferfds( int fd, int events );
+		void	removeSingleFd( int fd );
 		void	handleServer( size_t index );
 		void	handleClient( size_t index );
 		void	handleClientRecv( pollfd_t &pollfd, Client &client, size_t index );

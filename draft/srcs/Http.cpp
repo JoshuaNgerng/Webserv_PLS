@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Http.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/22 20:46:55 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 18:20:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,10 +108,6 @@ int	Http::checkMethods( const std::string &str ) const {
 
 int	Http::checkField( const std::string &str ) const {
 	return (iterEnumStrcmp(HOST, C_LEN, str, fields));
-}
-
-int	Http::checkType( const std::string &str ) const {
-	return (iterEnumStrcmp(TEXT, HTML, str, methods));
 }
 
 bool	Http::makeReponseHeader( std::string &str, int status ) const {

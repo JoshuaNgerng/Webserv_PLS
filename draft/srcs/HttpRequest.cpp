@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/22 23:56:28 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/24 18:22:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,7 +148,7 @@ bool	HttpRequest::addHeaderFields( const std::string &field, const std::string &
 		header_fields[field] = val;
 		return (true);
 	}
-	if (field == methods[COOKIE] || field == methods[CACHE]) {
+	if (field == fields[COOKIE] || field == fields[CACHE]) {
 		it->second += "; ";
 		it->second += val;
 		return (true);
@@ -178,7 +178,8 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 		if (normalizeString(buffer_field)) {
 			return (false);
 		}
-		buffer_value = token.substr(pos + 1);
+		int space = (token[pos + 1] == ' ') ? 1 : 0;
+		buffer_value = token.substr(pos + 1 + space);
 		if (checkValue(buffer_value)) {
 			return (false);
 		}
@@ -203,17 +204,16 @@ bool	HttpRequest::validateHeader( void ) {
 
 bool	HttpRequest::validateBody( void ) {
 	typedef std::map<std::string, std::string>::iterator iter;
-	iter it = header_fields.find(methods[C_TYPE]);
+	iter it = header_fields.find(fields[C_TYPE]);
 	int check = -1;
 	if (it == header_fields.end()) {
 		goto fail;
 	}
-	check = checkType(it->second);
-	if (check < 0) {
+	if (!getMimeType(it->second)) {
 		goto fail;
 	}
 	content_type = static_cast<type>(check);
-	it = header_fields.find(methods[C_LEN]);
+	it = header_fields.find(fields[C_LEN]);
 	if (it == header_fields.end()) {
 		goto fail;
 	}
