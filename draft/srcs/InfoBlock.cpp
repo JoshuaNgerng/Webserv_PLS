@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 22:26:09 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/25 10:07:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ void	InfoBlock::matchUri( Client &client, bool autoindex_ ) const {
 		EmbeddedVariable::resolveString(buffer, *it, client);
 		path = root + buffer;
 		matchUriSingle(client, path, autoindex_);
-		if (client.checkHttpResponse())
+		if (client.checkResponseStatus())
 			return ;
 		buffer.clear();
 	}

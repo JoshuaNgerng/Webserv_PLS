@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 22:43:44 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/25 10:02:34 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	ServerInfo::matchUri( Client &client ) const {
 			}
 		}
 	}
-	client = ptr;
+	client << ptr;
 	bool	b = (autoindex == on) ? true : false;
 	if (ptr != location.end()) {
 		ptr->matchUri(client, b);

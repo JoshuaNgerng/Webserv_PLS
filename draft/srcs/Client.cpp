@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/24 18:48:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/25 18:20:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ Client::~Client( void ) {
 	}
 }
 
-Client&	Client::operator=( const std::vector<Location>::const_iterator &it ) {
+Client&	Client::operator<<( const std::vector<Location>::const_iterator &it ) {
 	location_ref = it;
 	return (*this);
 }
@@ -113,7 +113,7 @@ bool	Client::clientRecvHttp( void ) {
 	char	buffer[recv_buffer_size + 1];
 	ssize_t	r = recv(socket_fd, buffer, recv_buffer_size, recv_flag);
 	if (r == 0) {
-		return (false);
+		return (false);//delete if socket fd is zero or less ?
 	}
 	if (r < 0) {
 		return (false);
@@ -228,11 +228,15 @@ void	Client::processResponseError( void ) {
 		getDefaultError();
 		return ;
 	}
-	has_content_fd = true;
+	if (content_fd > 0) {
+		close(content_fd);
+	}
 	if (!getStaticFileFd(content_name)) {
 		getDefaultError();
 		return ;
 	}
+	has_content_fd = true;
+	is_content_fd_in_server = false;
 	response.setContent(
 		Http::getMimeType(CheckFile::fetchExtension(content_name)),
 		check.getFilesize()
@@ -253,6 +257,8 @@ void	Client::errorOverwriteResponse( int status ) {
 	}
 	getDefaultError();
 }
+
+void	Client::markforDeletion( void ) { to_be_deleted = true; }
 
 void	Client::routeRequest( void ) {
 	HttpRequest &req = requests.front();
@@ -281,10 +287,10 @@ const std::string&	Client::getCurrentUri( void ) const {
 	return (requests.front().getUri());
 }
 
-void	Client::addContent( int status_code_, const std::string &str, size_t content_length ) {
+void	Client::addContent( int status_code_, const std::string &str, size_t content_length_ ) {
 	status_code = status_code_;
 	content_name = str;
-	content_length = content_length;
+	content_length = content_length_;
 }
 
 void	Client::addDir( const std::string &str ) {
@@ -305,14 +311,24 @@ bool	Client::checkResponseStatus( void ) const {
 	return ((status_code < 300) ? true : false);
 }
 
+bool	Client::checkResponseReady( void ) const { return (response_ready); }
+
+bool	Client::giveContentFdtoServer( void ) const {
+	return (is_content_fd_in_server);
+}
+
+bool	Client::toBeDeleted( void ) const { return (to_be_deleted); }
+
+void	Client::serverReceived( void ) { is_content_fd_in_server = true; }
+
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
 
 int	Client::getContentFd( void ) const { return(content_fd); }
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	o << "Client socket fd: " << ref.clientSocketFd() << '\n';
-	o << "Client response fd: " << ref.getContentFd();// <<
-		// ", response content status: " << ((ref.isDataReady()) ? "ready" : "not ready") << '\n';
+	o << "Client response fd: " << ref.getContentFd() << '\n';
+	// << ", response content status: " << ((ref.isDataReady()) ? "ready" : "not ready") << '\n';
 	// o << "Request status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
 	// o << "Request from Client\n" << ref.getRequest() << '\n';
 	// o << "response status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
@@ -320,4 +336,3 @@ std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	return (o);
 }
 
-bool	Client::checkResponseReady( void ) const { return (response_ready); }

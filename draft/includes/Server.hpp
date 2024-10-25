@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/24 19:03:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/25 18:18:53 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,15 +75,16 @@ class Server
 		bool	checkBufferfds( void ) const;
 		void	addBufferfds( int fd );
 		void	addBufferfds( int fd, int events );
-		void	removeSingleFd( int fd );
 		void	handleServer( size_t index );
 		void	handleClient( size_t index );
-		void	handleClientRecv( pollfd_t &pollfd, Client &client, size_t index );
-		void	handleClientSent( pollfd_t &pollfd, Client &client, size_t index );
+		void	handleClientRecv( pollfd_t &pollfd, Client &client );
+		void	handleClientSent( pollfd_t &pollfd, Client &client );
 		void	addClientContentFd( Client &client );
 
-		void	clearClient( client_ptr client );
-		void	fetchClientData( client_ptr &ptr );
+		void	error2Client( int fd, client_ptr client );
+		void	markAsDelete( pollfd_t &pollfd );
+		void	markAsDelete( pollfd_t &pollfd, Client &client );
+		void	fetchClientData( int fd );
 
 		// bool	receiveData( int fd , std::string &output ) const;
 		// bool	receiveRequest( Client &client );

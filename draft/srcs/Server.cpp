@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/24 19:14:57 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/25 18:21:14 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,11 @@ Server&	Server::operator=( const Server &src )
 	return (*this);
 }
 
-Server::~Server( void ) { }
+Server::~Server( void ) {
+	for (size_t i = 0; i < server_no; i ++) {
+		close(socket_fds[i].fd);
+	}
+}
 
 bool	Server::checkBufferfds( void ) const {
 	return ((buffer_counter > server_limit) ? false : true);
@@ -49,16 +53,6 @@ void	Server::addBufferfds( int fd ) {
 	addBufferfds(fd, POLLIN | POLLOUT);
 }
 
-void	Server::removeSingleFd( int fd ) {
-	for (size_t i = server_no; i < poll_tracker; i ++) {
-		if (socket_fds[i].fd == fd) {
-			close(fd);
-			socket_fds.erase(socket_fds.begin() + i);
-			break ;
-		}
-	}
-}
-
 void	Server::addClientContentFd( Client &client ) {
 	if (!checkBufferfds()) {
 		return ;
@@ -68,20 +62,25 @@ void	Server::addClientContentFd( Client &client ) {
 		return ;
 	}
 	addBufferfds(fd);
+	client.serverReceived();
 }
 
-void	Server::clearClient( client_ptr client ) {
-	typedef std::vector<pollfd_t>::iterator iter;
-	nfds_t	counter = 0;
-	for (iter it = socket_fds.begin() + server_no; it != socket_fds.end(); it ++) {
-		if (it->fd == client->getContentFd()
-			|| it->fd == client->clientSocketFd()) {
-			counter ++;
-			socket_fds.erase(it);
-		}
+void	Server::markAsDelete( pollfd_t &pollfd ) {
+	client_mapping.erase(pollfd.fd);
+	pollfd.fd = -1;
+}
+
+void	Server::markAsDelete( pollfd_t &pollfd, Client &client ) {
+	markAsDelete(pollfd);
+	client.markforDeletion();
+}
+
+void	Server::error2Client( int fd, client_ptr client ) {
+	if (client->clientSocketFd() == fd) {
+		client->markforDeletion();
+		return ;
 	}
-	poll_tracker -= counter;
-	fd_counter -= counter;
+	client->errorOverwriteResponse(500);
 }
 
 int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
@@ -139,7 +138,13 @@ void	Server::setupSockets( void ) {
 	buffer_new_fd.reserve((num > server_limit) ? server_limit : num);
 }
 
-void	Server::resetFds( void ) {
+void	Server::resetFds( void ) { // erase mark as deleted client somehow
+	typedef std::vector<pollfd_t>::const_iterator iter;
+	for (iter i = socket_fds.begin(); i != socket_fds.end(); i ++) {
+		if (i->fd < 0) {
+			socket_fds.erase(i);
+		}
+	}
 	for (nfds_t i = 0; i < buffer_counter; i ++) {
 		socket_fds.push_back(buffer_new_fd[i]);
 	}
@@ -148,27 +153,30 @@ void	Server::resetFds( void ) {
 	poll_tracker = fd_counter;
 }
 
-void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client, size_t index ) {
-	(void)index;
+
+void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 	if (poll_fd.fd == client.clientSocketFd()) {
-		client.clientRecvHttp();
+		if (!client.clientRecvHttp()) {
+			markAsDelete(poll_fd, client);
+			return ;
+		}
 		return ;
 	}
 	if (!client.clientRecvContent()) {
-		removeSingleFd(poll_fd.fd);
-		client.errorOverwriteResponse(500);
-		// ping Client to reroute for error page
+		markAsDelete(poll_fd);
 		return ;
 	}
 }
 
-void	Server::handleClientSent( pollfd_t &poll_fd, Client &client, size_t index ) {
-	(void)poll_fd;
-	(void)index;
+void	Server::handleClientSent( pollfd_t &poll_fd, Client &client ) {
 	if (!client.checkResponseStatus()) {
 		return ;
 	}
-	client.clientSendResponse();
+	if (poll_fd.fd == client.clientSocketFd()) {
+		if (!client.clientSendResponse()) {
+			markAsDelete(poll_fd, client);
+		}
+	}
 }
 
 void	Server::handleClient( size_t index ) {
@@ -180,16 +188,19 @@ void	Server::handleClient( size_t index ) {
 		return ;
 	}
 	client_ptr ptr = client_mapping[poll_fd.fd];
+	if (ptr->toBeDeleted()) {
+		return ;
+	}
 	if (poll_fd.revents & POLLIN) {
-		handleClientRecv(poll_fd, *ptr, index);
+		handleClientRecv(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & POLLOUT) {
-		handleClientSent(poll_fd, *ptr, index);
+		handleClientSent(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & (POLLHUP | POLLERR)) {
-		clearClient(ptr);// if fd is not client socket not full remove  ping client
+		error2Client(poll_fd.fd, ptr);
 	}
-	if (!ptr->contentFdtoServer()) {
+	if (ptr->giveContentFdtoServer()) {
 		addClientContentFd(*ptr);
 	}
 	// check timer , abort(etc invalid header) 
@@ -215,7 +226,7 @@ void	Server::loopServer( void ) {
 	if (poll(getSocketfds(), poll_tracker, timeout) < 0) {
 		return ; // throw error?
 	}
-	for (size_t index = server_no; index < fd_counter; index ++) { // handle Client first
+	for (size_t index = server_no; index < fd_counter; index ++) {
 		handleClient(index);
 	}
 	for (size_t index = 0; index != server_no; index ++) {
@@ -294,10 +305,10 @@ std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref ) {
 	return (o);
 }
 
-std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
-	o << "Server Status\n";
-	o << "Server info\n";
-	// o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
-	// o << "Servers info\n" << ref.displayServerInfo(o) << '\n';
-	return (o);
-}
+// std::ostream&	operator<<( std::ostream &o, const Server& ref ) {
+// 	o << "Server Status\n";
+// 	o << "Server info\n";
+// 	// o << "Display Sockets: " << ref.displaySocketFds(o) << '\n';
+// 	// o << "Servers info\n" << ref.displayServerInfo(o) << '\n';
+// 	return (o);
+// }
