@@ -139,7 +139,7 @@ void	Server::setupSockets( void ) {
 }
 
 void	Server::resetFds( void ) { // erase mark as deleted client somehow
-	typedef std::vector<pollfd_t>::const_iterator iter;
+	typedef std::vector<pollfd_t>::iterator iter; // changed from const to non-const iterator
 	for (iter i = socket_fds.begin(); i != socket_fds.end(); i ++) {
 		if (i->fd < 0) {
 			socket_fds.erase(i);

@@ -59,7 +59,7 @@ void	CheckFile::checking( int check_flags ) {
 	time_t	buffer;
 	#ifdef __APPLE__
 		buffer = stat_info.st_mtimespec.tv_sec;
-	#elif
+	#else // can't use #elif
 		buffer = stat_info.st_mtim.tv_sec;
 	#endif
 	timeinfo = std::localtime(&buffer);
@@ -94,6 +94,7 @@ const char*	CheckFile::fetchExtension( const std::string &fname ) {
 bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file ) {
 	if (!(file.is_open()))
 		return (false);
+	std::cout << "Here1!\n";
 	dst << file.rdbuf();
 	return (true);
 }
@@ -101,10 +102,14 @@ bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file 
 bool	CheckFile::getFileContent( std::string &dst ) const {
 	std::ifstream		config_file(filename);
 	std::stringstream	fileStream;
+	std::cout << "Test: " << config_file.is_open() << '\n';
+	std::cout << "Test: " << fileStream << '\n';
 	if (!fileToStringStream(fileStream, config_file))
 		return (false);
+	std::cout << "Here2!\n";
 	fileStream << config_file.rdbuf();
 	dst = fileStream.str();
+	std::cout << "Here3!\n";
 	return (true);
 }
 

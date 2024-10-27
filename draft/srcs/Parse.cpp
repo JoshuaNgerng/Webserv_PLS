@@ -318,11 +318,15 @@ void	Parse::processToken( const std::string &token ) {
 		return ;
 	}
 	block_level = checkLevel(block_level, token);
+	std::cout << "Here9!\n";
+	std::cout << "block_level: " << block_level << "\n";
+	std::cout << "bracket_no: " << bracket_no << "\n";
 	if (block_level == 2 && bracket_no == 1) {
 		location.addPath(token);
 	}
 	else if (bracket_no == 1 && block_level == 1) {
-		*ptr = serverinfo;
+		*ptr = serverinfo; // Seg fault here
+		std::cout << "Here10!\n";
 		processServer(token);
 	}
 	else if (bracket_no == 2 && block_level == 2) {
@@ -347,6 +351,7 @@ void	Parse:: processContent( void ) {
 	std::string	token;
 	while (getNextLine()) {
 		while (line_stream >> token) {
+			std::cout << "token: " << token << "\n";
 			processToken(token);
 		}
 	}
@@ -376,12 +381,16 @@ void Parse::parseConfigFile( void ) {
 	if (!(!check.getAccessbility() && check.getType() == file))
 		throw ParsingFileError(file_open);
 	std::string	content;
-	if (check.getFileContent(content))
+	if (!check.getFileContent(content)) // statement terbalik, fixed
 		throw ParsingFileError(file_open);
+	std::cout << "Here5!\n";
 	if (!content.length())
 		throw ParsingFileError(file_empty);
+	std::cout << "Here6!\n";
 	removeComments(content);
+	std::cout << "Here7!\n";
 	content_stream.str(content);
+	std::cout << "Here8!\n";
 	processContent();
 }
 
