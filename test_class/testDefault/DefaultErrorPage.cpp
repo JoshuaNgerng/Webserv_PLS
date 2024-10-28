@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 00:38:44 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 00:37:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/28 18:46:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,15 @@ const char *DefaultErrorPage::template_html =
 
 DefaultErrorPage::DefaultErrorPage( void ) { }
 
-DefaultErrorPage::DefaultErrorPage( const DefaultErrorPage &src ) {
-	(void)src;
+DefaultErrorPage::DefaultErrorPage(const DefaultErrorPage &other) {
+	*this = other;
 }
 
-DefaultErrorPage& DefaultErrorPage::operator=( const DefaultErrorPage &src ) {
-	(void)src; return *this;
+DefaultErrorPage& DefaultErrorPage::operator=(const DefaultErrorPage &other) {
+	if (this != &other) {
+		(void)other;
+	}
+	return *this;
 }
 
 DefaultErrorPage::~DefaultErrorPage( void ) { }
@@ -42,7 +45,7 @@ std::string	DefaultErrorPage::generateHtml( int status, const char *server_name 
 	if (!msg)
 		msg = "Unknown Error";
 	str += msg;
-	str += ' ';
+	str += " ";
 	size_t pos = out.find('*');
 	out.replace(pos, 1, str);
 	pos = out.find('*', pos);

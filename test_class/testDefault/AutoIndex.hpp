@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:31:26 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 00:36:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/28 23:09:48 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,9 @@ private:
 	DIR			*dir;
 
 	int			iterDir( std::string &name, std::string &time, uint64_t &size );
-	std::string	generateHtml( void );
-	std::string	generateXml( void );
-	std::string	generateJson( void );
+	std::string	generateHtml( DIR *dir );
+	std::string	generateXml( DIR *dir );
+	std::string	generateJson( DIR *dir );
 
 	static const char *template_html;
 	static const char *template_xml;

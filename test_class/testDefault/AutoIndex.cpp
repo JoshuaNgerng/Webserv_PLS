@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 00:35:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 00:30:15 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,12 +62,15 @@ AutoIndex::~AutoIndex( void ) { if (dir) { closedir(dir); } }
 
 int	AutoIndex::iterDir( std::string &name, std::string &time, uint64_t &size ) {
 	char	buffer[64];
+	// std::cout << "iterDir??\n";
 	struct dirent *entry = readdir(dir);
 	name.clear();
+	// std::cout << "test iterDir\n";
 	if (!entry) {
 		return (0);
 	}
 	name = entry->d_name;
+	// std::cout << "name?: " << name << '\n';
 	if (name[0] == '.' && name[1] == '\0') {
 		return (-1);
 	}
@@ -75,16 +78,19 @@ int	AutoIndex::iterDir( std::string &name, std::string &time, uint64_t &size ) {
 	CheckFile	file_info(root_name);
 	file_info.checking();
 	if (file_info.getType() == unknown) {
+		// std::cout << "failed file type\n";
 		return (root_name.resize(root_len), -1);
 	}
 	size = file_info.getFilesize();
 	if (file_info.getType() == directory) {
+		// std::cout << "directory\n";
 		name += "/";
 		return (root_name.resize(root_len), 2);
 	}
 	size_t r = std::strftime(buffer, sizeof(buffer), "%b %d %H:%M", file_info.getTime());
 	buffer[r] = '\0';
 	time = buffer;
+	// std::cout << "test end\n";
 	return (root_name.resize(root_len), 1);
 }
 
@@ -113,7 +119,7 @@ static std::string	makeHtmlList( int check, const std::string &name, const std::
 	return (buffer);
 }
 
-std::string	AutoIndex::generateHtml( void ) {
+std::string	AutoIndex::generateHtml( DIR *dir ) {
 	std::string	out(template_html);
 	size_t	pos = out.find("@");
 	out.replace(pos, 1, root_name);
@@ -122,7 +128,9 @@ std::string	AutoIndex::generateHtml( void ) {
 	std::string	fname;
 	std::string	time;
 	uint64_t	size;
+	// std::cout << "testinng\n";
 	int check = iterDir(fname, time, size);
+	// std::cout << "testing\n";
 	pos = out.find('*', pos);
 	out.erase(pos, 1);
 	while (check) {
@@ -138,7 +146,7 @@ std::string	AutoIndex::generateHtml( void ) {
 	return (out);
 }
 
-std::string	AutoIndex::generateXml( void ) {
+std::string	AutoIndex::generateXml( DIR *dir ) {
 	std::string	out(template_xml);
 	std::string	fname;
 	std::string	time;
@@ -175,7 +183,7 @@ std::string	AutoIndex::generateXml( void ) {
 	return (out);
 }
 
-std::string	AutoIndex::generateJson( void ) {
+std::string	AutoIndex::generateJson( DIR *dir ) {
 	std::string	out("[\n");
 	std::string	fname;
 	std::string	time;
@@ -217,10 +225,10 @@ std::string	AutoIndex::generateResource( const char *dirname ) {
 	root_name += '/';
 	root_len = root_name.length();
 	switch (autoindex_format) {
-		case html:	out = generateHtml();	break;
-		case xml:	out = generateXml();		break;
-		case json:	out = generateJson();	break;
-		case jsonp:	out = generateJson();	break;
+		case html:	out = generateHtml(dir);	break;
+		case xml:	out = generateXml(dir);		break;
+		case json:	out = generateJson(dir);	break;
+		case jsonp:	out = generateJson(dir);	break;
 		default:	break;
 	}
 	closedir(dir);
