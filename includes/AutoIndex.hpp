@@ -1,0 +1,51 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   AutoIndex.hpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/10/02 02:31:26 by jngerng           #+#    #+#             */
+/*   Updated: 2024/10/23 13:06:46 by jngerng          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef AUTOINDEX_HPP
+# define AUTOINDEX_HPP
+# include "Const.hpp"
+# include "InfoBlock.hpp"
+
+typedef enum auto_index_format {
+	none,
+	html,
+	xml,
+	json,
+	jsonp
+}	format;
+
+class AutoIndex {
+public:
+	AutoIndex( void );
+	AutoIndex( const InfoBlock &src );
+	AutoIndex( format f, boolean bt, boolean bs );
+	AutoIndex( const AutoIndex &src );
+	AutoIndex& operator=( const AutoIndex &src );
+	~AutoIndex( void );
+	const char	*getExtension( void ) const;
+	std::string generateResource( const std::string &dirname ) const;
+	std::string generateResource( const char *dirname ) const;
+
+private:
+	int		autoindex_format;
+	bool	autoindex_time;
+	bool	autoindex_exact_size;
+
+	std::string	generateHtml( DIR *dir, const char *dirname ) const;
+	std::string	generateXml( DIR *dir ) const;
+	std::string	generateJson( DIR *dir ) const;
+
+	static const char *template_html;
+	static const char *template_xml;
+};
+
+#endif
