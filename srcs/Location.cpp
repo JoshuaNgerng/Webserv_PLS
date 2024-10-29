@@ -3,16 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 20:48:51 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/29 14:44:22 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
 
-Location::Location( void ) { }
+Location::Location( void ) :
+path(""),
+alias(""),
+internal(false),
+cgi_mapping(),
+limit_except(),
+return_(),
+is_cgi(false)
+{ }
 
 Location::Location( const Location &src ) : InfoBlock(src) {
 	*this = src;

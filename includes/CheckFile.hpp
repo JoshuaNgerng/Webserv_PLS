@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CheckFile.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/16 07:37:12 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/29 14:38:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@ class CheckFile {
 	public:
 		CheckFile( const char *filename_ );
 		CheckFile( const std::string &filename_ );
-    	CheckFile(const CheckFile &other);
-		CheckFile& operator=(const CheckFile &other);
+		CheckFile( const CheckFile &src );
+		CheckFile& operator=( const CheckFile &src );
 		~CheckFile( void );
 
 		void	checking( void );

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/29 02:10:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/23 13:08:54 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,23 @@ void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, 
 	}
 }
 
-// void	shortFormStringDeny( std::string &str, int8_t *deny ) {	
+// void	EmbeddedVariable::shortFormStringAllow( std::string &str, int8_t *allow ) {
+// 	size_t  start_dollar = str.find('$'), end = 0;
+// 	while (start_dollar != std::string::npos) {
+// 		end = find_set(str, start_dollar);
+// 		for (size_t iter = 0; variables[iter]; iter ++) {
+// 			if (!str.compare(start_dollar + 1, end - start_dollar - 1, variables[iter])) {
+// 				std::string ref;
+// 				ref += static_cast<char>(shortform[iter]);
+// 				str.replace(start_dollar, end - start_dollar, ref);
+// 			}
+// 		}
+// 		start_dollar = str.find('$', end);
+// 	}
+// }
+
+// void	shortFormStringDeny( std::string &str, int8_t *deny ) {
+	
 // }
 
 EmbeddedVariable::EmbeddedVariable( void ) { }

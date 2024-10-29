@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 18:20:40 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 14:59:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ class Client {
 	typedef std::vector<ServerInfo>::const_iterator	server_ptr;
 	typedef std::vector<Location>::const_iterator	loc_ptr;
 	public:
-		Client( void );
 		Client( server_ptr &it );
 		Client( const Client &src );
 		~Client( void );
@@ -37,7 +36,6 @@ class Client {
 							size_t	content_length = 0 );
 		void	addDir( const std::string &str );
 		void	serverReceived( void );
-
 
 		/* getters */
 		int		clientSocketFd( void ) const;
@@ -94,12 +92,15 @@ class Client {
 		bool					completed;
 		bool					to_be_deleted;
 
+		Client( void );
 		void	routeRequest( void );
 		void	processResponseSuccess( void );
 		void	processResponseRedirect( void );
 		void	processResponseError( void );
 		void	getDefaultError( void );
 		bool	getStaticFileFd( const std::string &fname );
+		bool	getCgiPipeFd( const std::string &fname );
+		bool	getProxySocketFd( const std::string &fname );
 		void	reset( void );
 };
 

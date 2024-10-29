@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 13:14:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 15:39:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,20 @@
 
 const char *Server::server_name = NULL;
 
-Server::Server( void ) { }
+Server::Server( void ) :
+server_no(0),
+server_limit(0),
+fd_counter(0),
+buffer_counter(0),
+poll_tracker(0),
+socket_fds(),
+buffer_new_fd(),
+server_mapping(),
+socketfd_mapping(),
+client_mapping(),
+server_info(),
+client_info()
+{ }
 
 Server::Server( const Server &src ) {
 	*this = src;
@@ -57,13 +70,12 @@ void	Server::addClientContentFd( client_ptr client ) {
 	if (!checkBufferfds()) {
 		return ;
 	}
-	int	fd = client->getContentFd();
+	int	fd = client.getContentFd();
 	if (fd < 0) {
 		return ;
 	}
 	addBufferfds(fd);
-	client->serverReceived();
-	client_mapping[fd] = client;
+	client.serverReceived();
 }
 
 void	Server::markAsDelete( pollfd_t &pollfd ) {
@@ -140,29 +152,14 @@ void	Server::setupSockets( void ) {
 }
 
 void	Server::resetFds( void ) { // erase mark as deleted client somehow
-	typedef std::vector<pollfd_t>::const_iterator	iter; // changed from const to non-const iterator
-	iter it = socket_fds.begin();
-	for (size_t i = 0; i < server_no; i ++) {
-		if (it == socket_fds.end()) {
-			break ;
-		}
-	}
-	while (it != socket_fds.end()) {
-		if (it->fd < 0) {
-			it = socket_fds.erase(it);
-		} else {
-			it ++;
+	typedef std::vector<pollfd_t>::iterator iter; // changed from const to non-const iterator
+	for (iter i = socket_fds.begin(); i != socket_fds.end(); i ++) {
+		if (i->fd < 0) {
+			socket_fds.erase(i);
 		}
 	}
 	for (nfds_t i = 0; i < buffer_counter; i ++) {
 		socket_fds.push_back(buffer_new_fd[i]);
-	}
-	for (client_ptr ptr = client_info.begin(); ptr != client_info.end();) {
-		if (ptr->toBeDeleted()) {
-			ptr = client_info.erase(ptr);
-		} else {
-			ptr ++;
-		}
 	}
 	buffer_new_fd.clear();
 	buffer_counter = 0;

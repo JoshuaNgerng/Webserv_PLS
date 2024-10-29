@@ -3,17 +3,27 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 01:39:42 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 14:52:05 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerInfo.hpp"
 #include "Client.hpp"
 
-ServerInfo::ServerInfo( void ) : InfoBlock() {}
+ServerInfo::ServerInfo( void ) : 
+InfoBlock(),
+listen_sockets(),
+server_name(),
+client_header_buffer_size(0),
+client_header_timeout(0),
+merge_slash(false),
+ignore_invalid_header(false),
+location()
+{}
+
 
 ServerInfo::ServerInfo( const ServerInfo &src ) : InfoBlock(src) {
 	*this = src;
@@ -21,18 +31,7 @@ ServerInfo::ServerInfo( const ServerInfo &src ) : InfoBlock(src) {
 
 ServerInfo::~ServerInfo( void ) { }
 
-ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) {
-	if (this != &src) {
-		return (*this);
-	}
-	listen_sockets = src.listen_sockets;
-	server_name = src.server_name;
-	client_header_buffer_size = src.client_header_buffer_size;
-	client_header_timeout = src.client_header_timeout;
-	merge_slash = src.merge_slash;
-	location = src.location;
-	return (*this);
-}
+ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) { (void)src; return (*this); }
 
 void	ServerInfo::reset( void ) {
 	InfoBlock::reset();

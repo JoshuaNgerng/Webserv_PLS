@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 02:46:39 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/25 18:20:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,9 +79,6 @@ int	Client::clientSocketFd( int listen_fd ) {
 }
 
 bool	Client::getStaticFileFd( const std::string &fname ) {
-	if (content_fd > 0) {
-		close(content_fd);
-	}
 	content_fd = open(fname.c_str(), O_RDONLY);
 	if (content_fd < 0) {
 		status_code = 500;
