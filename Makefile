@@ -6,7 +6,7 @@
 #    By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/13 16:47:15 by jngerng           #+#    #+#              #
-#    Updated: 2024/10/29 14:19:47 by jngerng          ###   ########.fr        #
+#    Updated: 2024/10/29 15:47:31 by jngerng          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ SRC = $(foreach item, $(FILES), $(SRC_DIR)/$(item).cpp)
 M_SRC = main
 OBJ = $(foreach item, $(FILES) $(M_SRC), $(OBJ_DIR)/$(item).o)
 INC = -I $(INC_DIR)
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -pedantic -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -pedantic #-fsanitize=address
 CC = c++
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp

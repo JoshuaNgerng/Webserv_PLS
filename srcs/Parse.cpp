@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 21:02:34 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/29 16:05:00 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,39 @@ const char		*Parse::ParsingConfError::type = "";
 uint64_t		Parse::buffer = 0;
 const uint64_t	*Parse::ParsingConfError::line_no = &buffer;
 
-Parse::Parse( void ) : semicolon(false), filename("default.conf"), server(), location() {}
+Parse::Parse( void ) :
+content_stream(),
+line_stream(),
+line_counter(0),
+block_level(0),
+bracket_no(0),
+semicolon(false),
+no_para(0),
+directive_ptr(NULL),
+filename(""),
+server(NULL),
+ptr(NULL),
+serverinfo(),
+location(),
+listen_socket()
+{ }
 
-Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_){
-	semicolon = false;
-}
+Parse::Parse( const char *config, Server &server_ ) :
+content_stream(),
+line_stream(),
+line_counter(0),
+block_level(0),
+bracket_no(0),
+semicolon(false),
+no_para(0),
+directive_ptr(NULL),
+filename(config),
+server(&server_),
+ptr(NULL),
+serverinfo(),
+location(),
+listen_socket()
+{ }
 
 Parse::Parse( const Parse &src ) {
 	*this = src;
@@ -325,12 +353,13 @@ void	Parse::processToken( const std::string &token ) {
 		location.addPath(token);
 	}
 	else if (bracket_no == 1 && block_level == 1) {
-		*ptr = serverinfo; // Seg fault here
-		std::cout << "Here10!\n";
+		std::cout << "Here Server!\n";
+		ptr = &serverinfo;
 		processServer(token);
 	}
 	else if (bracket_no == 2 && block_level == 2) {
-		*ptr = location;
+		std::cout << "Here Location\n";
+		ptr = &location;
 		if (!location.getLocationPath().length())
 			throw ParsingConfError(invalid_no_parameter, "location");
 		processLocation(token);
