@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 02:52:36 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 13:14:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,7 @@ void	Server::resetFds( void ) { // erase mark as deleted client somehow
 	}
 	for (client_ptr ptr = client_info.begin(); ptr != client_info.end();) {
 		if (ptr->toBeDeleted()) {
-			client_info.erase(ptr);
+			ptr = client_info.erase(ptr);
 		} else {
 			ptr ++;
 		}
