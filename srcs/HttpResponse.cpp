@@ -3,17 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/24 12:03:40 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 14:53:42 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpResponse.hpp"
 #include "Server.hpp"
 
-HttpResponse::HttpResponse( void ) { }
+HttpResponse::HttpResponse( void ) :
+status(0),
+header(""),
+body(""),
+proxy(false),
+final(""),
+ready(false)
+{ }
 
 HttpResponse::HttpResponse( const HttpResponse &src ) : Http(src) { *this = src; }
 
