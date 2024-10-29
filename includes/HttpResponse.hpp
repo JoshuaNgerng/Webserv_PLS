@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/24 11:45:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 14:51:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class HttpResponse : Http {
 
 		size_t	getBodyLength( void ) const;
 		size_t	getTotalLength( void ) const;
+		bool	isReady( void ) const; // not defined
 		const char *getPtrPos( size_t no_bytes_send ) const;
 
 	private:
@@ -38,6 +39,7 @@ class HttpResponse : Http {
 		std::string	body;
 		bool		proxy;
 		std::string	final;
+		bool		ready;
 
 		void	addField( const char *name, const std::string &val );
 		void	addField( const char *name, const char *val );
