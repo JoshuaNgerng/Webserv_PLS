@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 10:07:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 02:07:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,7 +163,7 @@ void	InfoBlock::addTryFiles( const std::string &add ) {
 	// static int8_t	allow_var[] = {};
 	// try {
 	try_files.push_back(add);
-	EmbeddedVariable::shortFormString(try_files[try_files.size() - 1]);
+	// EmbeddedVariable::shortFormString(try_files[try_files.size() - 1]);
 	// }
 }
 

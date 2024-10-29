@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 18:21:14 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 02:52:36 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,16 +53,17 @@ void	Server::addBufferfds( int fd ) {
 	addBufferfds(fd, POLLIN | POLLOUT);
 }
 
-void	Server::addClientContentFd( Client &client ) {
+void	Server::addClientContentFd( client_ptr client ) {
 	if (!checkBufferfds()) {
 		return ;
 	}
-	int	fd = client.getContentFd();
+	int	fd = client->getContentFd();
 	if (fd < 0) {
 		return ;
 	}
 	addBufferfds(fd);
-	client.serverReceived();
+	client->serverReceived();
+	client_mapping[fd] = client;
 }
 
 void	Server::markAsDelete( pollfd_t &pollfd ) {
@@ -139,14 +140,29 @@ void	Server::setupSockets( void ) {
 }
 
 void	Server::resetFds( void ) { // erase mark as deleted client somehow
-	typedef std::vector<pollfd_t>::iterator iter; // changed from const to non-const iterator
-	for (iter i = socket_fds.begin(); i != socket_fds.end(); i ++) {
-		if (i->fd < 0) {
-			socket_fds.erase(i);
+	typedef std::vector<pollfd_t>::const_iterator	iter; // changed from const to non-const iterator
+	iter it = socket_fds.begin();
+	for (size_t i = 0; i < server_no; i ++) {
+		if (it == socket_fds.end()) {
+			break ;
+		}
+	}
+	while (it != socket_fds.end()) {
+		if (it->fd < 0) {
+			it = socket_fds.erase(it);
+		} else {
+			it ++;
 		}
 	}
 	for (nfds_t i = 0; i < buffer_counter; i ++) {
 		socket_fds.push_back(buffer_new_fd[i]);
+	}
+	for (client_ptr ptr = client_info.begin(); ptr != client_info.end();) {
+		if (ptr->toBeDeleted()) {
+			client_info.erase(ptr);
+		} else {
+			ptr ++;
+		}
 	}
 	buffer_new_fd.clear();
 	buffer_counter = 0;
@@ -201,7 +217,7 @@ void	Server::handleClient( size_t index ) {
 		error2Client(poll_fd.fd, ptr);
 	}
 	if (ptr->giveContentFdtoServer()) {
-		addClientContentFd(*ptr);
+		addClientContentFd(ptr);
 	}
 	// check timer , abort(etc invalid header) 
 }

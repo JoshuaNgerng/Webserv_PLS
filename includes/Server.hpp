@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 18:18:53 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 02:47:31 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ class Server
 		nfds_t	buffer_counter;
 		nfds_t	poll_tracker;
 
-		std::vector<pollfd_t>		socket_fds; // load all servers then only add clients (assume all fd on the same vector)
-		std::vector<pollfd_t>		buffer_new_fd; // store new fds
+		std::vector<pollfd_t>		socket_fds;
+		std::vector<pollfd_t>		buffer_new_fd;
 		std::vector<serverinfo_ptr>	server_mapping; // server_index to ServerInfo_index
 		std::vector<addrinfo_ptr>	socketfd_mapping;
 		std::map<int, client_ptr>	client_mapping; // client fd to client index
@@ -79,7 +79,7 @@ class Server
 		void	handleClient( size_t index );
 		void	handleClientRecv( pollfd_t &pollfd, Client &client );
 		void	handleClientSent( pollfd_t &pollfd, Client &client );
-		void	addClientContentFd( Client &client );
+		void	addClientContentFd( client_ptr client );
 
 		void	error2Client( int fd, client_ptr client );
 		void	markAsDelete( pollfd_t &pollfd );
