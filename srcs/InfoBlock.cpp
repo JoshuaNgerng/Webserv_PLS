@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 15:51:41 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 16:17:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,6 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	if (this == &src ) {
 		return (*this);
 	}
-	std::cout << "testing\n";
 	error_page = src.error_page;
 	try_files = src.try_files;
 	access_log = src.access_log;
