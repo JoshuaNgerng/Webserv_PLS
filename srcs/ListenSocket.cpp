@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:15:36 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 15:28:04 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ ListenSocket::ListenSocket( const ListenSocket &src ) {
 }
 
 ListenSocket& ListenSocket::operator=( const ListenSocket &src ) {
-	std::cout << "test listen socket assignment\n";
 	if (this != &src) {
 		addr_info_head = src.addr_info_head;
 		addr_info_tail = src.addr_info_tail;
@@ -67,25 +66,17 @@ bool	ListenSocket::addAddress(
 ) {
 	addrinfo_t	hints = {(AI_CANONNAME | AI_PASSIVE), AF_UNSPEC, SOCK_STREAM,
 							0, sizeof(*(hints.ai_addr)), 0, 0, 0};
-	std::cout << "test addAddr\n"; 
 	if (ipv6only)
 		hints.ai_family = AF_INET6;
 	if ((status = getaddrinfo(addr.c_str(),
 			((port.length()) ? port.c_str() : "80"), &hints, addr_info_tail)) < 0) {
 		return (false);
 	}
-	std::cout << "test addAddr2\n";
 	addrinfo_t	*ptr = *addr_info_tail;
 	while (ptr->ai_next) {
-		std::cout << "test add fam " << ptr->ai_family << '\n';
-		std::cout << "test add sock " << ptr->ai_socktype << '\n';
-		std::cout << "test add proto " << ptr->ai_protocol << '\n';
 		len ++;
 		ptr = ptr->ai_next;
 	}
-	std::cout << "test add fam " << ptr->ai_family << '\n';
-	std::cout << "test add sock " << ptr->ai_socktype << '\n';
-	std::cout << "test add proto " << ptr->ai_protocol << '\n';
 	addr_info_tail = &(ptr->ai_next);
 	len ++;
 	return (true);
@@ -161,9 +152,6 @@ bool	ListenSocket::socketSetup( int fd ) const {
 }
 
 int	ListenSocket::addListenFd( const Iterator &it ) const {
-	std::cout << "test fam " << it->ai_family << '\n';
-	std::cout << "test sock " << it->ai_socktype << '\n';
-	std::cout << "test proto " << it->ai_protocol << '\n';
 	int	fd = socket(it->ai_family, it->ai_socktype, it->ai_protocol);
 	if (fd < 0) {
 		return (-1);
@@ -215,7 +203,6 @@ void	ListenSocket::emptyAddrPtr( void ) {
 }
 
 void	ListenSocket::reset( void ) {
-	std::cout << "listensocket reset called\n";
 	emptyAddrPtr();
 	default_server = false;
 	backlog = SOMAXCONN;
@@ -232,10 +219,6 @@ void	ListenSocket::reset( void ) {
 }
 
 ListenSocket::Iterator	ListenSocket::begin( void ) const {
-	std::cout << "testing begin " << addr_info_head << '\n';
-	std::cout << "testing begin fam " << addr_info_head->ai_family << '\n';
-	std::cout << "testing begin sock " << addr_info_head->ai_socktype << '\n';
-	std::cout << "testing begin proto " << addr_info_head->ai_protocol << '\n';
 	return (Iterator(addr_info_head));
 }
 
@@ -302,11 +285,11 @@ std::ostream&	operator<<( std::ostream &o, const ListenSocket& ref ) {
 		}
 		inet_ntop(it->ai_family, addr, buffer, sizeof(buffer));
 		if (it->ai_family == AF_INET6) {
-			std::cout << '[' << buffer << ']';
+			o << '[' << buffer << ']';
 		}
 		else
-			std::cout << buffer;
-		std::cout << ':' << port << ' ';
+			o << buffer;
+		o << ':' << port << ' ';
 	}
 	return (o);
 }

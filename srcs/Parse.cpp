@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:02:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 15:29:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,14 +238,12 @@ void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 				throw ParsingConfError(excepted_delimitor, ";");
 			continue ;
 		}
-		std::cout << "token: " << token << '\n';
 		if (token[token.length() - 1] == ';') {
 			token.erase(token.length() - 1);
 			semicolon = true;
 		}
 		else
 			no_para ++;
-		std::cout << "test para count: " << no_para << '\n';
 		(this->*process)(token);
 	}
 	if (!semicolon)
@@ -568,7 +566,6 @@ void	Parse::processIndex( std::string &token ) {
 }
 
 void	Parse::processAutoIndex( std::string &token ) {
-	std::cout << "wtf" << token << "\n";
 	if (!token.length()) {
 		if (no_para != 1) {
 			throw ParsingConfError(invalid_no_parameter, directive_ptr);
@@ -678,7 +675,6 @@ void	Parse::processListenAddress( std::string &token ) {
 	if (listen_socket.getStatus()) {
 		throw ParsingConfError(token, directive_ptr);
 	}
-	std::cout << "testing: " << listen_socket << '\n';
 }
 
 bool	Parse::processListenPara1( std::string &token ) {
@@ -747,14 +743,10 @@ void	Parse::processListenKeepAlive( std::string &token, size_t pos ) {
 
 void	Parse::processListen( std::string &token ) {
 	static bool start = true;
-	std::cout << "test prcoess " << token << '\n';
 	if (!token.length()) {
-		std::cout << "process?\n";
 		goto add;
 	}
-	std::cout << "huh?" << start << '\n';
 	if (start) {
-		std::cout << "huh?\n";
 		start = false;
 		processListenAddress(token);
 	} else {

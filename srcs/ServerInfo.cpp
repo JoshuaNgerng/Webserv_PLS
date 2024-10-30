@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:15:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 15:29:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,7 @@ void	ServerInfo::reset( void ) {
 
 void	ServerInfo::addLocation( const Location &add ) { location.push_back(add); }
 
-void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add);
-	std::cout << "test added " << listen_sockets.size() << '\n';
-}
+void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add); }
 
 void	ServerInfo::addServerName( const std::string &add ) { server_name.push_back(add); }
 
@@ -93,7 +91,6 @@ void	ServerInfo::matchUri( Client &client ) const {
 }
 
 std::vector<ListenSocket>::const_iterator	ServerInfo::listenBegin( void ) const {
-	std::cout << "test size lisnte sockets " << listen_sockets.size() << '\n';
 	return (listen_sockets.begin());
 }
 
