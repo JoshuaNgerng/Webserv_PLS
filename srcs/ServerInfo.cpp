@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 15:46:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 15:15:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,25 @@ ServerInfo::ServerInfo( const ServerInfo &src ) : InfoBlock(src) {
 
 ServerInfo::~ServerInfo( void ) { }
 
-ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) { (void)src; return (*this); }
+ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) {
+	if (this == &src) {
+		return (*this);
+	}
+	listen_sockets = src.listen_sockets;
+	server_name = src.server_name;
+	client_header_buffer_size = src.client_header_buffer_size;
+	client_header_timeout = src.client_header_timeout;
+	merge_slash = src.merge_slash;
+	location = src.location;
+	return (*this);
+}
 
 void	ServerInfo::reset( void ) {
+	typedef	std::vector<ListenSocket>::iterator	iter;
 	InfoBlock::reset();
+	for (iter it = listen_sockets.begin(); it != listen_sockets.end(); it ++) {
+		it->emptyAddrPtr();
+	}
 	listen_sockets.clear();
 	server_name.clear();
 	location.clear();
@@ -41,7 +56,9 @@ void	ServerInfo::reset( void ) {
 
 void	ServerInfo::addLocation( const Location &add ) { location.push_back(add); }
 
-void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add); }
+void	ServerInfo::addListen( const ListenSocket &add ) { listen_sockets.push_back(add);
+	std::cout << "test added " << listen_sockets.size() << '\n';
+}
 
 void	ServerInfo::addServerName( const std::string &add ) { server_name.push_back(add); }
 
@@ -76,6 +93,7 @@ void	ServerInfo::matchUri( Client &client ) const {
 }
 
 std::vector<ListenSocket>::const_iterator	ServerInfo::listenBegin( void ) const {
+	std::cout << "test size lisnte sockets " << listen_sockets.size() << '\n';
 	return (listen_sockets.begin());
 }
 

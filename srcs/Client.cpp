@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 16:30:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 00:16:16 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,11 +78,50 @@ int	Client::clientSocketFd( int listen_fd ) {
 	return (socket_fd);
 }
 
-bool	Client::getStaticFileFd( const std::string &fname ) {
+int	Client::getStaticFileFd( void ) {
+	return (content_fd = open(content_name.c_str(), O_RDONLY));
+}
+
+bool	Client::getCgiPipeFd( void ) {
+	int	pipe_fd[2];
 	if (content_fd > 0) {
 		close(content_fd);
 	}
-	content_fd = open(fname.c_str(), O_RDONLY);
+	content_fd = -1;
+	if (pipe(pipe_fd) < 0) {
+		return (false);
+	}
+	content_fd = pipe_fd[1];
+	// int pid = fork();
+	close(pipe_fd[0]);
+	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
+		close(content_fd);
+		content_fd = -1;
+		status_code = 500;
+		return (false);
+	}
+	return (true);
+}
+
+bool	Client::getProxySocketFd( void ) {
+	if (content_fd > 0) {
+		close(content_fd);
+	}
+	
+	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
+		close(content_fd);
+		content_fd = -1;
+		status_code = 500;
+		return (false);
+	}
+	return (true);
+}
+
+bool	Client::processContentFd( int (Client::*func)( void ) ) {
+	if (content_fd > 0) {
+		close(content_fd);
+	}
+	content_fd = (this->*func)();
 	if (content_fd < 0) {
 		status_code = 500;
 		return (false);
@@ -93,33 +132,7 @@ bool	Client::getStaticFileFd( const std::string &fname ) {
 		status_code = 500;
 		return (false);
 	}
-	return (true);
-}
-
-bool	Client::getCgiPipeFd( const std::string &fname ) {
-	if (content_fd > 0) {
-		close(content_fd);
-	}
-	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(content_fd);
-		content_fd = -1;
-		status_code = 500;
-		return (false);
-	}
-	return (true);
-}
-
-bool	Client::getProxySocketFd( const std::string &fname ) {
-	if (content_fd > 0) {
-		close(content_fd);
-	}
-	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(content_fd);
-		content_fd = -1;
-		status_code = 500;
-		return (false);
-	}
-	return (true);
+	return (true);	
 }
 
 void	Client::reset( void ) {
@@ -219,7 +232,7 @@ void	Client::processResponseSuccess( void ) {
 	}
 	const char *ext = CheckFile::fetchExtension(content_name);
 	// check if cgi, is_cgi = true;
-	if (!getStaticFileFd(content_name)) {
+	if (!processContentFd(&Client::getStaticFileFd)) {
 		processResponseError();
 		return ;
 	}
@@ -260,7 +273,7 @@ void	Client::processResponseError( void ) {
 	if (content_fd > 0) {
 		close(content_fd);
 	}
-	if (!getStaticFileFd(content_name)) {
+	if (!processContentFd(&Client::getStaticFileFd)) {
 		getDefaultError();
 		return ;
 	}

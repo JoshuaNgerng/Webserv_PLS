@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ListenSocket.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/16 08:35:27 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/30 15:15:36 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,52 +14,78 @@
 
 int	ListenSocket::fcntl_flag = O_NONBLOCK;
 
-ListenSocket::ListenSocket( void ) { addr_info_tail = &addr_info_head; }
-
-// ListenSocket::ListenSocket( const ListenSocket &src ) :
-// 	addr_info_head(src.addr_info_head), addr_info_tail(src.addr_info_tail) { }
+ListenSocket::ListenSocket( void ) :
+addr_info_head(NULL),
+addr_info_tail(),
+default_server(true),
+backlog(SOMAXCONN),
+rcvbuf_size(65536),
+sndbuf_size(65536),
+ipv6only(false),
+reuseport(false),
+keepalive(false),
+keepidle(),
+keepintvl(),
+keepcnt(),
+len(),
+status()
+{ addr_info_tail = &addr_info_head; }
 
 ListenSocket::ListenSocket( const ListenSocket &src ) {
 	*this = src; 
 }
 
-ListenSocket& ListenSocket::operator=(const ListenSocket &other) {
-    if (this != &other) {
-        addr_info_head = other.addr_info_head;
-        addr_info_tail = other.addr_info_tail;
-        default_server = other.default_server;
-        backlog = other.backlog;
-        rcvbuf_size = other.rcvbuf_size;
-        sndbuf_size = other.sndbuf_size;
-        ipv6only = other.ipv6only;
-        reuseport = other.reuseport;
-        keepalive = other.keepalive;
-        keepidle = other.keepidle;
-        keepintvl = other.keepintvl;
-        keepcnt = other.keepcnt;
-        len = other.len;
-        status = other.status;
-    }
-    return *this;
+ListenSocket& ListenSocket::operator=( const ListenSocket &src ) {
+	std::cout << "test listen socket assignment\n";
+	if (this != &src) {
+		addr_info_head = src.addr_info_head;
+		addr_info_tail = src.addr_info_tail;
+		default_server = src.default_server;
+		backlog = src.backlog;
+		rcvbuf_size = src.rcvbuf_size;
+		sndbuf_size = src.sndbuf_size;
+		ipv6only = src.ipv6only;
+		reuseport = src.reuseport;
+		keepalive = src.keepalive;
+		keepidle = src.keepidle;
+		keepintvl = src.keepintvl;
+		keepcnt = src.keepcnt;
+		len = src.len;
+		status = src.status;
+	}
+	return (*this);
 }
 
-ListenSocket::~ListenSocket( void ) { freeaddrinfo(addr_info_head); }
+ListenSocket::~ListenSocket( void ) { 
+	if (addr_info_head != NULL) {
+		freeaddrinfo(addr_info_head);
+	}
+}
 
 bool	ListenSocket::addAddress(
 	const std::string &addr, const std::string &port = std::string()
 ) {
 	addrinfo_t	hints = {(AI_CANONNAME | AI_PASSIVE), AF_UNSPEC, SOCK_STREAM,
 							0, sizeof(*(hints.ai_addr)), 0, 0, 0};
+	std::cout << "test addAddr\n"; 
 	if (ipv6only)
 		hints.ai_family = AF_INET6;
 	if ((status = getaddrinfo(addr.c_str(),
-			((port.length()) ? port.c_str() : "80"), &hints, addr_info_tail)) < 0)
+			((port.length()) ? port.c_str() : "80"), &hints, addr_info_tail)) < 0) {
 		return (false);
+	}
+	std::cout << "test addAddr2\n";
 	addrinfo_t	*ptr = *addr_info_tail;
 	while (ptr->ai_next) {
+		std::cout << "test add fam " << ptr->ai_family << '\n';
+		std::cout << "test add sock " << ptr->ai_socktype << '\n';
+		std::cout << "test add proto " << ptr->ai_protocol << '\n';
 		len ++;
 		ptr = ptr->ai_next;
 	}
+	std::cout << "test add fam " << ptr->ai_family << '\n';
+	std::cout << "test add sock " << ptr->ai_socktype << '\n';
+	std::cout << "test add proto " << ptr->ai_protocol << '\n';
 	addr_info_tail = &(ptr->ai_next);
 	len ++;
 	return (true);
@@ -135,6 +161,9 @@ bool	ListenSocket::socketSetup( int fd ) const {
 }
 
 int	ListenSocket::addListenFd( const Iterator &it ) const {
+	std::cout << "test fam " << it->ai_family << '\n';
+	std::cout << "test sock " << it->ai_socktype << '\n';
+	std::cout << "test proto " << it->ai_protocol << '\n';
 	int	fd = socket(it->ai_family, it->ai_socktype, it->ai_protocol);
 	if (fd < 0) {
 		return (-1);
@@ -180,16 +209,14 @@ void	ListenSocket::setKeepalive( long idle, long intvl, long cnt ) {
 		keepcnt = cnt;
 }
 
-void	ListenSocket::clear( void ) {
+void	ListenSocket::emptyAddrPtr( void ) {
 	addr_info_tail = &addr_info_head;
-	if (!addr_info_head)
-		return ;
-	freeaddrinfo(addr_info_head);
-	addr_info_head = NULL; 
+	addr_info_head = NULL;
 }
 
 void	ListenSocket::reset( void ) {
-	clear();
+	std::cout << "listensocket reset called\n";
+	emptyAddrPtr();
 	default_server = false;
 	backlog = SOMAXCONN;
 	rcvbuf_size = 65536;
@@ -205,6 +232,10 @@ void	ListenSocket::reset( void ) {
 }
 
 ListenSocket::Iterator	ListenSocket::begin( void ) const {
+	std::cout << "testing begin " << addr_info_head << '\n';
+	std::cout << "testing begin fam " << addr_info_head->ai_family << '\n';
+	std::cout << "testing begin sock " << addr_info_head->ai_socktype << '\n';
+	std::cout << "testing begin proto " << addr_info_head->ai_protocol << '\n';
 	return (Iterator(addr_info_head));
 }
 
@@ -216,13 +247,13 @@ int	ListenSocket::getStatus( void ) const { return (status); }
 
 ListenSocket::Iterator::Iterator( void ) : ptr(0) { }
 
+ListenSocket::Iterator::Iterator( addrinfo_t *start ) : ptr(start) { }
+
 ListenSocket::Iterator::Iterator( const Iterator &src ) : ptr(src.ptr) { }
 
 ListenSocket::Iterator& ListenSocket::Iterator::operator=( const Iterator &src ) {
 	ptr = src.ptr; return (*this);
 }
-
-ListenSocket::Iterator::Iterator( addrinfo_t *start ) : ptr(start) { }
 
 ListenSocket::Iterator::~Iterator( void ) { }
 
@@ -247,12 +278,12 @@ ListenSocket::Iterator&	ListenSocket::Iterator::operator+( size_t n ) {
 	return (*this);
 }
 
-bool	ListenSocket::Iterator::operator!=( const Iterator& other ) const {
-	return (ptr != other.ptr);
+bool	ListenSocket::Iterator::operator!=( const Iterator& src ) const {
+	return (ptr != src.ptr);
 }
 
-bool	ListenSocket::Iterator::operator==( const Iterator& other ) const {
-	return (ptr == other.ptr);
+bool	ListenSocket::Iterator::operator==( const Iterator& src ) const {
+	return (ptr == src.ptr);
 }
 
 std::ostream&	operator<<( std::ostream &o, const ListenSocket& ref ) {
@@ -270,7 +301,12 @@ std::ostream&	operator<<( std::ostream &o, const ListenSocket& ref ) {
 			port = ntohs(ipv6->sin6_port);
 		}
 		inet_ntop(it->ai_family, addr, buffer, sizeof(buffer));
-		std::cout << buffer << ':' << port << ' ';
+		if (it->ai_family == AF_INET6) {
+			std::cout << '[' << buffer << ']';
+		}
+		else
+			std::cout << buffer;
+		std::cout << ':' << port << ' ';
 	}
 	return (o);
 }

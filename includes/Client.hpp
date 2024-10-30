@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 14:59:45 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 00:14:34 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,9 +98,10 @@ class Client {
 		void	processResponseRedirect( void );
 		void	processResponseError( void );
 		void	getDefaultError( void );
-		bool	getStaticFileFd( const std::string &fname );
-		bool	getCgiPipeFd( const std::string &fname );
-		bool	getProxySocketFd( const std::string &fname );
+		bool	processContentFd( int (Client::*func)( void ) );
+		int		getStaticFileFd( void );
+		bool	getCgiPipeFd( void );
+		bool	getProxySocketFd( void );
 		void	reset( void );
 };
 

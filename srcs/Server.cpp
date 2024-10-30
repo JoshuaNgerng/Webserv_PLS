@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 15:45:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 03:49:48 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,7 @@ int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
 		if (fd > 0) {
 			return (fd);
 		}
+		std::cout << "testloop\n";
 		if (error == 4) {
 			break ;
 		}
@@ -115,8 +116,11 @@ int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
 
 void	Server::setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer ) {
 	size_t	counter = 0;
+	std::cout << "test sockets listen start\n";
 	for (listen_ptr it = ptr->listenBegin(); it != ptr->listenEnd(); it ++) {
+		std::cout << "how\n";
 		for (addrinfo_ptr addr = it->begin(); addr != it->end(); addr ++) {
+			std::cout << "huh\n";
 			buffer.fd = setupSocketsCheckError(it, addr);
 			if (buffer.fd < 0) {
 				return ; // error?
@@ -268,7 +272,7 @@ void	Server::startServerLoop( void ) {
 		setupSockets();
 	}
 	if (!server_no) {
-		// std::cout << "no servers lulz\n";
+		std::cout << "no servers lulz\n";
 		return ;
 	}
 	while (1) {

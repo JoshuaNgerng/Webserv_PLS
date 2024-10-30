@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 18:21:14 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 01:42:16 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,7 +240,7 @@ void	Server::startServerLoop( void ) {
 		setupSockets();
 	}
 	if (!server_no) {
-		// std::cout << "no servers lulz\n";
+		std::cout << "no servers lulz\n";
 		return ;
 	}
 	while (1) {
