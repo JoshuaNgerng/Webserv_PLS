@@ -14,6 +14,7 @@
 # define AUTOINDEX_HPP
 # include "Const.hpp"
 # include "InfoBlock.hpp"
+# include <algorithm>
 
 typedef enum auto_index_format {
 	none,
@@ -36,6 +37,14 @@ public:
 	std::string generateResource( const char *dirname );
 
 private:
+	struct Entry {
+	int check;
+	std::string fname;
+	std::string time;
+	uint64_t size;
+    };
+
+	std::vector<Entry> entries;;
 	int		autoindex_format;
 	bool	autoindex_time;
 	bool	autoindex_exact_size;
