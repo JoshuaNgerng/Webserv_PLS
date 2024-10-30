@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 16:33:06 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 20:37:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,11 @@ Location& Location::operator=( const Location &src ) {
 Location::~Location( void ) { }
 
 void	Location::matchUri( Client &client, bool autoindex_ ) const {
-	(void)client;
-	(void)autoindex_;
+	// if proxy server and if cgi handle diff
+	// if (alias.length() > 0) {
+	// 	root = alias; // logic for alias
+	// } resolve roo alias before server setup
+	InfoBlock::matchUri(client, autoindex_);
 }
 
 void	Location::addPath( const std::string &path_ ) {

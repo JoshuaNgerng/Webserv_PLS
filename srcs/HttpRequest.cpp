@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/29 14:57:24 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/30 20:49:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,9 +125,11 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	if (!i)
 		return (false);
 	buffer = start.substr(0, i);
+	// std::cout << "test error\n";
 	int check_method = checkMethods(buffer);
 	if (check_method < 0)
 		return (false);
+	// std::cout << "test error 2\n";
 	method = static_cast<http_method>(check_method);
 	i ++;
 	j = i;
@@ -140,14 +142,16 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	uri = start.substr(j, i - j);
 	i ++;
 	j = i;
+	// std::cout << "test error 3\n";
 	for (; i < start.length(); i ++) {
-		if (start[i] == ' ')
+		if (start[i] == ' ' || start[i] == '\r')
 			break ;
 	}
 	if (j == i)
 		return (false);
 	protocol = start.substr(j, i - j); // need validation
-	i ++;
+	// std:", " << start[i - 1] :cout << "proto ? " << protocol << '\n';
+	// std::cout << "test i " << static_cast<int>(start[i]) << ", " << static_cast<int>(start[i - 1]) << '\n';
 	if (start[i] != '\r' || i != start.length() - 1) {
 		return (false);
 	}
@@ -175,6 +179,7 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 	std::string         token;
 	std::getline(ss, token);
 	if (!(validateStartLine(token))) {
+		std::cout << "Http start Error\n";
 		return (false);
 	}
 	while (std::getline(ss, token)) {
@@ -212,6 +217,8 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 
 bool	HttpRequest::validateHeader( void ) {
 	valid_header = validateHeaderHelper();
+	if (!valid_header)
+		std::cout << "Http Header Error\n";
 	return (valid_header);
 }
 

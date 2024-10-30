@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 00:14:34 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 19:24:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ class Client {
 		server_ptr	server_ref;
 		loc_ptr		location_ref;
 
+		bool				ignore_close_fd;
 		sockaddr_storage_t	client_addr;
 		socklen_t			socket_len;
 		int					socket_fd;

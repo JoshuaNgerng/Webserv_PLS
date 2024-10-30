@@ -1,15 +1,28 @@
-==80366== Memcheck, a memory error detector
-==80366== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==80366== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==80366== Command: ./webserv conf/basic_get.conf
-==80366== Parent PID: 1138
-==80366== 
-==80366== 
-==80366== HEAP SUMMARY:
-==80366==     in use at exit: 0 bytes in 0 blocks
-==80366==   total heap usage: 45 allocs, 45 frees, 91,361 bytes allocated
-==80366== 
-==80366== All heap blocks were freed -- no leaks are possible
-==80366== 
-==80366== For lists of detected and suppressed errors, rerun with: -s
-==80366== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==66316== Memcheck, a memory error detector
+==66316== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==66316== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==66316== Command: ./webserv conf/basic_get.conf
+==66316== Parent PID: 1010
+==66316== 
+==66316== Conditional jump or move depends on uninitialised value(s)
+==66316==    at 0x137B15: HttpRequest::validateStartLine(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x137D96: HttpRequest::validateHeaderHelper() (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x1381C5: HttpRequest::validateHeader() (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x13756B: HttpRequest::addRequest(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x12E210: Client::clientRecvHttp() (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x116395: Server::handleClientRecv(pollfd&, Client&) (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x116544: Server::handleClient(unsigned long) (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x11689C: Server::loopServer() (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x116943: Server::startServerLoop() (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316==    by 0x13C7CD: main (in /mnt/c/Users/user/Desktop/42_projects/webserv_repo/webserv)
+==66316== 
+==66316== 
+==66316== HEAP SUMMARY:
+==66316==     in use at exit: 0 bytes in 0 blocks
+==66316==   total heap usage: 67 allocs, 67 frees, 98,963 bytes allocated
+==66316== 
+==66316== All heap blocks were freed -- no leaks are possible
+==66316== 
+==66316== Use --track-origins=yes to see where uninitialised values come from
+==66316== For lists of detected and suppressed errors, rerun with: -s
+==66316== ERROR SUMMARY: 2 errors from 1 contexts (suppressed: 0 from 0)

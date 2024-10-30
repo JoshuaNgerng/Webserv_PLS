@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 00:16:16 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 20:04:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,49 +15,107 @@
 #include "AutoIndex.hpp"
 #include "DefaultErrorPage.hpp"
 
-Client::Client( void ) : socket_fd(-1), content_fd(-1) { }
+Client::Client( void ) :
+server_ref(),
+location_ref(),
+ignore_close_fd(false),
+socket_len(0),
+socket_fd(-1),
+content_fd(-1),
+has_content_fd(true),
+is_content_fd_in_server(false),
+content_length(0),
+status_code(0),
+is_directory(false),
+is_cgi(false),
+response_ready(false),
+requests(),
+response(),
+start_connection(),
+no_request(),
+current_time(),
+empty_event(),
+bytes_sent(0),
+emergency_overwrite(false),
+completed(false),
+to_be_deleted(false)
+{ }
 
 Client::Client( server_ptr &it ) :
-	server_ref(it), location_ref(it->getLocEnd()), socket_fd(-1), content_fd(-1) { }
+server_ref(it),
+location_ref(it->getLocEnd()),
+ignore_close_fd(true),
+socket_len(0),
+socket_fd(-1),
+content_fd(-1),
+has_content_fd(true),
+is_content_fd_in_server(false),
+content_length(0),
+status_code(0),
+is_directory(false),
+is_cgi(false),
+response_ready(false),
+requests(),
+response(),
+start_connection(),
+no_request(),
+current_time(),
+empty_event(),
+bytes_sent(0),
+emergency_overwrite(false),
+completed(false),
+to_be_deleted(false)
+{ }
 
 Client::Client( const Client &src ) {
+	std::cout << "client copy constructor called\n";
 	*this = src;
+	ignore_close_fd = false;
 }
 
-Client& Client::operator=( const Client &src ) {
-	if (this != &src) {
-		server_ref = src.server_ref;
-		location_ref = src.location_ref;
-		client_addr = src.client_addr;
-		socket_len = src.socket_len;
-		socket_fd = src.socket_fd;
-		content_fd = src.content_fd;
-		content_name = src.content_name;
-		has_content_fd = src.has_content_fd;
-		content_length = src.content_length;
-		status_code = src.status_code;
-		requests = src.requests;
-		response = src.response;
-		start_connection = src.start_connection;
-		is_directory = src.is_directory;
-		is_cgi = src.is_cgi;
-		response_ready = src.response_ready;
-		no_request = src.no_request;
-		current_time = src.current_time;
-		empty_event = src.empty_event;
-		bytes_sent = src.bytes_sent;
-		emergency_overwrite = src.emergency_overwrite;
-		completed = src.completed;
+Client&	Client::operator=( const Client &src ) {
+	if (this == &src) {
+		return (*this);
 	}
+	server_ref = src.server_ref;
+	location_ref = src.location_ref;
+	ignore_close_fd = src.ignore_close_fd;
+	client_addr = src.client_addr;
+	socket_len = src.socket_len;
+	socket_fd = src.socket_fd;
+	content_fd = src.content_fd;
+	content_name = src.content_name;
+	has_content_fd = src.has_content_fd;
+	is_content_fd_in_server = src.is_content_fd_in_server;
+	content_length = src.content_length;
+	status_code = src.status_code;
+	is_directory = src.is_directory;
+	is_cgi = src.is_cgi;
+	response_ready = src.response_ready;
+	requests = src.requests;
+	response = src.response;
+	start_connection = src.start_connection;
+	no_request = src.no_request;
+	current_time = src.current_time;
+	empty_event = src.empty_event;
+	bytes_sent = src.bytes_sent;
+	emergency_overwrite = src.emergency_overwrite;
+	completed = src.completed;
+	to_be_deleted = src.to_be_deleted;
 	return (*this);
 }
 
 Client::~Client( void ) {
-	if (socket_fd > 0) {
-		close(socket_fd);
-	}
-	if (content_fd > 0) {
-		close(content_fd);
+	std::cout << "client descrutor called\n";
+	if (!ignore_close_fd) {
+		if (socket_fd > 0) {
+			std::cout << "close socket fd\n";
+			close(socket_fd);
+		}
+		if (content_fd > 0) {
+			std::cout << "close content fd\n";
+			close(content_fd);
+		}
 	}
 }
 
@@ -67,6 +125,7 @@ Client&	Client::operator<<( const std::vector<Location>::const_iterator &it ) {
 }
 
 int	Client::clientSocketFd( int listen_fd ) {
+	socket_len = sizeof(client_addr);
 	socket_fd = accept(listen_fd, (sockaddr_t *)(&client_addr), &socket_len);
 	if (socket_fd < 0) {
 		return (-1);
@@ -162,6 +221,7 @@ bool	Client::clientRecvHttp( void ) {
 	}
 	buffer[r] = '\0';
 	std::string	str(buffer);
+	std::cout << "testing recv http\n" << str ;
 	if (!requests.size()) { 
 		HttpRequest new_req;
 		requests.push(new_req);
