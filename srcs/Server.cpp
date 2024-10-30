@@ -6,13 +6,14 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:49:59 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 17:13:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-const char *Server::server_name = NULL;
+const char		*Server::server_name = NULL;
+volatile bool	Server::running = true;
 
 Server::Server( void ) :
 server_no(0),
@@ -38,15 +39,35 @@ Server&	Server::operator=( const Server &src )
 	if (this == &src)
 		return (*this);
 	server_no = src.server_no;
+	server_limit = src.server_limit;
+	fd_counter = src.fd_counter;
+	buffer_counter = src.buffer_counter;
+	poll_tracker = src.poll_tracker;
+	socket_fds = src.socket_fds;
+	buffer_new_fd = src.buffer_new_fd;
+	server_mapping = src.server_mapping;
+	socketfd_mapping = src.socketfd_mapping;
+	client_mapping = src.client_mapping;
+	server_info = src.server_info;
+	client_info = src.client_info;
+	server_no = src.server_no;
 	server_info = src.server_info;
 	return (*this);
 }
 
 Server::~Server( void ) {
-	std::cout << server_no << '\n';
+	// std::cout << server_no << '\n';
 	for (size_t i = 0; i < server_no && i < socket_fds.size(); i ++) {
 		close(socket_fds[i].fd);
 	}
+}
+
+void	Server::signalHandler( int signal ) {
+	std::cout << "Signal received: " << signal << '\n';
+	if (signal != SIGINT) {
+		return ;
+	}
+	running = false; // Set flag to indicate cleanup
 }
 
 bool	Server::checkBufferfds( void ) const {
@@ -271,8 +292,15 @@ void	Server::startServerLoop( void ) {
 	if (!server_no) {
 		return ;
 	}
-	while (1) {
+	while (running) {
 		loopServer();
+	}
+}
+
+void	Server::clearListenAddr( void ) {
+	typedef std::vector<ServerInfo>::iterator	iter;
+	for (iter ptr = server_info.begin(); ptr != server_info.end(); ptr ++) {
+		ptr->clearListenAddr();
 	}
 }
 

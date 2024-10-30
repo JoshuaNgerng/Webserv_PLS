@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:28:04 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 16:58:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ int	ListenSocket::fcntl_flag = O_NONBLOCK;
 
 ListenSocket::ListenSocket( void ) :
 addr_info_head(NULL),
-addr_info_tail(),
+addr_info_tail(NULL),
 default_server(true),
 backlog(SOMAXCONN),
 rcvbuf_size(65536),
@@ -36,27 +36,31 @@ ListenSocket::ListenSocket( const ListenSocket &src ) {
 }
 
 ListenSocket& ListenSocket::operator=( const ListenSocket &src ) {
-	if (this != &src) {
-		addr_info_head = src.addr_info_head;
-		addr_info_tail = src.addr_info_tail;
-		default_server = src.default_server;
-		backlog = src.backlog;
-		rcvbuf_size = src.rcvbuf_size;
-		sndbuf_size = src.sndbuf_size;
-		ipv6only = src.ipv6only;
-		reuseport = src.reuseport;
-		keepalive = src.keepalive;
-		keepidle = src.keepidle;
-		keepintvl = src.keepintvl;
-		keepcnt = src.keepcnt;
-		len = src.len;
-		status = src.status;
+	std::cout << "assigment called\n";
+	if (this == &src) {
+		return (*this);
 	}
+	addr_info_head = src.addr_info_head;
+	addr_info_tail = src.addr_info_tail;
+	default_server = src.default_server;
+	backlog = src.backlog;
+	rcvbuf_size = src.rcvbuf_size;
+	sndbuf_size = src.sndbuf_size;
+	ipv6only = src.ipv6only;
+	reuseport = src.reuseport;
+	keepalive = src.keepalive;
+	keepidle = src.keepidle;
+	keepintvl = src.keepintvl;
+	keepcnt = src.keepcnt;
+	len = src.len;
+	status = src.status;
 	return (*this);
 }
 
-ListenSocket::~ListenSocket( void ) { 
+ListenSocket::~ListenSocket( void ) {
+	std::cout << "destructor called\n";
 	if (addr_info_head != NULL) {
+		std::cout << "free called\n";
 		freeaddrinfo(addr_info_head);
 	}
 }
@@ -197,12 +201,24 @@ void	ListenSocket::setKeepalive( long idle, long intvl, long cnt ) {
 		keepcnt = cnt;
 }
 
+void	ListenSocket::clearAddr( void ) {
+	std::cout << "clear called\n";
+	if (!addr_info_head) {
+		return ;
+	}
+	freeaddrinfo(addr_info_head);
+	addr_info_tail = &addr_info_head;
+	addr_info_head = NULL;
+}
+
 void	ListenSocket::emptyAddrPtr( void ) {
+	std::cout << "empty called\n";
 	addr_info_tail = &addr_info_head;
 	addr_info_head = NULL;
 }
 
 void	ListenSocket::reset( void ) {
+	std::cout << "reset called\n";
 	emptyAddrPtr();
 	default_server = false;
 	backlog = SOMAXCONN;

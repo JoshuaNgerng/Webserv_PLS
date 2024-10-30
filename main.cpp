@@ -6,24 +6,11 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:40:48 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 17:14:00 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parse.hpp"
-
-Server	*server_ptr = NULL;
-
-void cleanup( int signum ) {
-	// cout << "Interrupt signal (" << signum << ") received.\n";
-	if (signum != SIGINT) {
-		return ;
-	}
-	if (server_ptr) {
-		swap_clear(*server_ptr);
-	}
-	exit(0);  
-}
 
 int	main(int ac, char **av, char **env) {
 	(void)env;
@@ -34,10 +21,12 @@ int	main(int ac, char **av, char **env) {
 	if (ac == 2)
 		ref = av[1];
 	Server	server;
-	Parse	parse(ref, server);
-	parse.parseConfigFile();
-	server_ptr = &server;
-	std::signal(SIGINT, cleanup);
+	{
+		Parse	parse(ref, server);
+		parse.parseConfigFile();
+	}
+	std::cout << "done\n";
+	std::signal(SIGINT, Server::signalHandler);
 	server.startServerLoop();
 	return (0);
 }

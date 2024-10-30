@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 02:47:31 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 17:13:15 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,10 @@ class Server
 		Server&	operator=( const Server &src );
 		~Server( void );
 
-		void	startServerLoop( void );
+		void		startServerLoop( void );
+		static void	signalHandler( int signal );
 
+		void		clearListenAddr( void );
 		void		addServerInfo( ServerInfo &ref );
 		pollfd_t*	getSocketfds( void );
 
@@ -52,6 +54,7 @@ class Server
 		static const int		socket_protocol = 0;
 		static const int		fcntl_flag = (O_NONBLOCK );
 		static const int		timeout = (3 * 60 * 1000);
+		static volatile bool	running;
 
 		nfds_t	server_no;
 		nfds_t	server_limit;

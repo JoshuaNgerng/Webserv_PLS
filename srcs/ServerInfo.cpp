@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:29:01 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 16:51:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) {
 	if (this == &src) {
 		return (*this);
 	}
+	InfoBlock::operator=(src);
 	listen_sockets = src.listen_sockets;
 	server_name = src.server_name;
 	client_header_buffer_size = src.client_header_buffer_size;
@@ -43,12 +44,23 @@ ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) {
 	return (*this);
 }
 
-void	ServerInfo::reset( void ) {
+void	ServerInfo::clearListenAddr( void ) {
 	typedef	std::vector<ListenSocket>::iterator	iter;
-	InfoBlock::reset();
+	for (iter it = listen_sockets.begin(); it != listen_sockets.end(); it ++) {
+		it->clearAddr();
+	}
+}
+
+void	ServerInfo::emptyListenAddr( void ) {
+	typedef	std::vector<ListenSocket>::iterator	iter;
 	for (iter it = listen_sockets.begin(); it != listen_sockets.end(); it ++) {
 		it->emptyAddrPtr();
 	}
+}
+
+void	ServerInfo::reset( void ) {
+	InfoBlock::reset();
+	emptyListenAddr();
 	listen_sockets.clear();
 	server_name.clear();
 	location.clear();
