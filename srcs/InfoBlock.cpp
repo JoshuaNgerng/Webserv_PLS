@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 10:07:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 14:42:07 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,26 @@
 #include "AutoIndex.hpp"
 #include "Client.hpp"
 
-InfoBlock::InfoBlock( void ) { }
+InfoBlock::InfoBlock( void ) :
+empty(""),
+error_page(),
+try_files(),
+access_log(),
+error_log(),
+if_modify_since(0),
+root(""),
+client_body_timeout(0),
+client_max_body_size(0),
+index(),
+autoindex(off),
+autoindex_exact_size(off),
+autoindex_format(0),
+autoindex_localtime(off),
+allow(),
+deny(),
+symlinks(off),
+etag(off)
+{ }
 
 InfoBlock::InfoBlock( const InfoBlock &src ) {
 	*this = src;

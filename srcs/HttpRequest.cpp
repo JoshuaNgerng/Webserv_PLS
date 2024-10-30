@@ -3,16 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/24 18:22:18 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 14:57:24 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest( void ): Http() { }
+HttpRequest::HttpRequest( void ) :
+Http(),
+header(""),
+body(""),
+header_fields(),
+valid_header(false),
+method(),
+uri(""),
+protocol(""),
+has_body(false),
+content_type(TEXT),
+content_length(0),
+finished_request(false)
+{ }
 
 HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {
 	*this = src;

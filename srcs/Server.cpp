@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 18:21:14 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 15:20:36 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,20 @@
 
 const char *Server::server_name = NULL;
 
-Server::Server( void ) { }
+Server::Server( void ) :
+server_no(0),
+server_limit(0),
+fd_counter(0),
+buffer_counter(0),
+poll_tracker(0),
+socket_fds(),
+buffer_new_fd(),
+server_mapping(),
+socketfd_mapping(),
+client_mapping(),
+server_info(),
+client_info()
+{ }
 
 Server::Server( const Server &src ) {
 	*this = src;
