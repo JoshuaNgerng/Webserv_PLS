@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/31 13:03:25 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/31 15:56:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ void	Server::addClientContentFd( client_ptr client ) {
 	if (fd < 0) {
 		return ;
 	}
+	std::cout << "client content name: " << client->getContentName() << '\n';
 	addBufferfds(fd);
 	std::cout << "client added content fd: " << fd << '\n';
 	client->serverReceived();
@@ -290,9 +291,7 @@ void	Server::handleServer( size_t index ) {
 	addBufferfds(fd);
 	client_info.push_back(buffer);
 	client_mapping[fd] = -- client_info.end();
-	std::cout << "client successfully added\n";
-	// std::cout << client_info.begin()->getServerRef()->getAutoIndex() << '\n';
-	// std::cout << client_info.begin()->toBeDeleted() << '\n';
+	std::cout << "client socket successfully added\n";
 }
 
 void	Server::loopServer( void ) {

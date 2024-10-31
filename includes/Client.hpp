@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 19:24:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/31 14:40:24 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,11 +53,12 @@ class Client {
 
 		/* getters */
 		const std::string&	getCurrentUri( void ) const;
+		const std::string&	getContentName( void ) const { return (content_name); }
 
 		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;
 		std::vector<Location>::const_iterator	getLocationRef( void ) const;
-		std::map<int, client_ptr>::iterator		getSocketRef( void ) const;
-		std::map<int, client_ptr>::iterator		getReponseRef( void ) const;
+		// std::map<int, client_ptr>::iterator		getSocketRef( void ) const;
+		// std::map<int, client_ptr>::iterator		getReponseRef( void ) const;
 
 	private:
 		static const int	recv_flag = 0;
