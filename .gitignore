@@ -35,3 +35,4 @@ webserv
 #vscode
 .vscode/*
 .vscode
+*.txt
