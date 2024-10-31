@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   InfoBlock.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 14:42:07 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/29 16:17:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,34 +31,53 @@ autoindex_format(0),
 autoindex_localtime(off),
 allow(),
 deny(),
-symlinks(off),
-etag(off)
+symlinks(undefined),
+etag(undefined)
 { }
 
-InfoBlock::InfoBlock( const InfoBlock &src ) {
+InfoBlock::InfoBlock( const InfoBlock &src ) :
+empty(""),
+error_page(),
+try_files(),
+access_log(),
+error_log(),
+if_modify_since(0),
+root(""),
+client_body_timeout(0),
+client_max_body_size(0),
+index(),
+autoindex(off),
+autoindex_exact_size(off),
+autoindex_format(0),
+autoindex_localtime(off),
+allow(),
+deny(),
+symlinks(undefined),
+etag(undefined) {
 	*this = src;
 }
 
 InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
-	if (this != &src) {
-		error_page = src.error_page;
-		try_files = src.try_files;
-		access_log = src.access_log;
-		error_log = src.error_log;
-		if_modify_since = src.if_modify_since;
-		root = src.root;
-		client_body_timeout = src.client_body_timeout;
-		client_max_body_size = src.client_max_body_size;
-		index = src.index;
-		autoindex = src.autoindex;
-		autoindex_exact_size = src.autoindex_exact_size;
-		autoindex_format = src.autoindex_format;
-		autoindex_localtime = src.autoindex_localtime;
-		allow = src.allow;
-		deny = src.deny;
-		symlinks = src.symlinks;
-		etag = src.etag;
+	if (this == &src ) {
+		return (*this);
 	}
+	error_page = src.error_page;
+	try_files = src.try_files;
+	access_log = src.access_log;
+	error_log = src.error_log;
+	if_modify_since = src.if_modify_since;
+	root = src.root;
+	client_body_timeout = src.client_body_timeout;
+	client_max_body_size = src.client_max_body_size;
+	index = src.index;
+	autoindex = src.autoindex;
+	autoindex_exact_size = src.autoindex_exact_size;
+	autoindex_format = src.autoindex_format;
+	autoindex_localtime = src.autoindex_localtime;
+	allow = src.allow;
+	deny = src.deny;
+	symlinks = src.symlinks;
+	etag = src.etag;
 	return (*this);
 }
 

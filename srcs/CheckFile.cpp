@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/23 13:05:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 01:34:05 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,6 @@ const char*	CheckFile::fetchExtension( const std::string &fname ) {
 bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file ) {
 	if (!(file.is_open()))
 		return (false);
-	std::cout << "Here1!\n";
 	dst << file.rdbuf();
 	return (true);
 }
@@ -102,14 +101,10 @@ bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file 
 bool	CheckFile::getFileContent( std::string &dst ) const {
 	std::ifstream		config_file(filename);
 	std::stringstream	fileStream;
-	std::cout << "Test: " << config_file.is_open() << '\n';
-	std::cout << "Test: " << fileStream << '\n';
 	if (!fileToStringStream(fileStream, config_file))
 		return (false);
-	std::cout << "Here2!\n";
 	fileStream << config_file.rdbuf();
 	dst = fileStream.str();
-	std::cout << "Here3!\n";
 	return (true);
 }
 

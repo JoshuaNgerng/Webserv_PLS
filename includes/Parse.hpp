@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/16 07:20:17 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/30 12:52:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ class Parse
 		Parse( void );
 
 		void	removeComments( std::string &content ) const;
-		void	removeWhitespace( std::string &content ) const;
+		void	insertDelimWhiteSpace( std::string &content, const char *delim ) const;
 		void	processContent( void );
 		void	processToken( const std::string &token );
 		void	processDirective( void (Parse::*process)(std::string &) );

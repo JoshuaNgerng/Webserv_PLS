@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 00:35:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/29 15:40:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 const char *AutoIndex::template_html =
 "<html><head><title>Index of @</title></head>\n""<body>\n"
-"<h1>Index of @</h1><hr><pre><a href=\"../\">../</a>\n""*""</pre><hr>\n""</body></html>\n";
+"<h1>Index of @</h1><hr><pre>\n""*""</pre><hr>\n""</body></html>\n";
  
 const char *AutoIndex::template_xml =
 "<?xml version=\"1.0\"?>\n""<list>\n""*</list>\n";

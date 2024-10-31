@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/29 14:53:42 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/31 12:46:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ void	HttpResponse::addField( const char *name, const std::string &val ) {
 }
 
 void	HttpResponse::addField( const char *name, const char *val ) {
+	if (!name) { std::cout << "NULL name\n"; } if (!val) { std::cout << "NULL val\n"; }
 	header += name;
 	header += ": ";
 	header += val;
@@ -101,6 +102,7 @@ void	HttpResponse::addBody( const std::string &str ) { body += str; }
 
 void	HttpResponse::finishResponseMsg( void ) {
 	final = header + body;
+	ready = true;
 }
 
 void	HttpResponse::reset( void ) {
@@ -117,4 +119,12 @@ size_t	HttpResponse::getTotalLength( void ) const { return (final.length()); }
 
 const char*	HttpResponse::getPtrPos( size_t no_bytes_send ) const {
 	return (final.c_str() + no_bytes_send);
+}
+
+bool	HttpResponse::isReady( void ) const { return (ready); }
+
+std::ostream&	operator<<( std::ostream &o, const HttpResponse &res ) {
+	o << "Http Response " << ((!res.isReady()) ? "not " : " " ) << "ready\n";
+	o << res.getPtrPos(0) << '\n';
+	return (o);
 }

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/25 18:18:53 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 17:13:15 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,10 @@ class Server
 		Server&	operator=( const Server &src );
 		~Server( void );
 
-		void	startServerLoop( void );
+		void		startServerLoop( void );
+		static void	signalHandler( int signal );
 
+		void		clearListenAddr( void );
 		void		addServerInfo( ServerInfo &ref );
 		pollfd_t*	getSocketfds( void );
 
@@ -52,6 +54,7 @@ class Server
 		static const int		socket_protocol = 0;
 		static const int		fcntl_flag = (O_NONBLOCK );
 		static const int		timeout = (3 * 60 * 1000);
+		static volatile bool	running;
 
 		nfds_t	server_no;
 		nfds_t	server_limit;
@@ -59,8 +62,8 @@ class Server
 		nfds_t	buffer_counter;
 		nfds_t	poll_tracker;
 
-		std::vector<pollfd_t>		socket_fds; // load all servers then only add clients (assume all fd on the same vector)
-		std::vector<pollfd_t>		buffer_new_fd; // store new fds
+		std::vector<pollfd_t>		socket_fds;
+		std::vector<pollfd_t>		buffer_new_fd;
 		std::vector<serverinfo_ptr>	server_mapping; // server_index to ServerInfo_index
 		std::vector<addrinfo_ptr>	socketfd_mapping;
 		std::map<int, client_ptr>	client_mapping; // client fd to client index
@@ -79,7 +82,7 @@ class Server
 		void	handleClient( size_t index );
 		void	handleClientRecv( pollfd_t &pollfd, Client &client );
 		void	handleClientSent( pollfd_t &pollfd, Client &client );
-		void	addClientContentFd( Client &client );
+		void	addClientContentFd( client_ptr client );
 
 		void	error2Client( int fd, client_ptr client );
 		void	markAsDelete( pollfd_t &pollfd );

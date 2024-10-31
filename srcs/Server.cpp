@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 15:20:36 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/31 13:03:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-const char *Server::server_name = NULL;
+const char		*Server::server_name = NULL;
+volatile bool	Server::running = true;
 
 Server::Server( void ) :
 server_no(0),
@@ -38,14 +39,35 @@ Server&	Server::operator=( const Server &src )
 	if (this == &src)
 		return (*this);
 	server_no = src.server_no;
+	server_limit = src.server_limit;
+	fd_counter = src.fd_counter;
+	buffer_counter = src.buffer_counter;
+	poll_tracker = src.poll_tracker;
+	socket_fds = src.socket_fds;
+	buffer_new_fd = src.buffer_new_fd;
+	server_mapping = src.server_mapping;
+	socketfd_mapping = src.socketfd_mapping;
+	client_mapping = src.client_mapping;
+	server_info = src.server_info;
+	client_info = src.client_info;
+	server_no = src.server_no;
 	server_info = src.server_info;
 	return (*this);
 }
 
 Server::~Server( void ) {
-	for (size_t i = 0; i < server_no; i ++) {
+	// std::cout << server_no << '\n';
+	for (size_t i = 0; i < server_no && i < socket_fds.size(); i ++) {
 		close(socket_fds[i].fd);
 	}
+}
+
+void	Server::signalHandler( int signal ) {
+	std::cout << "Signal received: " << signal << '\n';
+	if (signal != SIGINT) {
+		return ;
+	}
+	running = false; // Set flag to indicate cleanup
 }
 
 bool	Server::checkBufferfds( void ) const {
@@ -66,24 +88,27 @@ void	Server::addBufferfds( int fd ) {
 	addBufferfds(fd, POLLIN | POLLOUT);
 }
 
-void	Server::addClientContentFd( Client &client ) {
+void	Server::addClientContentFd( client_ptr client ) {
 	if (!checkBufferfds()) {
 		return ;
 	}
-	int	fd = client.getContentFd();
+	int	fd = client->getContentFd();
 	if (fd < 0) {
 		return ;
 	}
 	addBufferfds(fd);
-	client.serverReceived();
+	std::cout << "client added content fd: " << fd << '\n';
+	client->serverReceived();
 }
 
 void	Server::markAsDelete( pollfd_t &pollfd ) {
-	client_mapping.erase(pollfd.fd);
+	std::cout << "pollfd mark as delete\n";
 	pollfd.fd = -1;
+	fd_counter --;
 }
 
 void	Server::markAsDelete( pollfd_t &pollfd, Client &client ) {
+	std::cout << "client mark as delete\n";
 	markAsDelete(pollfd);
 	client.markforDeletion();
 }
@@ -151,19 +176,44 @@ void	Server::setupSockets( void ) {
 	buffer_new_fd.reserve((num > server_limit) ? server_limit : num);
 }
 
-void	Server::resetFds( void ) { // erase mark as deleted client somehow
-	typedef std::vector<pollfd_t>::iterator iter; // changed from const to non-const iterator
-	for (iter i = socket_fds.begin(); i != socket_fds.end(); i ++) {
-		if (i->fd < 0) {
-			socket_fds.erase(i);
+void	Server::resetFds( void ) {
+	typedef std::vector<pollfd_t>::iterator	iter;
+	iter it = socket_fds.begin();
+	for (size_t i = 0; i < server_no; i ++) {
+		if (it == socket_fds.end()) {
+			break ;
+		}
+		it ++;
+	}
+	while (it != socket_fds.end()) {
+		if (it->fd < 0) {
+			it = socket_fds.erase(it);
+		} else {
+			it ++;
 		}
 	}
+	std::cout << "new fd added\n";
 	for (nfds_t i = 0; i < buffer_counter; i ++) {
 		socket_fds.push_back(buffer_new_fd[i]);
+		std::cout << socket_fds.back().fd << ", ";
+	}
+	std::cout << '\n';
+	std::cout << "socket fd status at reset\n";
+	for (client_ptr ptr = client_info.begin(); ptr != client_info.end();) {
+		if (ptr->toBeDeleted()) {
+			ptr = client_info.erase(ptr);
+			std::cout << "client sucessfully deleted\n";
+		} else {
+			ptr ++;
+		}
 	}
 	buffer_new_fd.clear();
 	buffer_counter = 0;
 	poll_tracker = fd_counter;
+	for (size_t i = 0; i < poll_tracker; i ++) {
+		std::cout << socket_fds[i].fd << ", ";
+	}
+	std::cout << "\n";
 }
 
 
@@ -182,7 +232,8 @@ void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 }
 
 void	Server::handleClientSent( pollfd_t &poll_fd, Client &client ) {
-	if (!client.checkResponseStatus()) {
+	if (!client.checkResponseReady()) {
+		std::cout << "client check response not ready\n";
 		return ;
 	}
 	if (poll_fd.fd == client.clientSocketFd()) {
@@ -200,22 +251,27 @@ void	Server::handleClient( size_t index ) {
 	if (!poll_fd.revents) {
 		return ;
 	}
+	std::cout << "test client\n";
 	client_ptr ptr = client_mapping[poll_fd.fd];
 	if (ptr->toBeDeleted()) {
 		return ;
 	}
 	if (poll_fd.revents & POLLIN) {
+		std::cout << "test POLLIN\n";
 		handleClientRecv(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & POLLOUT) {
+		std::cout << "test POLLOUT\n";
 		handleClientSent(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & (POLLHUP | POLLERR)) {
+		std::cout << "test POLLERR\n";
 		error2Client(poll_fd.fd, ptr);
 	}
 	if (ptr->giveContentFdtoServer()) {
-		addClientContentFd(*ptr);
+		addClientContentFd(ptr);
 	}
+	std::cout << "try client end\n";
 	// check timer , abort(etc invalid header) 
 }
 
@@ -233,9 +289,14 @@ void	Server::handleServer( size_t index ) {
 	}
 	addBufferfds(fd);
 	client_info.push_back(buffer);
+	client_mapping[fd] = -- client_info.end();
+	std::cout << "client successfully added\n";
+	// std::cout << client_info.begin()->getServerRef()->getAutoIndex() << '\n';
+	// std::cout << client_info.begin()->toBeDeleted() << '\n';
 }
 
 void	Server::loopServer( void ) {
+	std::cout << "poll tracker: " << poll_tracker << " fd_counter " << fd_counter << '\n';
 	if (poll(getSocketfds(), poll_tracker, timeout) < 0) {
 		return ; // throw error?
 	}
@@ -253,11 +314,18 @@ void	Server::startServerLoop( void ) {
 		setupSockets();
 	}
 	if (!server_no) {
-		// std::cout << "no servers lulz\n";
 		return ;
 	}
-	while (1) {
+	std::cout << "running" << running << "\n";
+	while (running) {
 		loopServer();
+	}
+}
+
+void	Server::clearListenAddr( void ) {
+	typedef std::vector<ServerInfo>::iterator	iter;
+	for (iter ptr = server_info.begin(); ptr != server_info.end(); ptr ++) {
+		ptr->clearListenAddr();
 	}
 }
 

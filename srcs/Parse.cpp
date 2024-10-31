@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 21:02:34 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/30 15:29:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,31 +20,60 @@ const char		*Parse::ParsingConfError::type = "";
 uint64_t		Parse::buffer = 0;
 const uint64_t	*Parse::ParsingConfError::line_no = &buffer;
 
-Parse::Parse( void ) : semicolon(false), filename("default.conf"), server(), location() {}
+Parse::Parse( void ) :
+content_stream(),
+line_stream(),
+line_counter(0),
+block_level(0),
+bracket_no(0),
+semicolon(false),
+no_para(0),
+directive_ptr(NULL),
+filename(""),
+server(NULL),
+ptr(NULL),
+serverinfo(),
+location(),
+listen_socket()
+{ }
 
-Parse::Parse( const char *config, Server &server_ ) : line_counter(), block_level(), bracket_no(), filename(config), server(&server_){
-	semicolon = false;
-}
+Parse::Parse( const char *config, Server &server_ ) :
+content_stream(),
+line_stream(),
+line_counter(0),
+block_level(0),
+bracket_no(0),
+semicolon(false),
+no_para(0),
+directive_ptr(NULL),
+filename(config),
+server(&server_),
+ptr(NULL),
+serverinfo(),
+location(),
+listen_socket()
+{ }
 
 Parse::Parse( const Parse &src ) {
 	*this = src;
 }
 
 Parse& Parse::operator=( const Parse &src ) {
-	if (this != &src) {
-		line_counter = src.line_counter;
-		block_level = src.block_level;
-		bracket_no = src.bracket_no;
-		semicolon = src.semicolon;
-		no_para = src.no_para;
-		directive_ptr = src.directive_ptr;
-		filename = src.filename;
-		server = src.server;
-		ptr = src.ptr;
-		serverinfo = src.serverinfo;
-		location = src.location;
-		listen_socket = src.listen_socket;
+	if (this == &src) {
+		return (*this);
 	}
+	line_counter = src.line_counter;
+	block_level = src.block_level;
+	bracket_no = src.bracket_no;
+	semicolon = src.semicolon;
+	no_para = src.no_para;
+	directive_ptr = src.directive_ptr;
+	filename = src.filename;
+	server = src.server;
+	ptr = src.ptr;
+	serverinfo = src.serverinfo;
+	location = src.location;
+	listen_socket = src.listen_socket;
 	return (*this);
 }
 
@@ -63,6 +92,37 @@ void	Parse::removeComments( std::string &content ) const {
 		size_t pos_end = content.find('\n', pos);
 		content.erase(pos, pos_end - pos);
 	}
+}
+
+void	Parse::insertDelimWhiteSpace(std::string &str, const char *delim) const {
+	std::string result;
+	result.reserve(str.length());
+	
+	for (size_t i = 0; i < str.length(); ++i) {
+		char current = str[i];
+		bool isDelimiter = false;
+
+		// Check if the current character is in the delim
+		for (const char *d = delim; *d != '\0'; ++d) {
+			if (current == *d) {
+				isDelimiter = true;
+				break;
+			}
+		}
+
+		if (isDelimiter) {
+			if (i > 0 && str[i - 1] != ' ') {
+				result += ' ';
+			}
+			result += current;
+			if (i < str.length() - 1 && str[i + 1] != ' ') {
+				result += ' ';
+			}
+		} else {
+			result += current;
+		}
+	}
+	str = result;
 }
 
 bool	Parse::getNextLine( void ) {
@@ -171,7 +231,6 @@ static uint64_t	checkSize( std::string::iterator start, std::string::iterator en
  */
 void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 	std::string token;
-	// std::cout << "line_stream: " << line_stream << "\n";
 	while (line_stream >> token && semicolon == false)
 	{
 		if (!token.length()) {
@@ -186,7 +245,6 @@ void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 		else
 			no_para ++;
 		(this->*process)(token);
-		// std::cout << "token: " << token << "\n";
 	}
 	if (!semicolon)
 		throw ParsingConfError(excepted_delimitor, ";");
@@ -292,7 +350,6 @@ void	Parse::processLocation( const std::string &directive ) {
  * 
  */
 void	Parse::processToken( const std::string &token ) {
-
 	if (token == "{")
 	{
 		bracket_no ++;
@@ -306,35 +363,30 @@ void	Parse::processToken( const std::string &token ) {
 			throw ParsingConfError(extra_delimitor, "}");
 		}
 		if (!bracket_no && !block_level) {
-			// std::cout << "\nParsing ServerInfo info\n" << ServerInfo << '\n';
 			server->addServerInfo(serverinfo);
 			serverinfo.reset();
 		}
 		if (bracket_no == 1 && block_level == 1) {
-			// std::cout << "Pushing location: " << location.path << "\n";
 			serverinfo.addLocation(location);
 			location.reset();
 		}
 		return ;
 	}
 	block_level = checkLevel(block_level, token);
-	std::cout << "Here9!\n";
-	std::cout << "block_level: " << block_level << "\n";
-	std::cout << "bracket_no: " << bracket_no << "\n";
 	if (block_level == 2 && bracket_no == 1) {
 		location.addPath(token);
 	}
 	else if (bracket_no == 1 && block_level == 1) {
-		*ptr = serverinfo; // Seg fault here
-		std::cout << "Here10!\n";
+		ptr = &serverinfo;
 		processServer(token);
 	}
 	else if (bracket_no == 2 && block_level == 2) {
-		*ptr = location;
+		ptr = &location;
 		if (!location.getLocationPath().length())
 			throw ParsingConfError(invalid_no_parameter, "location");
 		processLocation(token);
 	}
+	semicolon = false;
 }
 
 /**
@@ -351,7 +403,6 @@ void	Parse:: processContent( void ) {
 	std::string	token;
 	while (getNextLine()) {
 		while (line_stream >> token) {
-			std::cout << "token: " << token << "\n";
 			processToken(token);
 		}
 	}
@@ -376,26 +427,23 @@ void Parse::parseConfigFile( void ) {
 	if (!server) {
 		throw ParsingFileError(-1);
 	}
-	CheckFile	check(filename.c_str());
+	CheckFile	check(fname);
 	check.checking(F_OK | R_OK);
 	if (!(!check.getAccessbility() && check.getType() == file))
 		throw ParsingFileError(file_open);
 	std::string	content;
 	if (!check.getFileContent(content)) // statement terbalik, fixed
 		throw ParsingFileError(file_open);
-	std::cout << "Here5!\n";
 	if (!content.length())
 		throw ParsingFileError(file_empty);
-	std::cout << "Here6!\n";
 	removeComments(content);
-	std::cout << "Here7!\n";
+	insertDelimWhiteSpace(content, "{};");
 	content_stream.str(content);
-	std::cout << "Here8!\n";
 	processContent();
 }
 
 boolean	Parse::processBoolParameter( const std::string &token, const char *directive ) {
-	if (no_para > 0) {
+	if (no_para > 1) {
 		throw ParsingConfError(invalid_no_parameter, directive);
 	}
 	if (token == "on") {
@@ -519,8 +567,9 @@ void	Parse::processIndex( std::string &token ) {
 
 void	Parse::processAutoIndex( std::string &token ) {
 	if (!token.length()) {
-		if (!no_para)
+		if (no_para != 1) {
 			throw ParsingConfError(invalid_no_parameter, directive_ptr);
+		}
 		return ;
 	}
 	ptr->toggleAutoIndex(processBoolParameter(token, directive_ptr));
@@ -625,7 +674,7 @@ void	Parse::processListenAddress( std::string &token ) {
 	listen_socket.addAddress(addr, port);
 	if (listen_socket.getStatus()) {
 		throw ParsingConfError(token, directive_ptr);
-	}	
+	}
 }
 
 bool	Parse::processListenPara1( std::string &token ) {
@@ -700,7 +749,6 @@ void	Parse::processListen( std::string &token ) {
 	if (start) {
 		start = false;
 		processListenAddress(token);
-		return ;
 	} else {
 		if (processListenPara1(token))
 			goto add;

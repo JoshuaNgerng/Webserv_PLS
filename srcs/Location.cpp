@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 14:44:22 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/30 20:37:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,23 +27,27 @@ Location::Location( const Location &src ) : InfoBlock(src) {
 }
 
 Location& Location::operator=( const Location &src ) {
-	if (this != &src) {
-		InfoBlock::operator=(src);
-		path = src.path;
-		alias = src.alias;
-		internal = src.internal;
-		return_ = src.return_;
-		cgi_mapping = src.cgi_mapping;
-		is_cgi = src.is_cgi;
+	if (this == &src) {
+		return (*this);
 	}
+	InfoBlock::operator=(src);
+	path = src.path;
+	alias = src.alias;
+	internal = src.internal;
+	return_ = src.return_;
+	cgi_mapping = src.cgi_mapping;
+	is_cgi = src.is_cgi;
 	return (*this);
 }
 
 Location::~Location( void ) { }
 
 void	Location::matchUri( Client &client, bool autoindex_ ) const {
-	(void)client;
-	(void)autoindex_;
+	// if proxy server and if cgi handle diff
+	// if (alias.length() > 0) {
+	// 	root = alias; // logic for alias
+	// } resolve roo alias before server setup
+	InfoBlock::matchUri(client, autoindex_);
 }
 
 void	Location::addPath( const std::string &path_ ) {

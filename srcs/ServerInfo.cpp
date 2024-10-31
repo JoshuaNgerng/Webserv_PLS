@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 14:52:05 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/30 16:51:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ server_name(),
 client_header_buffer_size(0),
 client_header_timeout(0),
 merge_slash(false),
-ignore_invalid_header(false),
 location()
 {}
 
@@ -31,10 +30,37 @@ ServerInfo::ServerInfo( const ServerInfo &src ) : InfoBlock(src) {
 
 ServerInfo::~ServerInfo( void ) { }
 
-ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) { (void)src; return (*this); }
+ServerInfo&	ServerInfo::operator=( const ServerInfo &src ) {
+	if (this == &src) {
+		return (*this);
+	}
+	InfoBlock::operator=(src);
+	listen_sockets = src.listen_sockets;
+	server_name = src.server_name;
+	client_header_buffer_size = src.client_header_buffer_size;
+	client_header_timeout = src.client_header_timeout;
+	merge_slash = src.merge_slash;
+	location = src.location;
+	return (*this);
+}
+
+void	ServerInfo::clearListenAddr( void ) {
+	typedef	std::vector<ListenSocket>::iterator	iter;
+	for (iter it = listen_sockets.begin(); it != listen_sockets.end(); it ++) {
+		it->clearAddr();
+	}
+}
+
+void	ServerInfo::emptyListenAddr( void ) {
+	typedef	std::vector<ListenSocket>::iterator	iter;
+	for (iter it = listen_sockets.begin(); it != listen_sockets.end(); it ++) {
+		it->emptyAddrPtr();
+	}
+}
 
 void	ServerInfo::reset( void ) {
 	InfoBlock::reset();
+	emptyListenAddr();
 	listen_sockets.clear();
 	server_name.clear();
 	location.clear();

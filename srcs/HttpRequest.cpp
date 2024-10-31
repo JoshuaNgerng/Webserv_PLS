@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/29 14:57:24 by ychng            ###   ########.fr       */
+/*   Updated: 2024/10/31 11:16:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,12 +73,9 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 	pos += 4;
 	header.append(str, 0, pos);
 	validateHeader();
-	if (!valid_header) {
-		return (std::string::npos);
-	}
 	if (method == POST || method == PUT) {
 		if (!(validateBody()))
-			return (std::string::npos);
+			return (str.length() - pos);
 		return (addBody(str, pos));
 	}
 	else
@@ -125,9 +122,11 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	if (!i)
 		return (false);
 	buffer = start.substr(0, i);
+	// std::cout << "test error\n";
 	int check_method = checkMethods(buffer);
 	if (check_method < 0)
 		return (false);
+	// std::cout << "test error 2\n";
 	method = static_cast<http_method>(check_method);
 	i ++;
 	j = i;
@@ -140,14 +139,16 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	uri = start.substr(j, i - j);
 	i ++;
 	j = i;
+	// std::cout << "test error 3\n";
 	for (; i < start.length(); i ++) {
-		if (start[i] == ' ')
+		if (start[i] == ' ' || start[i] == '\r')
 			break ;
 	}
 	if (j == i)
 		return (false);
 	protocol = start.substr(j, i - j); // need validation
-	i ++;
+	// std:", " << start[i - 1] :cout << "proto ? " << protocol << '\n';
+	// std::cout << "test i " << static_cast<int>(start[i]) << ", " << static_cast<int>(start[i - 1]) << '\n';
 	if (start[i] != '\r' || i != start.length() - 1) {
 		return (false);
 	}
@@ -175,6 +176,7 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 	std::string         token;
 	std::getline(ss, token);
 	if (!(validateStartLine(token))) {
+		std::cout << "Http start Error\n";
 		return (false);
 	}
 	while (std::getline(ss, token)) {
@@ -212,6 +214,8 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 
 bool	HttpRequest::validateHeader( void ) {
 	valid_header = validateHeaderHelper();
+	if (!valid_header)
+		std::cout << "Http Header Error\n";
 	return (valid_header);
 }
 
@@ -255,4 +259,24 @@ void	HttpRequest::normalizeUri( void ) {
 
 bool	HttpRequest::getValidHeader( void ) const { return (valid_header); }
 
+bool	HttpRequest::isReady( void ) const { return (finished_request); }
+
 const std::string&	HttpRequest::getUri( void ) const  { return (uri); }
+
+const std::string&	HttpRequest::getHeaderStr( void ) const { return (header); }
+
+std::ostream&	operator<<( std::ostream &o, const HttpRequest &req ) {
+	o << "Request is" << ((req.isReady()) ? " " : " not ") << "ready\n";
+	o << "Validate Header: " << ((req.getValidHeader()) ? "turw" : "false") << "\n";
+	o << "Header\n" << req.getHeaderStr();
+		// 	http_method	getMethod( void ) const;
+		// const std::string&	getUri( void ) const;
+		// const std::string&	getProtocol( void ) const; // empty
+		// bool		getHasBody( void ) const;
+		// bool		getValidHeader( void ) const;
+		// bool		isReady( void ) const; //empty
+
+		// type		getContentType( void ) const;
+		// uint64_t	getContentLength( void ) const;
+	return (o);
+}

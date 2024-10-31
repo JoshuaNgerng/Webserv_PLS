@@ -33,7 +33,8 @@ class ListenSocket {
 		void	setReusePort( void );
 		void	setKeepalive( long idle, long intvl, long cnt );
 		void	setKeepalive( void );
-		void	clear( void );
+		void	clearAddr( void );
+		void	emptyAddrPtr( void );
 		void	reset( void );
 
 		class Iterator {

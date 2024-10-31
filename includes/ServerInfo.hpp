@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/22 22:42:21 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/30 16:51:37 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ class ServerInfo : public InfoBlock {
 
 		ServerInfo&	operator=( const ServerInfo &src );
 
+		void	emptyListenAddr( void );
+		void	clearListenAddr( void );
 		void	reset( void );
 
 		void	addListen( const ListenSocket &add );		
@@ -49,7 +51,6 @@ class ServerInfo : public InfoBlock {
 		uint64_t					client_header_buffer_size;
 		uint64_t					client_header_timeout;
 		bool						merge_slash;
-		bool						ignore_invalid_header;
 		std::vector<Location>		location;
 };
 
