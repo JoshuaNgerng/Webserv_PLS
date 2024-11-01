@@ -38,11 +38,24 @@ public:
 
 private:
 	struct Entry {
-	int check;
-	std::string fname;
-	std::string time;
-	uint64_t size;
+		int check;
+		std::string fname;
+		std::string time;
+		uint64_t size;
+
+		Entry(int c, const std::string &f, const std::string &t, uint64_t s)
+        	: check(c), fname(f), time(t), size(s) {}
     };
+
+	// Functor to replace the lambda function
+	struct EntryComparator {
+		bool operator()(const Entry &a, const Entry &b) const {
+			if (a.check == b.check) {
+				return a.fname < b.fname;
+			}
+			return a.check > b.check;
+		}
+	};
 
 	std::vector<Entry> entries;;
 	int		autoindex_format;

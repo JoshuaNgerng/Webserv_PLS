@@ -281,7 +281,7 @@ std::string	AutoIndex::generateResource( const char *dirname ) {
 
     while (check) {
         if (check > 0 && !(fname != "../" && fname[0] == '.')) {
-            entries.push_back(Entry{check, fname, time, size});
+            entries.push_back(Entry(check, fname, time, size));
 			// std::cout << "fname: " << fname << '\n';
         }
         check = iterDir(fname, time, size);
@@ -300,12 +300,8 @@ std::string	AutoIndex::generateResource( const char *dirname ) {
 			If check is different, it sorts entries with higher check values first (directories).
 	*/
 
-    std::sort(entries.begin(), entries.end(), [](const Entry &a, const Entry &b) {
-        if (a.check == b.check) {
-            return a.fname < b.fname;
-        }
-        return a.check > b.check;
-    });
+	std::sort(entries.begin(), entries.end(), EntryComparator());
+
 	// part A end
 
 	switch (autoindex_format) {
