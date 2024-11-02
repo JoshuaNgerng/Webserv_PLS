@@ -36,3 +36,4 @@ webserv
 .vscode/*
 .vscode
 .DS_Store
+*.txt
