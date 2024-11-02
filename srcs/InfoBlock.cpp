@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 16:17:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/03 01:40:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,82 +105,169 @@ void	InfoBlock::reset( void ) {
 	etag = undefined;
 }
 
-bool	InfoBlock::matchUriSingle( const std::string &name ) const {
-	CheckFile	file_info(name);
+bool	InfoBlock::searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const {
+	std::string	path(root);
+	path += fname;
+	std::cout << "checking file: " << path << '\n';
+	client.addRootDir(root);
+	CheckFile	file_info(path);
 	file_info.checking(F_OK | R_OK);
 	if (file_info.getAccessbility() < 0) {
-		return (false);
-	}
-	if (file_info.getType() != file || file_info.getType() != systemlink) {
-		return (false);
-	}
-	return (true);
-}
-
-void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool autoindex_ ) const {
-	CheckFile	file_info(uri);
-	file_info.checking(F_OK | R_OK);
-	if (file_info.getAccessbility() < 0) {
+		std::cout << "file cant access\n";
 		client.addContent(404);
-		return ;
+		return (false);
 	}
 	if (file_info.getType() == directory) {
-		if (uri[uri.length() - 1] != '/') {
-			std::string	buffer(uri);
-			buffer += '/';
-			client.addContent(308, buffer);
-			return ;
-		}
-		if (autoindex_) {
-			client.addDir(uri);
-			return;
-		}
-		for (std::vector<std::string>::const_iterator it = index.begin(); it != index.end(); it ++) {
-			std::string	buffer(uri);
-			buffer += *it;
-			if (matchUriSingle(buffer)) {
-				client.addContent(200, buffer, file_info.getFilesize());
-				return ;
-			}
-		}
+		std::cout << "directory " << path << '\n';
+		client.addContent(308, fname + '/');
+		return (true);
+	}
+	if (file_info.getType() != file && file_info.getType() != systemlink) {
+		std::cout << "file type error: " << static_cast<int>(file_info.getType()) << '\n';
 		client.addContent(404);
-		return ;
+		return (false);
 	}
-	if (file_info.getType() != file || file_info.getType() != systemlink) {
-		client.addContent(403);
-		return ;
+	std::cout << "client add Content: " << fname << '\n';
+	client.addContent(200, fname, file_info.getFilesize());
+	return (true);
+} 
+
+bool	InfoBlock::searchIndexes( Client &client, const std::string &uri ) const {
+	typedef std::vector<std::string>::const_iterator	iter;
+	client.addRootDir(uri);
+	for (iter it = index.begin(); it != index.end(); it ++) {
+		if (searchSingleFile(client, uri, *it)) {
+			return (true);
+		}
 	}
-	client.addContent(200, uri, file_info.getFilesize());
+	client.addContent(404);
+	return (false);
 }
 
-void	InfoBlock::matchUri( Client &client, bool autoindex_ ) const {
+bool	InfoBlock::resolveUri( Client &client, const std::string &uri ) const {
+	std::string	path = root;
+	bool		is_directory = false;
+	if (uri[uri.length() - 1] == '/') {
+		is_directory = true;
+		path += uri;
+	}
+	if (is_directory) {
+		if (searchIndexes(client, path)) {
+			return (true);
+		} else if (autoindex == on) {
+			client.addDir(path);
+			return (true);
+		}
+		client.addContent(403);
+		return (false);
+	}
+	std::cout << "test resolve Uri path: " << path << " uri: " << uri << '\n';
+	if (searchSingleFile(client, path, uri)) {
+		return (true);
+	}
+	return (false);
+}
+
+void	InfoBlock::routingClient( Client &client, std::string *redirect ) const {
 	typedef std::vector<std::string>::const_iterator	iter;
-	std::string	buffer;
 	if (!try_files.size()) {
-		std::string	path(root);
-		path += client.getCurrentUri();
-		matchUriSingle(client, path, autoindex_);
+		resolveUri(client, client.getCurrentUri());
 		return ;
 	}
 	iter end = -- try_files.end();
-	std::string	path;
-	path.reserve(root.length());
 	for (iter it = try_files.begin(); it != end; it ++) {
-		EmbeddedVariable::resolveString(buffer, *it, client);
-		path = root + buffer;
-		matchUriSingle(client, path, autoindex_);
-		if (client.checkResponseStatus())
+		std::string new_uri = root + *it;
+		if (resolveUri(client, new_uri))
 			return ;
-		buffer.clear();
 	}
 	const std::string &str = *end;
 	if (str[0] == '=') {
 		client.addContent(::atoi(str.c_str() + 1));
 		return ;
 	}
-	buffer = root + '/';
-	buffer += str;
-	matchUriSingle(client, buffer, autoindex_);
+	if (redirect) {
+		*redirect = str;
+	}
+}
+
+void	InfoBlock::defaultSetting( void ) {
+	// if (!access_log.first.length()) {
+	// 	access_log.first = "access.log";
+	// 	access_log.second = combined;
+	// }
+	// if (!error_log.first.length()) {
+	// 	access_log.first = "error.log";
+	// 	access_log.second = error;
+	// }
+	if (if_modify_since == undefined_) {
+		if_modify_since = off_;
+	}
+	if (!root.length()) {
+		root = "public";
+	}
+	if (!client_body_timeout) {
+		client_body_timeout = 0;
+	}
+	if (!client_max_body_size) {
+		client_max_body_size = 0;
+	}
+	if (!index.size()) {
+		index.push_back("index.html");
+	}
+	if (autoindex == undefined) {
+		autoindex = off;
+	}
+	if (autoindex_exact_size == undefined) {
+		autoindex_exact_size = on;
+	}
+	if (autoindex_localtime == undefined) {
+		autoindex_localtime = on;
+	}
+	if (autoindex_format == none) {
+		autoindex_format = html;
+	}
+	if (symlinks == undefined) {
+		symlinks = on;
+	}
+	if (etag == undefined) {
+		etag = off;
+	}
+}
+
+void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
+	if (if_modify_since == undefined_) {
+		if_modify_since = ref.if_modify_since;
+	}
+	if (!root.length()) {
+		root = ref.root;
+	}
+	if (!client_body_timeout) {
+		client_body_timeout = ref.client_body_timeout;
+	}
+	if (!client_max_body_size) {
+		client_max_body_size = ref.client_max_body_size;
+	}
+	if (!index.size()) {
+		index = ref.index; // not sure if this best idea
+	}
+	if (autoindex == undefined) {
+		autoindex = ref.autoindex;
+	}
+	if (autoindex_exact_size == undefined) {
+		autoindex_exact_size = ref.autoindex_exact_size;
+	}
+	if (autoindex_localtime == undefined) {
+		autoindex_localtime = ref.autoindex_localtime;
+	}
+	if (autoindex_format == none) {
+		autoindex_format = ref.autoindex_format;
+	}
+	if (symlinks == undefined) {
+		symlinks = ref.symlinks;
+	}
+	if (etag == undefined) {
+		etag = ref.etag;
+	}
 }
 
 bool	InfoBlock::findErrorPath( std::string &str, int status ) const {

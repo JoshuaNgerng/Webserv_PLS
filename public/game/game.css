@@ -1,0 +1,43 @@
+/* LIAW-NOTE [SUN-29TH-SEP-2024]: 
+ * the reason why i use relative on game board is
+ * because i want to make the paddle absolute;
+ * by having the absolute one could use top, left, right, bottom
+ * to position the paddles and the ball
+ */
+#game {
+	position: relative;
+	background-color: #333;
+	border: 3px solid #fff;
+
+	border-radius: 0.3rem;
+	width: 70rem;
+	height: 45rem;
+}
+
+.paddle {
+	position: absolute;
+	width: 10px;
+	height: 80px;
+	background-color: #fff;
+}
+
+#paddle-left {
+	left: 0;
+	top: 160px;
+}
+
+#paddle-right {
+	right: 0;
+	top: 160px;
+}
+
+#ball {
+	position: absolute;
+	width: 15px;
+	height: 15px;
+	background-color: #ff0;
+	border-radius: 50%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}

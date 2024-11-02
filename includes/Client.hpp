@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 19:24:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/02 19:15:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,12 @@ class Client {
 		bool	clientRecvHttp( void );
 		bool	clientRecvContent( void );
 		bool	clientSendResponse( void );
+		void	addRootDir( const std::string &str );
+		void	addRootDir( const std::string &root, const std::string &uri );
 		void	addContent( int status_code, const std::string &str = std::string(),
 							size_t	content_length = 0 );
 		void	addDir( const std::string &str );
+		void	ignoreClosingFd( void );
 		void	serverReceived( void );
 
 		/* getters */
@@ -53,16 +56,17 @@ class Client {
 
 		/* getters */
 		const std::string&	getCurrentUri( void ) const;
+		const std::string&	getContentName( void ) const { return (content_name); }
 
 		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;
 		std::vector<Location>::const_iterator	getLocationRef( void ) const;
-		std::map<int, client_ptr>::iterator		getSocketRef( void ) const;
-		std::map<int, client_ptr>::iterator		getReponseRef( void ) const;
+		// std::map<int, client_ptr>::iterator		getSocketRef( void ) const;
+		// std::map<int, client_ptr>::iterator		getReponseRef( void ) const;
 
 	private:
 		static const int	recv_flag = 0;
 		static const int	send_flag = 0;
-		static const size_t	recv_buffer_size = 8192;
+		static const size_t	buffer_size = 8192;
 		/* server related info + data fd*/
 		server_ptr	server_ref;
 		loc_ptr		location_ref;
@@ -72,6 +76,8 @@ class Client {
 		socklen_t			socket_len;
 		int					socket_fd;
 		int					content_fd;
+		std::string			root_dir;
+		std::string			content_path;
 		std::string			content_name;
 		bool				has_content_fd;
 		bool				is_content_fd_in_server;
@@ -79,6 +85,7 @@ class Client {
 		int					status_code;
 		bool				is_directory;
 		bool				is_cgi;
+		bool				is_proxy;
 		bool				response_ready;
 
 		/* http related info + data info */
@@ -103,6 +110,7 @@ class Client {
 		int		getStaticFileFd( void );
 		bool	getCgiPipeFd( void );
 		bool	getProxySocketFd( void );
+		void	resetResponse( void );
 		void	reset( void );
 };
 

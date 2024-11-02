@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/29 14:47:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/02 17:32:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,5 +46,7 @@ class HttpResponse : Http {
 		void	addField( const std::string &name, const std::string &val );
 		void	addField( std::string &str, const char *name, const std::string &val ) const;
 };
+
+std::ostream&	operator<<( std::ostream &o, const HttpResponse &res );
 
 #endif

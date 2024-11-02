@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/29 14:53:42 by ychng            ###   ########.fr       */
+/*   Updated: 2024/11/03 01:14:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,16 +84,17 @@ void	HttpResponse::setHeader( int status, const std::string &str ) {
 }
 
 void	HttpResponse::setContent( const std::string &type, uint64_t len ) {
-	size_t	insert_pos = header.find_last_of("\r\n\r\n");
-	if (insert_pos == std::string::npos) {
-		return ;
+	size_t	insert_pos = header.length();
+	if (insert_pos > 2) {
+		insert_pos -= 2;
 	}
-	std::string	buffer, buffer2;
+	// std::cout << "test response insert pos " << insert_pos << '\n';
+	std::string	buffer;
 	addField(buffer, "Content-Type", type);
 	header.insert(insert_pos, buffer);
 	insert_pos += buffer.length();
-	buffer2 = to_String(len);
-	addField(buffer, "Content-Length", buffer2);
+	buffer.clear();
+	addField(buffer, "Content-Length", to_String(len));
 	header.insert(insert_pos, buffer);
 }
 
@@ -101,6 +102,7 @@ void	HttpResponse::addBody( const std::string &str ) { body += str; }
 
 void	HttpResponse::finishResponseMsg( void ) {
 	final = header + body;
+	ready = true;
 }
 
 void	HttpResponse::reset( void ) {
@@ -109,6 +111,7 @@ void	HttpResponse::reset( void ) {
 	body.clear();
 	proxy = false;
 	final.clear();
+	ready = false;
 }
 
 size_t	HttpResponse::getBodyLength( void ) const { return (body.length()); }
@@ -117,4 +120,12 @@ size_t	HttpResponse::getTotalLength( void ) const { return (final.length()); }
 
 const char*	HttpResponse::getPtrPos( size_t no_bytes_send ) const {
 	return (final.c_str() + no_bytes_send);
+}
+
+bool	HttpResponse::isReady( void ) const { return (ready); }
+
+std::ostream&	operator<<( std::ostream &o, const HttpResponse &res ) {
+	o << "Http Response " << ((!res.isReady()) ? "not " : " " ) << "ready\n";
+	o << res.getPtrPos(0) << '\n';
+	return (o);
 }

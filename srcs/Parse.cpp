@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 15:29:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/02 03:04:56 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -440,6 +440,7 @@ void Parse::parseConfigFile( void ) {
 	insertDelimWhiteSpace(content, "{};");
 	content_stream.str(content);
 	processContent();
+	server->normalizeDefaultSetting();
 }
 
 boolean	Parse::processBoolParameter( const std::string &token, const char *directive ) {

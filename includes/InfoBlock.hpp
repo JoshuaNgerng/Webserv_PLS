@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/23 13:05:59 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/03 01:40:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,10 @@ class InfoBlock {
 		virtual ~InfoBlock( void );
 
 		bool	findErrorPath( std::string &str, int status ) const;
-		void	matchUri( Client &client, bool autoindex ) const;
+		// void	matchUri( Client &client, bool autoindex ) const;
+		void	routingClient( Client &client, std::string *redirect = NULL ) const;
+		void	defaultSetting( void );
+		void	defaultSetting( const InfoBlock &ref );
 
 		virtual void	reset( void );
 
@@ -107,8 +110,9 @@ class InfoBlock {
 		boolean							symlinks;
 		boolean							etag;
 
-		bool	matchUriSingle( const std::string &name ) const;
-		void	matchUriSingle( Client &client, const std::string &uri ,bool autoindex ) const;
+		bool	searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const;
+		bool	searchIndexes( Client &client, const std::string &uri ) const;
+		bool	resolveUri( Client &client, const std::string &uri ) const;
 };
 
 #endif

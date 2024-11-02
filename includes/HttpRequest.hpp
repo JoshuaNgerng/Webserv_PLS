@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joshua <joshua@student.42.fr>              +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 15:25:21 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/06 23:08:07 by joshua           ###   ########.fr       */
+/*   Updated: 2024/10/31 07:56:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,12 @@ class HttpRequest : Http {
 		size_t		addBody( const std::string &str, size_t pos );
 		http_method	getMethod( void ) const;
 		const std::string&	getUri( void ) const;
+		const std::string&	getProtocol( void ) const; // empty
+		const std::string&	getHeaderStr( void ) const; //empty
 		bool		getHasBody( void ) const;
 		bool		getValidHeader( void ) const;
+		bool		isReady( void ) const; //empty
+
 		type		getContentType( void ) const;
 		uint64_t	getContentLength( void ) const;
 		void		normalizeUri( void );
@@ -51,5 +55,7 @@ class HttpRequest : Http {
 		bool	validateBody( void );
 		bool	addHeaderFields( const std::string &field, const std::string &val );
 };
+
+std::ostream&	operator<<( std::ostream &o, const HttpRequest &res );
 
 #endif

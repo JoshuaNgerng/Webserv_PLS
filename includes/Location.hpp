@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:06:49 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/23 13:06:33 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/03 01:01:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,9 @@ class Location : public InfoBlock {
 		void	reset( void );
 
 		const std::string&	getLocationPath( void ) const;
-		void	matchUri( Client &client, bool autoindex_ ) const;
+		void	routingClient( Client &client ) const;
+		void	defaultSetting( void );
+		void	defaultSetting( const InfoBlock &ref );
 
 	private:
 		std::string	path;

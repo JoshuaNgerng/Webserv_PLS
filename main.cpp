@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 17:14:00 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/31 15:48:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ int	main(int ac, char **av, char **env) {
 		parse.parseConfigFile();
 	}
 	std::cout << "done\n";
+	Server::server_name = &av[0][2];
 	std::signal(SIGINT, Server::signalHandler);
 	server.startServerLoop();
 	return (0);

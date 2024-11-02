@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 16:58:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/30 23:27:42 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,8 +105,11 @@ int	ListenSocket::addListenPollFd( std::vector<pollfd_t> &listen_v ) const {
 
 bool	ListenSocket::socketSetup( int fd ) const {
 	int	opt = 1;
-	if (fcntl(fd, F_SETFL, fcntl_flag) < 0)
+	if (fcntl(fd, F_SETFL, fcntl_flag) < 0) {
+		return (false);
+	}
 	if (reuseport) {
+		std::cout << "reuseport huh?\n";
 		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEADDR,
 			&opt, sizeof(opt)) < 0) {
 			return (false);

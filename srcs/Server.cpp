@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 20:09:29 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/03 01:49:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,16 +96,21 @@ void	Server::addClientContentFd( client_ptr client ) {
 	if (fd < 0) {
 		return ;
 	}
+	std::cout << "client content name: " << client->getContentName() << '\n';
 	addBufferfds(fd);
+	std::cout << "client added content fd: " << fd << '\n';
 	client->serverReceived();
+	client_mapping[fd] = client;
 }
 
 void	Server::markAsDelete( pollfd_t &pollfd ) {
+	std::cout << "pollfd mark as delete\n";
 	pollfd.fd = -1;
 	fd_counter --;
 }
 
 void	Server::markAsDelete( pollfd_t &pollfd, Client &client ) {
+	std::cout << "client mark as delete\n";
 	markAsDelete(pollfd);
 	client.markforDeletion();
 }
@@ -176,9 +181,7 @@ void	Server::setupSockets( void ) {
 void	Server::resetFds( void ) {
 	typedef std::vector<pollfd_t>::iterator	iter;
 	iter it = socket_fds.begin();
-	std::cout << "socket fd status at reset\n";
 	for (size_t i = 0; i < server_no; i ++) {
-		std::cout << socket_fds[i] << ", ";
 		if (it == socket_fds.end()) {
 			break ;
 		}
@@ -190,17 +193,18 @@ void	Server::resetFds( void ) {
 		} else {
 			it ++;
 		}
-		std::cout << it->fd << ", ";
 	}
+	// std::cout << "new fd added\n";
 	for (nfds_t i = 0; i < buffer_counter; i ++) {
 		socket_fds.push_back(buffer_new_fd[i]);
-		std::cout << socket_fds.back().fd << ", ";
+		// std::cout << socket_fds.back().fd << ", ";
 	}
-	std::cout << '\n';
+	// std::cout << '\n';
+	// std::cout << "socket fd status at reset\n";
 	for (client_ptr ptr = client_info.begin(); ptr != client_info.end();) {
 		if (ptr->toBeDeleted()) {
-			std::cout << "deleted client";
 			ptr = client_info.erase(ptr);
+			std::cout << "client sucessfully deleted\n";
 		} else {
 			ptr ++;
 		}
@@ -208,6 +212,10 @@ void	Server::resetFds( void ) {
 	buffer_new_fd.clear();
 	buffer_counter = 0;
 	poll_tracker = fd_counter;
+	// for (size_t i = 0; i < poll_tracker; i ++) {
+	// 	std::cout << socket_fds[i].fd << ", ";
+	// }
+	// std::cout << "\n";
 }
 
 
@@ -226,7 +234,8 @@ void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 }
 
 void	Server::handleClientSent( pollfd_t &poll_fd, Client &client ) {
-	if (!client.checkResponseStatus()) {
+	if (!client.checkResponseReady()) {
+		// std::cout << "client check response not ready\n";
 		return ;
 	}
 	if (poll_fd.fd == client.clientSocketFd()) {
@@ -244,24 +253,31 @@ void	Server::handleClient( size_t index ) {
 	if (!poll_fd.revents) {
 		return ;
 	}
-	std::cout << "test client\n";
+	// std::cout << "test client " << poll_fd.fd << "\n";
+	// if (client_mapping.find(poll_fd.fd) == client_mapping.end()) {
+		// std::cout << "WTF " << poll_fd.fd << "\n";
+		// usleep(5000);
+	// }
 	client_ptr ptr = client_mapping[poll_fd.fd];
 	if (ptr->toBeDeleted()) {
 		return ;
 	}
 	if (poll_fd.revents & POLLIN) {
+		// std::cout << "test POLLIN\n";
 		handleClientRecv(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & POLLOUT) {
+		// std::cout << "test POLLOUT\n";
 		handleClientSent(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & (POLLHUP | POLLERR)) {
+		// std::cout << "test POLLERR\n";
 		error2Client(poll_fd.fd, ptr);
 	}
-	if (ptr->giveContentFdtoServer()) {
+	if (!ptr->giveContentFdtoServer()) {
 		addClientContentFd(ptr);
 	}
-	std::cout << "try client end\n";
+	// std::cout << "try client end\n";
 	// check timer , abort(etc invalid header) 
 }
 
@@ -280,16 +296,16 @@ void	Server::handleServer( size_t index ) {
 	addBufferfds(fd);
 	client_info.push_back(buffer);
 	client_mapping[fd] = -- client_info.end();
-	// std::cout << client_info.begin()->getServerRef()->getAutoIndex() << '\n';
-	// std::cout << client_info.begin()->toBeDeleted() << '\n';
+	buffer.ignoreClosingFd();
+	std::cout << "client socket successfully added\n";
 }
 
 void	Server::loopServer( void ) {
-	std::cout << "poll tracker: " << poll_tracker << " fd_counter " << fd_counter << '\n';
+	// std::cout << "poll tracker: " << poll_tracker << " fd_counter " << fd_counter << '\n';
 	if (poll(getSocketfds(), poll_tracker, timeout) < 0) {
 		return ; // throw error?
 	}
-	for (size_t index = server_no; index < fd_counter; index ++) {
+	for (size_t index = server_no; index < poll_tracker; index ++) {
 		handleClient(index);
 	}
 	for (size_t index = 0; index != server_no; index ++) {
@@ -306,8 +322,19 @@ void	Server::startServerLoop( void ) {
 		return ;
 	}
 	std::cout << "running" << running << "\n";
+	// size_t	i = 0, limit = 10;
 	while (running) {
 		loopServer();
+		// if (i == limit)
+			// break ;
+		// i ++;
+	}
+}
+
+void	Server::normalizeDefaultSetting( void ) {
+	typedef std::vector<ServerInfo>::iterator	server_iter;
+	for (server_iter it = server_info.begin(); it != server_info.end(); it ++) {
+		it->defaultSetting();
 	}
 }
 

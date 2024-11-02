@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 17:13:15 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/02 03:04:36 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Server
 		void		startServerLoop( void );
 		static void	signalHandler( int signal );
 
+		void		normalizeDefaultSetting( void );
 		void		clearListenAddr( void );
 		void		addServerInfo( ServerInfo &ref );
 		pollfd_t*	getSocketfds( void );

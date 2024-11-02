@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 16:51:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/03 01:01:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,11 +80,15 @@ void	ServerInfo::setMergeSlash( bool opt ) { merge_slash = opt; }
 
 bool	ServerInfo::isMergeSlash( void ) const { return (merge_slash); }
 
-void	ServerInfo::matchUri( Client &client ) const {
+void	ServerInfo::routingClient( Client &client, int level, const std::string &uri_ ) const {
 	typedef std::vector<Location>::const_iterator iter;
-	const std::string	&uri = client.getCurrentUri();
+	const std::string	&uri = ((uri_.length() > 0) ? uri_ : client.getCurrentUri());
 	iter				ptr = location.end();
 	size_t				len = 0;
+	if (level > 3) {
+		client.addContent(404);
+		return ;
+	}
 	for (iter it = location.begin(); it != location.end(); it ++) {
 		size_t check = it->getLocationPath().length();
 		if (!uri.compare(0, check, it->getLocationPath())) {
@@ -95,11 +99,23 @@ void	ServerInfo::matchUri( Client &client ) const {
 		}
 	}
 	client << ptr;
-	bool	b = (autoindex == on) ? true : false;
 	if (ptr != location.end()) {
-		ptr->matchUri(client, b);
+		ptr->routingClient(client);
 	}
-	InfoBlock::matchUri(client, b);
+	std::cout << "no location founded\n";
+	std::string	redirect;
+	InfoBlock::routingClient(client, &redirect);
+	if (redirect.length() > 0) {
+		ServerInfo::routingClient(client, level + 1, redirect);
+	}
+}
+
+void	ServerInfo::defaultSetting( void ) {
+	typedef std::vector<Location>::iterator	iter;
+	InfoBlock::defaultSetting();
+	for (iter it = location.begin(); it != location.end(); it ++) {
+		it->defaultSetting(*this);
+	}
 }
 
 std::vector<ListenSocket>::const_iterator	ServerInfo::listenBegin( void ) const {
