@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/03 01:14:45 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/03 02:08:33 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,16 @@ void	HttpResponse::setContent( const std::string &type, uint64_t len ) {
 	insert_pos += buffer.length();
 	buffer.clear();
 	addField(buffer, "Content-Length", to_String(len));
+	header.insert(insert_pos, buffer);
+}
+
+void	HttpResponse::setContent( void ) {
+	size_t	insert_pos = header.length();
+	if (insert_pos > 2) {
+		insert_pos -= 2;
+	}
+	std::string	buffer;
+	addField(buffer, "Content-Length", "0");
 	header.insert(insert_pos, buffer);
 }
 

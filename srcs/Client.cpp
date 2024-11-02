@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/03 01:25:40 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/03 02:09:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,14 +285,16 @@ bool	Client::clientRecvContent( void ) {
 }
 
 bool	Client::clientSendResponse( void ) {
-	std::cout << "clientSendResponse\n" << response;
+	std::cout << "client Send Response\n" << response;
 	ssize_t	no_bytes = send(socket_fd,
 		response.getPtrPos(bytes_sent), response.getTotalLength() - bytes_sent, 0);
 	if (no_bytes <= 0) {
+		std::cout << "error sending to client\n";
 		return (false);
 	}
 	bytes_sent += no_bytes;
 	if (bytes_sent == response.getTotalLength()) {
+		std::cout << "Sent Response\n";
 		reset();
 	}
 	return (true);
@@ -322,9 +324,12 @@ void	Client::processResponseSuccess( void ) {
 }
 
 void	Client::processResponseRedirect( void ) {
+	std::cout << "Redirect " << status_code << '\n';
 	has_content_fd = false;
 	response_ready = true;
 	response.setHeader(status_code, content_name);
+	response.setContent();
+	response.finishResponseMsg();
 }
 
 void	Client::getDefaultError( void ) {
