@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/03 01:01:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/04 23:28:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,10 @@ void	ServerInfo::routingClient( Client &client, int level, const std::string &ur
 		client.addContent(404);
 		return ;
 	}
+	std::cout << "uri: " << uri << '\n';
 	for (iter it = location.begin(); it != location.end(); it ++) {
 		size_t check = it->getLocationPath().length();
+		std::cout << "location: " << it->getLocationPath() << '\n';
 		if (!uri.compare(0, check, it->getLocationPath())) {
 			if (check > len) {
 				len = check;
@@ -100,9 +102,14 @@ void	ServerInfo::routingClient( Client &client, int level, const std::string &ur
 	}
 	client << ptr;
 	if (ptr != location.end()) {
+		std::cout << "location found : " << ptr->getLocationPath() << '\n';
 		ptr->routingClient(client);
 	}
-	std::cout << "no location founded\n";
+	else
+		std::cout << "no location founded\n";
+	if (client.checkResponseStatus()) {
+		return ;
+	}
 	std::string	redirect;
 	InfoBlock::routingClient(client, &redirect);
 	if (redirect.length() > 0) {
