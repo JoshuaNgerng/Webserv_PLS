@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/03 02:09:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/04 23:04:46 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,12 +215,15 @@ void	Client::reset( void ) {
 	content_length = 0;
 	status_code = 0;
 	resetResponse();
+	if (requests.size() > 0)
+		routeRequest();
 }
 
 void	Client::resetResponse( void ) {
 	response_ready = false;
 	is_directory = false;
 	is_cgi = false;
+	bytes_sent = 0;
 	response.reset();
 }
 
@@ -242,17 +245,18 @@ bool	Client::clientRecvHttp( void ) {
 		requests.push(new_req);
 	}
 	size_t pos = requests.back().addRequest(str);
+	std::cout << "Queued request from: " << socket_fd << "\n" << requests.back();
 	while (pos) {
 		HttpRequest new_req;
 		requests.push(new_req);
 		str.erase(0, str.length() - pos);
 		pos = requests.back().addRequest(str);
+		std::cout << "Queued request from: " << socket_fd << "\n" << new_req;
 	}
-	std::cout << "Show HttpRequest\n" << requests.front();
 	routeRequest();
-	if (response_ready) {
-		std::cout << "Show HttpResponse\n" << response << '\n';
-	}
+	// if (response_ready) {
+		// std::cout << "Show HttpResponse\n" << response << '\n';
+	// }
 	return (true);
 }
 
@@ -265,9 +269,16 @@ bool	Client::clientRecvContent( void ) {
 	} else {
 		r = read(content_fd, buffer, buffer_size);
 	}
-	if (r == 0 || r < 0) {
-		std::cout << "client recv content close or failed: " << strerror(errno) <<"\n";
+	if (r <= 0) {
+		std::cout << "content fd: " << content_fd << " ";
+		if (r == 0) {
+			std::cout << "No bytes read: " << strerror(errno) << "\n";
+		}
+		else {
+			std::cout << "client recv content close or failed: " << strerror(errno) <<"\n";
+		}
 		if (response.getBodyLength() != content_length) {
+			std::cout << "what huh? length recieved " << response.getBodyLength() << " expected " << content_length << "\n";
 			status_code = 500;
 			processResponseError();
 		}
@@ -278,26 +289,28 @@ bool	Client::clientRecvContent( void ) {
 	if (response.getBodyLength() == content_length) {
 		response.finishResponseMsg();
 		response_ready = true;
-		std::cout << "Show HttpResponse\n" << response << '\n';
+		// std::cout << "Show HttpResponse\n" << response << '\n';
 		return (false);
 	}
 	return (true);
 }
 
 bool	Client::clientSendResponse( void ) {
-	std::cout << "client Send Response\n" << response;
+	// std::cout << "client Send Response\n" << response;
 	ssize_t	no_bytes = send(socket_fd,
 		response.getPtrPos(bytes_sent), response.getTotalLength() - bytes_sent, 0);
 	if (no_bytes <= 0) {
 		std::cout << "error sending to client\n";
+		reset();
 		return (false);
 	}
 	bytes_sent += no_bytes;
-	if (bytes_sent == response.getTotalLength()) {
-		std::cout << "Sent Response\n";
-		reset();
+	if (bytes_sent != response.getTotalLength()) {
+		// std::cout << response << "\nSent Response to: " << socket_fd << "\n";
+		// reset();
+		return (true);
 	}
-	return (true);
+	return (false);
 }
 
 void	Client::processResponseSuccess( void ) {
@@ -366,6 +379,7 @@ void	Client::processResponseError( void ) {
 		return ;
 	}
 	if (content_fd > 0) {
+		std::cout << "test close content fd " << content_fd << "\n";
 		close(content_fd);
 	}
 	if (!processContentFd(&Client::getStaticFileFd)) {
