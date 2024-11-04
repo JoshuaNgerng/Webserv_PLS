@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/04 23:14:34 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 00:04:46 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,12 +286,16 @@ bool	Client::clientRecvContent( void ) {
 		return (false);
 	}
 	buffer[r] = '\0';
-	response.addBody(buffer);
+	response.addBody(buffer, static_cast<size_t>(r));
 	if (response.getBodyLength() == content_length) {
 		response.finishResponseMsg();
 		response_ready = true;
+		std::cout << "response for " << requests.front().getUri() << " is ready\n";
 		// std::cout << "Show HttpResponse\n" << response << '\n';
 		return (false);
+	}
+	else {
+		std::cout << "response for " << requests.front().getUri() << " is not ready\n";
 	}
 	return (true);
 }

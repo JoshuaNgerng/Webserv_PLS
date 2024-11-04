@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/04 23:28:45 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 00:07:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,14 +102,14 @@ void	ServerInfo::routingClient( Client &client, int level, const std::string &ur
 	}
 	client << ptr;
 	if (ptr != location.end()) {
-		std::cout << "location found : " << ptr->getLocationPath() << '\n';
+		// std::cout << "location found : " << ptr->getLocationPath() << '\n';
 		ptr->routingClient(client);
+		if (client.checkResponseStatus()) {
+			return ;
+		}
 	}
-	else
-		std::cout << "no location founded\n";
-	if (client.checkResponseStatus()) {
-		return ;
-	}
+	// else
+		// std::cout << "no location founded\n";
 	std::string	redirect;
 	InfoBlock::routingClient(client, &redirect);
 	if (redirect.length() > 0) {

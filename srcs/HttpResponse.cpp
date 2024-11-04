@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/03 02:08:33 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/04 23:48:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,8 @@ void	HttpResponse::setContent( void ) {
 }
 
 void	HttpResponse::addBody( const std::string &str ) { body += str; }
+
+void	HttpResponse::addBody( const char *str, size_t bytes ) { body.append(str, bytes); }
 
 void	HttpResponse::finishResponseMsg( void ) {
 	final = header + body;
