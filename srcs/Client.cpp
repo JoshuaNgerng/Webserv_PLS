@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/04 23:04:46 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/04 23:14:34 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,6 +279,7 @@ bool	Client::clientRecvContent( void ) {
 		}
 		if (response.getBodyLength() != content_length) {
 			std::cout << "what huh? length recieved " << response.getBodyLength() << " expected " << content_length << "\n";
+			std::cout << response << '\n';
 			status_code = 500;
 			processResponseError();
 		}
