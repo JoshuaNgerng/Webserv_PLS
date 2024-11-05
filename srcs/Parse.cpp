@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 22:27:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 22:30:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -514,7 +514,7 @@ void	Parse::processClientBodyTimeout( std::string &token ) {
 
 void	Parse::processErrorPage( std::string &token ) {
 	checkParameterEndMin(token, 1);
-	ptr->addErrorPage();
+	// ptr->addErrorPage();
 }
 
 void	Parse::processEtag( std::string &token ) {
