@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 11:04:32 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 11:18:54 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,15 @@ class Http {
 			JPEG, PNG, OCTECT
 		};
 		virtual ~Http( void );
+
 		static const char	*fetchMsg( int status );
 		static const char	*getMimeType( const std::string &ext );
+
+		virtual void	addHeader( const std::string &str );
+		virtual void	addBody( const std::string &str );
+		virtual void	addBody( const char *str, size_t bytes );
+		virtual void	finishHttp( void );
+		const char*		getPtr2Http( size_t bytes = 0 );
 
 	protected:
 		Http( void );
@@ -50,7 +57,7 @@ class Http {
 		bool				ready;
 		std::string			header;
 		std::string			body;
-		std::string			combined;
+		std::string			combine;
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;

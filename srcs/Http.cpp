@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 11:08:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 11:18:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ const Http::t_types Http::mime_types[] = {
     {NULL, NULL}
 };
 
-Http::Http( void ) : ready(false), header(""), body(""), combined("") { }
+Http::Http( void ) : ready(false), header(""), body(""), combine("") { }
 
 Http::Http( const Http &src ) { *this = src; }
 
@@ -87,9 +87,19 @@ Http&	Http::operator=( const Http &src ) {
 	ready = src.ready;
 	header = src.header;
 	body = src.body;
-	combined = src.combined;
+	combine = src.combine;
 	return (*this);
 }
+
+void	Http::addHeader( const std::string &str ) { header += str; }
+
+void	Http::addBody( const std::string &str ) { body += str; }
+
+void	Http::addBody( const char *str, size_t bytes ) { body.append(str, bytes); }
+
+void	Http::finishHttp( void ) { combine = header + body; }
+
+const char*	Http::getPtr2Http( size_t bytes ) { return (combine.c_str() + bytes); }
 
 const char	*Http::fetchMsg( int status ) {
 	for (size_t i = 0; pairing[i].msg; i ++) {
