@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
+/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/04 23:48:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 11:15:10 by ychng            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,15 @@ void	HttpResponse::setHeader( int status, const std::string &str ) {
 	header += "HTTP/1.1 ";
 	header += buffer + "\r\n";
 	addField("Server", Server::server_name);
-	addField("Date", "");
+
+	std::time_t current_time = std::time(NULL);
+	struct tm* time_info = std::gmtime(&current_time);
+	char date_buffer[100];
+	if (strftime(date_buffer, sizeof(date_buffer), "%a, %d %b %Y %H:%M:%S GMT", time_info)) {
+		std::string date_string(date_buffer);
+		addField("Date", date_string);
+	}
+
 	if (status > 299 && status < 400) {
 		addField("Location", str);
 	}
