@@ -21,9 +21,14 @@ int	main(int ac, char **av, char **env) {
 	if (ac == 2)
 		ref = av[1];
 	Server	server;
-	{
-		Parse	parse(ref, server);
-		parse.parseConfigFile();
+	{	
+		try {
+			Parse	parse(ref, server);
+			parse.parseConfigFile();
+		} catch (std::exception &e) {
+			std::cerr << e.what() << std::endl;
+			return (1);
+		}
 	}
 	std::cout << "done\n";
 	Server::server_name = &av[0][2];

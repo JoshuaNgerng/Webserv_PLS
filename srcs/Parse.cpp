@@ -771,6 +771,9 @@ void	Parse::processListen( std::string &token ) {
 	}
 	add:
 	if (semicolon) {
+		if (no_para < 1) {
+			throw ParsingConfError(invalid_no_parameter, directive_ptr); // edited
+		}
 		start = true;
 		serverinfo.addListen(listen_socket);
 		listen_socket.reset();
