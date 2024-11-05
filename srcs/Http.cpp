@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/24 18:20:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 11:08:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,14 +74,21 @@ const Http::t_types Http::mime_types[] = {
     {NULL, NULL}
 };
 
-Http::Http( void ) { }
+Http::Http( void ) : ready(false), header(""), body(""), combined("") { }
 
-Http::Http( const Http &src ) { (void)src; }
+Http::Http( const Http &src ) { *this = src; }
 
 Http::~Http( void ) { }
 
 Http&	Http::operator=( const Http &src ) {
-	(void)src; return (*this);
+	if (this == &src) {
+		return (*this);
+	}
+	ready = src.ready;
+	header = src.header;
+	body = src.body;
+	combined = src.combined;
+	return (*this);
 }
 
 const char	*Http::fetchMsg( int status ) {

@@ -6,12 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/02 19:15:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 10:55:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
+# include "File.hpp"
 # include "ServerInfo.hpp"
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
@@ -72,13 +73,13 @@ class Client {
 		loc_ptr		location_ref;
 
 		bool				ignore_close_fd;
+		bool				to_be_deleted;
 		sockaddr_storage_t	client_addr;
 		socklen_t			socket_len;
 		int					socket_fd;
-		int					content_fd;
 		std::string			root_dir;
-		std::string			content_path;
 		std::string			content_name;
+		File				*content;
 		bool				has_content_fd;
 		bool				is_content_fd_in_server;
 		size_t				content_length;
@@ -86,7 +87,6 @@ class Client {
 		bool				is_directory;
 		bool				is_cgi;
 		bool				is_proxy;
-		bool				response_ready;
 
 		/* http related info + data info */
 		std::queue<HttpRequest>	requests;
@@ -97,8 +97,6 @@ class Client {
 		time_t					empty_event;
 		size_t					bytes_sent;
 		bool					emergency_overwrite;
-		bool					completed;
-		bool					to_be_deleted;
 
 		Client( void );
 		void	routeRequest( void );

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/24 18:21:13 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 11:04:32 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,10 @@ class Http {
 		Http( const Http &src );
 		static const char	*methods[];
 		static const char	*fields[];
+		bool				ready;
+		std::string			header;
+		std::string			body;
+		std::string			combined;
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;
