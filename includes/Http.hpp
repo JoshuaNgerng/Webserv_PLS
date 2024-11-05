@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 11:18:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 18:08:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class Http {
 			C_TYPE, C_LEN
 		};
 		enum type {
-			TEXT, HTML, JS, CSS,
+			TEXT_PLAIN, HTML, JS, CSS,
 			JPEG, PNG, OCTECT
 		};
 		virtual ~Http( void );
@@ -43,11 +43,13 @@ class Http {
 		static const char	*fetchMsg( int status );
 		static const char	*getMimeType( const std::string &ext );
 
-		virtual void	addHeader( const std::string &str );
-		virtual void	addBody( const std::string &str );
-		virtual void	addBody( const char *str, size_t bytes );
+		// virtual size_t	addHeader( const std::string &str );
+		// virtual size_t	addBody( const std::string &str );
+		// virtual size_t	addBody( const char *str, size_t bytes );
 		virtual void	finishHttp( void );
-		const char*		getPtr2Http( size_t bytes = 0 );
+		const char*		getPtr2Http( size_t bytes = 0 ) const;
+		bool			isReady( void ) const;
+		void			reset( void );
 
 	protected:
 		Http( void );
@@ -58,6 +60,8 @@ class Http {
 		std::string			header;
 		std::string			body;
 		std::string			combine;
+		size_t				content_length;
+		type				content_type;
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;

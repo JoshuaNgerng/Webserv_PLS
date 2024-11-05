@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/31 15:48:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 17:05:12 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,13 @@ int	main(int ac, char **av, char **env) {
 	Server	server;
 	{
 		Parse	parse(ref, server);
-		parse.parseConfigFile();
+		try {
+			parse.parseConfigFile();
+		}
+		catch ( const std::exception &e ) {
+			std::cerr << e.what() << '\n';
+			return (1);
+		}
 	}
 	std::cout << "done\n";
 	Server::server_name = &av[0][2];

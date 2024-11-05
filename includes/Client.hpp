@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 10:55:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 16:29:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,12 +43,13 @@ class Client {
 
 		/* getters */
 		int		clientSocketFd( void ) const;
-		int		getContentFd( void ) const;
 		bool	checkResponseStatus( void ) const;
 		bool	checkContentFd( void ) const;
 		bool	checkResponseReady( void ) const;
 		bool	giveContentFdtoServer( void ) const;
 		bool	toBeDeleted( void ) const;
+		
+		const File*	getContent( void ) const;
 
 		/* com from client to server */
 		void	errorOverwriteResponse( int status );
@@ -104,10 +105,8 @@ class Client {
 		void	processResponseRedirect( void );
 		void	processResponseError( void );
 		void	getDefaultError( void );
-		bool	processContentFd( int (Client::*func)( void ) );
-		int		getStaticFileFd( void );
-		bool	getCgiPipeFd( void );
-		bool	getProxySocketFd( void );
+		bool	processContent( void );
+		bool	processContent( const std::string &path );
 		void	resetResponse( void );
 		void	reset( void );
 };

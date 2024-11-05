@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/03 01:30:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 17:58:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,12 @@
 
 HttpRequest::HttpRequest( void ) :
 Http(),
-header(""),
-body(""),
 header_fields(),
-valid_header(false),
+error(),
 method(),
 uri(""),
 protocol(""),
-has_body(false),
-content_type(TEXT),
-content_length(0),
-finished_request(false)
+has_body(false)
 { }
 
 HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {
@@ -33,17 +28,12 @@ HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {
 
 HttpRequest&	HttpRequest::operator=( const HttpRequest &src ) {
 	if (this != &src) {
-		header = src.header;
-		body = src.body;
 		header_fields = src.header_fields;
-		valid_header = src.valid_header;
+		error = src.error;
 		method = src.method;
 		uri = src.uri;
 		protocol = src.protocol;
 		has_body = src.has_body;
-		content_type = src.content_type;
-		content_length = src.content_length;
-		finished_request = src.finished_request;
 	}
 	return (*this);
 }
@@ -58,6 +48,7 @@ size_t	HttpRequest::addBody( const std::string &str, size_t pos ) {
 		return (str.length() - pos - excepted_bytes);
 	}
 	body.append(str, pos);
+	ready = true;
 	return (0);
 }
 
@@ -68,18 +59,28 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 	size_t pos = str.find("\r\n\r\n");
 	if (pos == std::string::npos) {
 		header += str;
+		if (header.length() > header_limit) {
+			error = limit_exceed;
+		}
 		return (0);
 	}
 	pos += 4;
 	header.append(str, 0, pos);
+	if (header.length() > header_limit) {
+		error = limit_exceed;
+		return (str.length() - pos);
+	}
 	validateHeader();
+	if (content_length > body_limit) {
+		error = request_too_large;
+	}
 	if (method == POST || method == PUT) {
 		if (!(validateBody()))
 			return (str.length() - pos);
 		return (addBody(str, pos));
 	}
 	else
-		finished_request = true;
+		ready = true;
 	return (str.length() - pos);
 }
 
@@ -150,9 +151,10 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	}
 	if (j == i)
 		return (false);
-	protocol = start.substr(j, i - j); // need validation
-	// std:", " << start[i - 1] :cout << "proto ? " << protocol << '\n';
-	// std::cout << "test i " << static_cast<int>(start[i]) << ", " << static_cast<int>(start[i - 1]) << '\n';
+	protocol = start.substr(j, i - j);
+	if (protocol != "HTTP/1.1") {
+		return (false);
+	}
 	if (start[i] != '\r' || i != start.length() - 1) {
 		return (false);
 	}
@@ -175,10 +177,11 @@ bool	HttpRequest::addHeaderFields( const std::string &field, const std::string &
 }
 
 // checkHeader field and val size
-bool    HttpRequest::validateHeaderHelper( void ) {
-	std::istringstream  ss(header);
-	std::string         token;
+bool	HttpRequest::validateHeader( void ) {
+	std::istringstream	ss(header);
+	std::string			token;
 	bool				check = false;
+	error = malform_header;
 	std::getline(ss, token);
 	if (!(validateStartLine(token))) {
 		std::cout << "Http start Error\n";
@@ -192,6 +195,10 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 		std::string buffer_field;
 		std::string buffer_value;
 		// std::cout << token << '\n';
+		if (token.length() > header_field_limit) {
+			error = limit_exceed;
+			return (false);
+		}
 		if (token == "\r") {
 			check = true;
 			break ;
@@ -226,14 +233,8 @@ bool    HttpRequest::validateHeaderHelper( void ) {
 		std::cout << "test Http Request Valid doesnt end with \\r\\n\n";
 		return (false);
 	}
+	error = 0;
 	return (true);
-}
-
-bool	HttpRequest::validateHeader( void ) {
-	valid_header = validateHeaderHelper();
-	// if (!valid_header)
-		// std::cout << "Http Header Error\n";
-	return (valid_header);
 }
 
 bool	HttpRequest::validateBody( void ) {
@@ -260,10 +261,8 @@ bool	HttpRequest::validateBody( void ) {
 	static_cast<uint64_t> (
 		std::atoll(it->second.c_str())
 	);
-	valid_header = true;
 	return (true);
 	fail:
-		valid_header = false;
 		return (false);
 }
 
@@ -274,9 +273,15 @@ void	HttpRequest::normalizeUri( void ) {
 	}
 }
 
-bool	HttpRequest::getValidHeader( void ) const { return (valid_header); }
-
-bool	HttpRequest::isReady( void ) const { return (finished_request); }
+int	HttpRequest::getValidHeader( void ) const {
+	if (error & malform_header) {
+		return (400);
+	}
+	if (error & limit_exceed) {
+		return (431);
+	}
+	return (0);
+}
 
 const std::string&	HttpRequest::getUri( void ) const  { return (uri); }
 

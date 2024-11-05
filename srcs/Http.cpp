@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 11:18:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 18:08:47 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,34 +47,37 @@ const char *Http::fields[] = {
 };
 
 const Http::t_types Http::mime_types[] = {
-    {"aac", "audio/aac"}, 
-    {"abw", "application/x-abiword"}, 
-    {"apng", "image/apng"},
-    {"avi", "video/x-msvideo"},
-    {"bmp", "image/bmp"},
-    {"css", "text/css"},
-    {"csv", "text/csv"},
-    {"doc", "application/msword"},
-    {"gif", "image/gif"},
-    {"html", "text/html"},
+	{"aac", "audio/aac"}, 
+	{"abw", "application/x-abiword"}, 
+	{"apng", "image/apng"},
+	{"avi", "video/x-msvideo"},
+	{"bmp", "image/bmp"},
+	{"css", "text/css"},
+	{"csv", "text/csv"},
+	{"doc", "application/msword"},
+	{"gif", "image/gif"},
+	{"html", "text/html"},
 	{"htm", "text/html"},
-    {"ico", "image/vnd.microsoft.icon"},
-    {"jpeg", "image/jpeg"},
-    {"jpg", "image/jpeg"},
-    {"js", "text/javascript"},
-    {"json", "application/json"},
-    {"mp3", "audio/mpeg"},
-    {"mp4", "video/mp4"},
-    {"pdf", "application/pdf"},
-    {"png", "image/png"},
-    {"svg", "image/svg+xml"},
-    {"txt", "text/plain"},
-    {"xml", "application/xml"},
-    // Add more MIME types as needed
-    {NULL, NULL}
+	{"ico", "image/vnd.microsoft.icon"},
+	{"jpeg", "image/jpeg"},
+	{"jpg", "image/jpeg"},
+	{"js", "text/javascript"},
+	{"json", "application/json"},
+	{"mp3", "audio/mpeg"},
+	{"mp4", "video/mp4"},
+	{"pdf", "application/pdf"},
+	{"png", "image/png"},
+	{"svg", "image/svg+xml"},
+	{"txt", "text/plain"},
+	{"xml", "application/xml"},
+	// Add more MIME types as needed
+	{NULL, NULL}
 };
 
-Http::Http( void ) : ready(false), header(""), body(""), combine("") { }
+Http::Http( void ) :
+ready(false),
+header(""), body(""), combine(""),
+content_length(0), content_type(TEXT_PLAIN) { }
 
 Http::Http( const Http &src ) { *this = src; }
 
@@ -88,18 +91,31 @@ Http&	Http::operator=( const Http &src ) {
 	header = src.header;
 	body = src.body;
 	combine = src.combine;
+	content_length = src.content_length;
+	content_type = src.content_type;
 	return (*this);
 }
 
-void	Http::addHeader( const std::string &str ) { header += str; }
+// size_t	Http::addHeader( const std::string &str ) { header += str; return (0); }
 
-void	Http::addBody( const std::string &str ) { body += str; }
+// size_t	Http::addBody( const std::string &str ) { body += str; return (0); }
 
-void	Http::addBody( const char *str, size_t bytes ) { body.append(str, bytes); }
+// size_t	Http::addBody( const char *str, size_t bytes ) { body.append(str, bytes); return (0); }
 
-void	Http::finishHttp( void ) { combine = header + body; }
+void	Http::finishHttp( void ) { combine = header + body; ready = true; }
 
-const char*	Http::getPtr2Http( size_t bytes ) { return (combine.c_str() + bytes); }
+const char*	Http::getPtr2Http( size_t bytes ) const { return (combine.c_str() + bytes); }
+
+bool	Http::isReady( void ) const { return (ready); }
+
+void	Http::reset( void ) {
+	ready = false;
+	header.clear();
+	body.clear();
+	combine.clear();
+	content_length = 0;
+	content_type = TEXT_PLAIN;
+}
 
 const char	*Http::fetchMsg( int status ) {
 	for (size_t i = 0; pairing[i].msg; i ++) {

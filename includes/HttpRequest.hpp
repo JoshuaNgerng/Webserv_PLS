@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 15:25:21 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/31 07:56:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 18:06:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,12 @@
 # define REQUEST_HPP
 # include "Http.hpp"
 
-class HttpRequest : Http {
+class HttpRequest : public Http {
+	enum error_type {
+		malform_header = 1,
+		request_too_large = 2,
+		limit_exceed = 4
+	};
 	public:
 		HttpRequest( void );
 		HttpRequest( const std::string &str, size_t pos );
@@ -22,32 +27,30 @@ class HttpRequest : Http {
 		HttpRequest& operator=( const HttpRequest &src );
 		~HttpRequest( void );
 		size_t		addRequest( const std::string &str );
-		size_t		addBody( const std::string &str, size_t pos );
 		http_method	getMethod( void ) const;
 		const std::string&	getUri( void ) const;
 		const std::string&	getProtocol( void ) const; // empty
 		const std::string&	getHeaderStr( void ) const; //empty
 		bool		getHasBody( void ) const;
-		bool		getValidHeader( void ) const;
-		bool		isReady( void ) const; //empty
+		int			getValidHeader( void ) const;
 
 		type		getContentType( void ) const;
 		uint64_t	getContentLength( void ) const;
 		void		normalizeUri( void );
+		size_t		addHeader( const std::string &str, size_t bytes );
+		size_t		addBody( const std::string &str, size_t pos );
 
 	private:
-		std::string	header;
-		std::string	body;
+		static const size_t	header_field_limit = 1000;
+		static const size_t	header_limit = 10000;
+		static const size_t	body_limit = 150000;
 		std::map<std::string, std::string>	header_fields;
 
-		bool		valid_header;
+		short		error;
 		http_method	method;
 		std::string	uri;
 		std::string	protocol;
 		bool		has_body;
-		type		content_type;
-		uint64_t	content_length;
-		bool		finished_request;
 
 		bool	validateStartLine( const std::string &start );
 		bool	validateHeader( void );

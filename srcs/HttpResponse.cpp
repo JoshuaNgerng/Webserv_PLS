@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ychng <ychng@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 11:15:10 by ychng            ###   ########.fr       */
+/*   Updated: 2024/11/05 18:13:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,15 @@
 
 HttpResponse::HttpResponse( void ) :
 status(0),
-header(""),
-body(""),
-proxy(false),
-final(""),
-ready(false)
+proxy(false)
+{ }
+
+HttpResponse::HttpResponse( bool proxy_ ) :
+status(0),
+proxy(proxy_)
 { }
 
 HttpResponse::HttpResponse( const HttpResponse &src ) : Http(src) { *this = src; }
-
-HttpResponse::HttpResponse( bool proxy_ ) : proxy(proxy_) { }
 
 HttpResponse::~HttpResponse( void ) { }
 
@@ -33,10 +32,7 @@ HttpResponse&	HttpResponse::operator=( const HttpResponse &src ) {
 		return (*this);
 	}
 	status = src.status;
-	header = src.header;
-	body = src.body;
 	proxy = src.proxy;
-	final = src.final;
 	return (*this);
 }
 
@@ -68,6 +64,10 @@ void	HttpResponse::addField( const std::string &name, const std::string &val ) {
 	header += "\r\n";
 }
 
+void	HttpResponse::addBody( const std::string &str ) { body += str; }
+
+void	HttpResponse::addBody( const char *str, size_t bytes ) { body.append(str, bytes); }
+
 void	HttpResponse::setHeader( int status, const std::string &str ) {
 	std::string	buffer;
 	if (!makeReponseHeader(buffer, status)) {
@@ -76,7 +76,6 @@ void	HttpResponse::setHeader( int status, const std::string &str ) {
 	header += "HTTP/1.1 ";
 	header += buffer + "\r\n";
 	addField("Server", Server::server_name);
-
 	std::time_t current_time = std::time(NULL);
 	struct tm* time_info = std::gmtime(&current_time);
 	char date_buffer[100];
@@ -116,36 +115,20 @@ void	HttpResponse::setContent( void ) {
 	header.insert(insert_pos, buffer);
 }
 
-void	HttpResponse::addBody( const std::string &str ) { body += str; }
-
-void	HttpResponse::addBody( const char *str, size_t bytes ) { body.append(str, bytes); }
-
-void	HttpResponse::finishResponseMsg( void ) {
-	final = header + body;
-	ready = true;
-}
-
 void	HttpResponse::reset( void ) {
 	status = 0;
-	header.clear();
-	body.clear();
 	proxy = false;
-	final.clear();
 	ready = false;
 }
 
 size_t	HttpResponse::getBodyLength( void ) const { return (body.length()); }
 
-size_t	HttpResponse::getTotalLength( void ) const { return (final.length()); }
-
-const char*	HttpResponse::getPtrPos( size_t no_bytes_send ) const {
-	return (final.c_str() + no_bytes_send);
-}
+size_t	HttpResponse::getTotalLength( void ) const { return (combine.length()); }
 
 bool	HttpResponse::isReady( void ) const { return (ready); }
 
 std::ostream&	operator<<( std::ostream &o, const HttpResponse &res ) {
 	o << "Http Response " << ((!res.isReady()) ? "not " : " " ) << "ready\n";
-	o << res.getPtrPos(0) << '\n';
+	o << res.getPtr2Http(0) << '\n';
 	return (o);
 }
