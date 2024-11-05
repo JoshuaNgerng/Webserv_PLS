@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/02 03:04:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 21:18:47 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -771,6 +771,9 @@ void	Parse::processListen( std::string &token ) {
 	}
 	add:
 	if (semicolon) {
+		if (no_para < 1) {
+			throw ParsingConfError(invalid_no_parameter, directive_ptr);
+		}
 		start = true;
 		serverinfo.addListen(listen_socket);
 		listen_socket.reset();
