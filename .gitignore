@@ -37,4 +37,4 @@ webserv
 .vscode
 .DS_Store
 *.txt
-test*
+# test*
