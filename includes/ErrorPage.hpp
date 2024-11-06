@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 22:30:09 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 22:44:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 23:05:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,15 @@
 class ErrorPage {
 	public:
 		ErrorPage( void );
+		ErrorPage( const ErrorPage &src );
 		~ErrorPage( void );
 
+		ErrorPage&	operator=( const ErrorPage &src );
+
 		bool	inputStr( const std::string &token );
-		bool	findError( std::string &path_, int status );
+		bool	findError( std::string &path_, int status ) const;
 	private:
-		std::vector<int>    codes;
+		std::vector<short>    codes;
 		std::string         path;
 };
 

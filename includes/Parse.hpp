@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 22:08:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/06 18:28:04 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,7 @@ class Parse
 		boolean		processBoolParameter( const std::string &token, const char *directive );
 		uint64_t	processSizeParameter( std::string &token, const char *directive );
 		uint64_t	processTimeParameter( std::string &token, const char *directive );
-		void		checkParameterEnd( const std::string &token, size_t expected_no_para );
-		void		checkParameterEndMin( const std::string &token, size_t minimum );
+		void		checkParameterEnd( void );
 
 		/* process Generic InfoBlock */
 		void	processClientBodyTempPath( std::string &token );
@@ -118,6 +117,8 @@ class Parse
 		short			bracket_no;
 		bool			semicolon;
 		uint16_t		no_para;
+		uint16_t		para_limit;
+		bool			exact_para_limit;
 		const char		*directive_ptr;
 		std::string		filename;
 

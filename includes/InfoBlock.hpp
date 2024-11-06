@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/03 01:40:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 23:07:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 # include "EmbeddedVariable.hpp"
 # include "AutoIndex.hpp"
 # include "CheckFile.hpp"
-// # include "Client.hpp"
+# include "ErrorPage.hpp"
 
 enum if_modify_level {
 	undefined_,
@@ -36,7 +36,7 @@ class InfoBlock {
 		InfoBlock&	operator=( const InfoBlock &src );
 		virtual ~InfoBlock( void );
 
-		bool	findErrorPath( std::string &str, int status ) const;
+		bool	findErrorPath( std::string &str, short status ) const;
 		// void	matchUri( Client &client, bool autoindex ) const;
 		void	routingClient( Client &client, std::string *redirect = NULL ) const;
 		void	defaultSetting( void );
@@ -46,7 +46,8 @@ class InfoBlock {
 
 		/* setters */
 		void	addIndex( const std::string &add );
-		void	addErrorPage( uint16_t error_code, const std::string &path );
+		void	addErrorPage( void );
+		void	addErrorPage( const std::string &add );
 		void	addTryFiles( const std::string &add );
 		void	addRoot( const std::string &add );
 		void	addAccessLog( const std::string &add, int format );
@@ -69,7 +70,6 @@ class InfoBlock {
 		void	setChunkEncoding( boolean opt );
 
 		/* getters */
-		const std::string&	getErrorPagePath( short status ) const;
 		const std::string&	getRoot( void ) const;
 
 		void				writeAccessLog( void ) const;
@@ -86,7 +86,7 @@ class InfoBlock {
 
 	protected:
 		std::string						empty;
-		std::map<short, std::string>	error_page;
+		std::vector<ErrorPage>			error_page;
 		std::vector<std::string>		try_files;
 
 		std::pair<std::string, int>		access_log;

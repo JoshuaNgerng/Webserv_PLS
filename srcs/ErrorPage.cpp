@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 22:39:42 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 22:44:12 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/06 18:51:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,21 @@
 
 ErrorPage::ErrorPage( void ) { }
 
+ErrorPage::ErrorPage( const ErrorPage &src ) { *this = src; }
+
 ErrorPage::~ErrorPage( void ) { }
 
+ErrorPage&	ErrorPage::operator=( const ErrorPage &src ) {
+	if (this == &src) {
+		return (*this);
+	}
+	codes = src.codes;
+	path = src.path;
+	return (*this);
+}
+
 bool	ErrorPage::inputStr( const std::string &token ) {
+	std::cout << "huh? " << token << "\n";
 	if (path.length() > 0) {
 		return (false);
 	}
@@ -28,7 +40,7 @@ bool	ErrorPage::inputStr( const std::string &token ) {
 	return (true); 
 }
 
-bool	ErrorPage::findError( std::string &path_, int status ) {
+bool	ErrorPage::findError( std::string &path_, int status ) const{
 	for (size_t i = 0; i < codes.size(); i ++) {
 		if (status == codes[i]) {
 			path_ = path;
