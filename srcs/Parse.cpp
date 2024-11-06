@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/02 03:04:56 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 22:30:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -484,104 +484,80 @@ uint64_t	Parse::processTimeParameter( std::string &token, const char *directive 
 	return (out);
 }
 
-void	Parse::processClientLimitMaxBody( std::string &token ){
+void	Parse::checkParameterEnd( const std::string &token, size_t expected_no_para ) {
 	if (!token.length()) {
-		if (!no_para)
+		if (no_para != expected_no_para)
 			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
 	}
+	if (no_para > expected_no_para) {
+		throw ParsingConfError(invalid_no_parameter, directive_ptr);
+	}
+}
+
+void	Parse::checkParameterEndMin( const std::string &token, size_t minimum ) {
+	if (!token.length()) {
+		if (no_para < minimum)
+			throw ParsingConfError(invalid_no_parameter, directive_ptr);
+	}
+}
+
+
+void	Parse::processClientLimitMaxBody( std::string &token ){
+	checkParameterEnd(token, 1);
 	ptr->setClientMaxBodySize(processSizeParameter(token, directive_ptr));
 }
 
 void	Parse::processClientBodyTimeout( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	ptr->setClientBodyTimeout(processTimeParameter(token, directive_ptr));
 }
 
 void	Parse::processErrorPage( std::string &token ) {
-	if (!token.length())
-		return ;
+	checkParameterEndMin(token, 1);
+	// ptr->addErrorPage();
 }
 
 void	Parse::processEtag( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	ptr->setEtag(processBoolParameter(token, directive_ptr));
 }
 
 void	Parse::processIfModifiedSince( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
-	if (no_para > 0)
-		throw ParsingConfError(invalid_no_parameter, directive_ptr);
+	checkParameterEnd(token, 1);
 	if (token == "off") {
 		ptr->setModifySince(off_);
-	}
-	else if (token == "exact") {
+	} else if (token == "exact") {
 		ptr->setModifySince(exact);
-	}
-	else if (token == "before") {
+	} else if (token == "before") {
 		ptr->setModifySince(before);
-	}
-	else {
+	} else {
 		throw ParsingConfError(invalid_parameter, directive_ptr);
 	}
 }
 
 
 void	Parse::processDisableSymlink( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	ptr->setCheckSymlinks(processBoolParameter(token, directive_ptr));
 }
 
 void	Parse::processRoot( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	ptr->addRoot(token);
 }
 
 void	Parse::processIndex( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEndMin(token, 1);
 	ptr->addIndex(token);
 }
 
 void	Parse::processAutoIndex( std::string &token ) {
-	if (!token.length()) {
-		if (no_para != 1) {
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		}
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	ptr->toggleAutoIndex(processBoolParameter(token, directive_ptr));
 }
 
 void	Parse::processAutoIndexExactSize( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	ptr->toggleAutoIndexSize(processBoolParameter(token, directive_ptr));
 }
 
@@ -589,13 +565,7 @@ void	Parse::processAutoFormat( std::string &token ) {
 	static const char *para[] = {
 		"html", "xml", "json", "jsonp", NULL
 	};
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
-	if (no_para > 1)
-		throw ParsingConfError(invalid_no_parameter, directive_ptr);
+	checkParameterEnd(token, 1);
 	int	check = checkMatch(para, token);
 	if (check < 0)
 		throw ParsingConfError(invalid_parameter, directive_ptr); 
@@ -603,20 +573,12 @@ void	Parse::processAutoFormat( std::string &token ) {
 }
 
 void	Parse::processAutoIndexLocalTime( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	ptr->toggleAutoIndexTime(processBoolParameter(token, directive_ptr));	
 }
 
 void	Parse::processAccessLog( std::string &token ) {
-	if (!token.length()) {
-		if (no_para < 1)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 2);
 	// if (no_para == 1)
 	// 	;
 	// else if (no_para == 2)
@@ -626,11 +588,7 @@ void	Parse::processAccessLog( std::string &token ) {
 }
 
 void	Parse::processErrorLog( std::string &token ) {
-	if (!token.length()) {
-		if (no_para < 1)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 2);
 	// if (no_para == 1)
 	// 	;
 	// else if (no_para == 2)
@@ -771,6 +729,9 @@ void	Parse::processListen( std::string &token ) {
 	}
 	add:
 	if (semicolon) {
+		if (no_para < 1) {
+			throw ParsingConfError(invalid_no_parameter, directive_ptr);
+		}
 		start = true;
 		serverinfo.addListen(listen_socket);
 		listen_socket.reset();
@@ -778,66 +739,36 @@ void	Parse::processListen( std::string &token ) {
 }
 
 void	Parse::processServerName( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	serverinfo.addServerName(token);
 }
 
 void	Parse::processClientHeaderBufferSize( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	serverinfo.setClientHeaderBufferSize(processSizeParameter(token, directive_ptr));
 }
 
 void	Parse::processClientHeaderTimeout( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	serverinfo.setClientBodyTimeout(processTimeParameter(token, directive_ptr));
 }
 
 void	Parse::processMergeSlash( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
+	checkParameterEnd(token, 1);
 	serverinfo.setMergeSlash(processBoolParameter(token, directive_ptr));
 }
 
 void	Parse::processAlias( std::string &token ) {
-	if (!token.length()) {
-		if (!no_para)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-		return ;
-	}
-	if (no_para > 1)
-		throw ParsingConfError(invalid_no_parameter, directive_ptr);
+	checkParameterEnd(token, 1);
 	location.addAlias(token);
 }
 
 void	Parse::processInternal( std::string &token ) {
-	if (!token.length()) {
-		location.setInternal();
-		return ;
-	}
-	if (no_para > 0)
-		throw ParsingConfError(invalid_no_parameter, directive_ptr);
+	checkParameterEnd(token, 0);
 }
 
 void	Parse::processTryFiles( std::string &token ) {
-	if (!token.length()) {
-		if (no_para < 2)
-			throw ParsingConfError(invalid_no_parameter, directive_ptr);
-	}
+	checkParameterEndMin(token, 2);
 	ptr->addTryFiles(token);
 }
 

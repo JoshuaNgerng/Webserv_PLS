@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 12:52:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/05 22:08:54 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ class Parse
 		uint16_t			getBracketNo( void ) const;
 		const std::string&	getFilename( void ) const;
 
-		// Server				&getServer( void ) const;
 		ServerInfo			getServerInfo( void ) const;
 
 		Location			getlocation(); // have make yet
@@ -73,6 +72,8 @@ class Parse
 		boolean		processBoolParameter( const std::string &token, const char *directive );
 		uint64_t	processSizeParameter( std::string &token, const char *directive );
 		uint64_t	processTimeParameter( std::string &token, const char *directive );
+		void		checkParameterEnd( const std::string &token, size_t expected_no_para );
+		void		checkParameterEndMin( const std::string &token, size_t minimum );
 
 		/* process Generic InfoBlock */
 		void	processClientBodyTempPath( std::string &token );
