@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 10:14:01 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 14:15:00 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ class Client {
 		/* getters */
 		size_t				getContentLength( void ) const; // empty
 		const std::string&	getContentType( void ) const; // empty
-		const std::string&	getCurrentUri( void ) const { return (); }
+		const std::string&	getCurrentUri( void ) const { return (requests.front().getUri()); }
 		const std::string&	getContentName( void ) const { return (content_name); }
 
 		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;

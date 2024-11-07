@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:11:01 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/07 10:10:41 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 13:55:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,7 @@ enum short_form {
 	remote_addr,
 	remote_port,
 	request_method,
-	scheme,
-	status
+	scheme
 };
 
 class EmbeddedVariable {
