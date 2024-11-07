@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/02 23:45:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 12:49:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,10 @@ Location::Location( void ) :
 path(""),
 alias(""),
 internal(false),
+cgi_enabled(false),
 cgi_mapping(),
 limit_except(),
-return_(),
-is_cgi(false)
+return_()
 { }
 
 Location::Location( const Location &src ) : InfoBlock(src) {
@@ -34,9 +34,9 @@ Location& Location::operator=( const Location &src ) {
 	path = src.path;
 	alias = src.alias;
 	internal = src.internal;
-	return_ = src.return_;
+	cgi_enabled = src.cgi_enabled;
 	cgi_mapping = src.cgi_mapping;
-	is_cgi = src.is_cgi;
+	return_ = src.return_;
 	return (*this);
 }
 
@@ -66,6 +66,19 @@ void	Location::setInternal( void ) {
 	internal = true;
 }
 
+void	Location::addCgiMapping( const std::string &ext ) {
+	typedef std::pair<std::string, std::string> pairing;
+	CgiIter iter = cgi_mapping.find(ext);
+	if (iter == cgi_mapping.end()) {
+		return ;
+	}
+	cgi_mapping.insert(pairing(std::string(ext), std::string()));
+}
+
+void	Location::addCgiMapping( const std::string &ext, const std::string &interpt ) {
+	cgi_mapping[ext] = interpt;
+}
+
 void	Location::reset( void ) {
 	InfoBlock::reset();
 	path.clear();
@@ -74,7 +87,7 @@ void	Location::reset( void ) {
 	return_.first = 0;
 	return_.second.clear();
 	cgi_mapping.clear();
-	is_cgi = false;
+	cgi_enabled = false;
 }
 
 const std::string&	Location::getLocationPath( void ) const {
