@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 18:53:35 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 22:03:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -487,7 +487,9 @@ std::string	Client::getReqMethod( void ) const {
 	return (requests.front().getContentType());
 }
 
-const std::string&	Client::getHttpScheme( void ) const { return("http"); }
+std::string	Client::getHttpScheme( void ) const { return("http"); }
+
+const HttpRequest&	Client::getCurrentHttpRequest( void ) const { return(requests.front()); }
 
 const File*	Client::getContent( void ) const { return(content); }
 

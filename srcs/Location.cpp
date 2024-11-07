@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 12:49:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:01:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,6 @@ Location::Location( void ) :
 path(""),
 alias(""),
 internal(false),
-cgi_enabled(false),
-cgi_mapping(),
-limit_except(),
 return_()
 { }
 
@@ -66,19 +63,6 @@ void	Location::setInternal( void ) {
 	internal = true;
 }
 
-void	Location::addCgiMapping( const std::string &ext ) {
-	typedef std::pair<std::string, std::string> pairing;
-	CgiIter iter = cgi_mapping.find(ext);
-	if (iter == cgi_mapping.end()) {
-		return ;
-	}
-	cgi_mapping.insert(pairing(std::string(ext), std::string()));
-}
-
-void	Location::addCgiMapping( const std::string &ext, const std::string &interpt ) {
-	cgi_mapping[ext] = interpt;
-}
-
 void	Location::reset( void ) {
 	InfoBlock::reset();
 	path.clear();
@@ -86,8 +70,6 @@ void	Location::reset( void ) {
 	internal = false;
 	return_.first = 0;
 	return_.second.clear();
-	cgi_mapping.clear();
-	cgi_enabled = false;
 }
 
 const std::string&	Location::getLocationPath( void ) const {

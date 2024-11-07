@@ -14,7 +14,7 @@ assume string dont exist
 plain text can add later
 
 cgi rules
-exec_cgi boolean statement
+cgi boolean statement
 add_handler .extension (at least one)
 action .extension interpreter binary (two excat)
 if no interpreter given get from first line

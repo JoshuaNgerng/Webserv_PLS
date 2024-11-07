@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/06 18:28:04 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:00:20 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,9 +89,10 @@ class Parse
 		void	processAutoIndexExactSize( std::string &token );
 		void	processAutoFormat( std::string &token );
 		void	processAutoIndexLocalTime( std::string &token );
-		void	processAccessLog( std::string &token );
-		void	processErrorLog( std::string &token );
-		
+		void	processCgi( std::string &token );
+		void	processAddHandler( std::string &token );
+		void	processAction( std::string &token );
+
 		/* process Server specfic directive */
 		void	processListen( std::string &token );
 		void	processListenAddress( std::string &token );
@@ -103,6 +104,8 @@ class Parse
 		void	processMergeSlash( std::string &token );
 		void	processServerName( std::string &token );
 		void	processTryFiles( std::string &token );
+		// void	processAccessLog( std::string &token );
+		// void	processErrorLog( std::string &token );
 
 		/* process Location specfic directive */
 		void	processAlias( std::string &token );
@@ -121,6 +124,7 @@ class Parse
 		bool			exact_para_limit;
 		const char		*directive_ptr;
 		std::string		filename;
+		std::string		parsing_buffer;
 
 		Server			*server;
 		InfoBlock		*ptr;

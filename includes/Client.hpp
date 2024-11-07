@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 18:49:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 22:02:59 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,9 @@ class Client {
 		size_t				getContentLength( void ) const;
 		const std::string&	getHost( void ) const;
 		std::string			getReqMethod( void ) const;
-		const std::string&	getHttpScheme( void ) const;
+		std::string			getHttpScheme( void ) const;
 		const std::string&	getContentName( void ) const;
+		const HttpRequest&	getCurrentHttpRequest( void ) const;
 
 		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;
 		std::vector<Location>::const_iterator	getLocationRef( void ) const;

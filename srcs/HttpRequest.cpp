@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/07 18:52:47 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:49:56 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,7 +307,7 @@ int	HttpRequest::getValidHeader( void ) const {
 
 const std::string&	HttpRequest::getField( const char *field ) const {
 	typedef std::map<std::string, std::string>::const_iterator	iter;
-	static std::string	empty;
+	static const std::string	empty;
 	iter it = header_fields.find(field);
 	if (it == header_fields.end()) {
 		return (empty);

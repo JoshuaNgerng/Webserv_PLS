@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/07 18:17:39 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:52:33 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ class Http {
 			TEXT_PLAIN, HTML, JS, CSS,
 			JPEG, PNG, OCTECT
 		};
+
+		static const char	*fields[];
+
 		virtual ~Http( void );
 
 		static const char	*fetchMsg( int status );
@@ -56,7 +59,6 @@ class Http {
 		Http( const Http &src );
 		Http&	operator=( const Http &src );
 		static const char	*methods[];
-		static const char	*fields[];
 		bool				ready;
 		std::string			header;
 		std::string			body;

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 23:07:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:04:55 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include "AutoIndex.hpp"
 # include "CheckFile.hpp"
 # include "ErrorPage.hpp"
+# include "LimitExcept.hpp"
 
 enum if_modify_level {
 	undefined_,
@@ -30,6 +31,8 @@ enum log_format {
 };
 
 class InfoBlock {
+	typedef std::map<std::string, std::string>				CgiMapping;
+	typedef std::map<std::string, std::string>::iterator	CgiIter;
 	public:
 		InfoBlock( void );
 		InfoBlock( const InfoBlock &src );
@@ -62,27 +65,27 @@ class InfoBlock {
 		void	setAutoIndexFormat( int level );
 		void	toggleAutoIndexTime( boolean opt );
 
-		void	addAllow( const std::string &path );
-		void	addDeny( const std::string &path );
-
 		void	setCheckSymlinks( boolean opt );
 		void	setEtag( boolean opt );
-		void	setChunkEncoding( boolean opt );
+
+		void	setCgiEnable( boolean opt );
+		void	addCgiMapping( const std::string &ext );
+		void	addCgiMapping( const std::string &ext, const std::string &interpret );
 
 		/* getters */
 		const std::string&	getRoot( void ) const;
 
-		void				writeAccessLog( void ) const;
-		void				writeAccessLog( const std::string &log ) const;
-		void				writeErrorLog( void ) const;
-		void				writeErrorLog( const std::string &log ) const;
-		bool				isIndex( const std::string &str ) const;
-		bool				ifModifySince( void ) const;
-		bool				isEtag( void ) const;
-		boolean				getAutoIndex( void ) const;
-		int					getAutoFormat( void ) const;
-		boolean				getAutoSize( void ) const;
-		boolean				getAutoTimeFormat( void ) const;
+		void	writeAccessLog( void ) const;
+		void	writeAccessLog( const std::string &log ) const;
+		void	writeErrorLog( void ) const;
+		void	writeErrorLog( const std::string &log ) const;
+		boolean	isIndex( const std::string &str ) const;
+		boolean	ifModifySince( void ) const;
+		boolean	isEtag( void ) const;
+		boolean	getAutoIndex( void ) const;
+		int		getAutoFormat( void ) const;
+		boolean	getAutoSize( void ) const;
+		boolean	getAutoTimeFormat( void ) const;
 
 	protected:
 		std::string						empty;
@@ -104,11 +107,13 @@ class InfoBlock {
 		int								autoindex_format;
 		boolean							autoindex_localtime;
 
-		std::vector<std::string>		allow;
-		std::vector<std::string>		deny;
-
 		boolean							symlinks;
 		boolean							etag;
+
+		boolean							cgi_enabled;
+		CgiMapping						cgi_mapping;
+
+		// LimitExcept						limit_except;
 
 		bool	searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const;
 		bool	searchIndexes( Client &client, const std::string &uri ) const;

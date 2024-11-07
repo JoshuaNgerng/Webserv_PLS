@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/06 18:53:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:05:41 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ semicolon(false),
 no_para(0),
 directive_ptr(NULL),
 filename(""),
+parsing_buffer(""),
 server(NULL),
 ptr(NULL),
 serverinfo(),
@@ -47,6 +48,7 @@ semicolon(false),
 no_para(0),
 directive_ptr(NULL),
 filename(config),
+parsing_buffer(""),
 server(&server_),
 ptr(NULL),
 serverinfo(),
@@ -69,6 +71,7 @@ Parse& Parse::operator=( const Parse &src ) {
 	no_para = src.no_para;
 	directive_ptr = src.directive_ptr;
 	filename = src.filename;
+	parsing_buffer = src.parsing_buffer;
 	server = src.server;
 	ptr = src.ptr;
 	serverinfo = src.serverinfo;
@@ -263,7 +266,7 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 		"client_body_timeout", "client_max_body_size",
 		"disable_symlinks", "error_page", "etag", "if_modified_since", 
 		"root", "index", "autoindex", "autoindex_exact_size", "autoindex_format", "autoindex_localtime",
-		"access_log", "error_log", NULL
+		"cgi", "add_handler", "action", "limit_except", NULL
 	};
 	void (Parse::*process)(std::string &); 
 	process = NULL;
@@ -299,19 +302,21 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 			break ;
 		case 8:
 			process = &Parse::processAutoIndex;
-			break;
+			break ;
 		case 9:
 			process = &Parse::processAutoIndexExactSize;
-			break;
+			break ;
 		case 10:
 			process = &Parse::processAutoIndexLocalTime;
-			break;
+			break ;
 		case 11:
-			process = &Parse::processAccessLog;
-			break;
+			break ;
 		case 12:
-			process = &Parse::processErrorLog;
-			break;
+			break ;
+		case 13:
+			break ;
+		case 14:
+			break ;
 		default:
 			return (false);
 	}
@@ -571,7 +576,7 @@ void	Parse::processClientBodyTimeout( std::string &token ) {
 }
 
 void	Parse::processErrorPage( std::string &token ) {
-	std::cout << "testing add " << no_para << "\n";
+	// std::cout << "testing add " << no_para << "\n";
 	if (no_para == 1) {
 		ptr->addErrorPage();
 	}
@@ -633,25 +638,40 @@ void	Parse::processAutoIndexLocalTime( std::string &token ) {
 	ptr->toggleAutoIndexTime(processBoolParameter(token, directive_ptr));	
 }
 
-void	Parse::processAccessLog( std::string &token ) {
-	(void)token;
-	// if (no_para == 1)
-	// 	;
-	// else if (no_para == 2)
-	// 	;
-	// else
-	// 	;
+void	Parse::processCgi( std::string &token ) {
+	ptr->setCgiEnable(processBoolParameter(token, directive_ptr));
 }
 
-void	Parse::processErrorLog( std::string &token ) {
-	(void)token;
-	// if (no_para == 1)
-	// 	;
-	// else if (no_para == 2)
-	// 	;
-	// else
-	// 	;
+void	Parse::processAddHandler( std::string &token ) {
+	ptr->addCgiMapping(token);
 }
+
+void	Parse::processAction( std::string &token ) {
+	if (no_para == 1) {
+		parsing_buffer = token;
+	}
+	ptr->addCgiMapping(parsing_buffer, token);
+}
+
+// void	Parse::processAccessLog( std::string &token ) {
+// 	(void)token;
+// 	// if (no_para == 1)
+// 	// 	;
+// 	// else if (no_para == 2)
+// 	// 	;
+// 	// else
+// 	// 	;
+// }
+
+// void	Parse::processErrorLog( std::string &token ) {
+// 	(void)token;
+// 	// if (no_para == 1)
+// 	// 	;
+// 	// else if (no_para == 2)
+// 	// 	;
+// 	// else
+// 	// 	;
+// }
 
 void	Parse::processListenAddress( std::string &token ) {
 	std::string	addr;
