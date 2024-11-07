@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/03 01:56:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/06 18:00:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,18 +270,18 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	}
 }
 
-bool	InfoBlock::findErrorPath( std::string &str, int status ) const {
-	str = getErrorPagePath(status);
-	if (!str.length())
-		return (false);
-	return (true);
-}
-
 /* setters */
 void	InfoBlock::addIndex( const std::string &add ) { index.push_back(add); }
 
-void	InfoBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
-	error_page[error_code] = path;
+void	InfoBlock::addErrorPage( void ) {
+	ErrorPage	buffer;
+	error_page.push_back(buffer);
+}
+
+void	InfoBlock::addErrorPage( const std::string &add ) {
+	if (!error_page.back().inputStr(add)) {
+		throw std::invalid_argument("add Error Page");
+	}
 }
 
 void	InfoBlock::addTryFiles( const std::string &add ) {
@@ -293,9 +293,13 @@ void	InfoBlock::addTryFiles( const std::string &add ) {
 }
 
 void	InfoBlock::addRoot( const std::string &add ) { 
-	if (root.length())
-		throw std::invalid_argument("too_many_root");
+	if (root.length() > 0) {
+		std::cout << "root check " << root << ", trying to add: " << add << '\n';
+		std::cout << "test " << add.length() << '\n';
+		// throw std::invalid_argument("too_many_root");
+	}
 	root = add;
+	std::cout << "added: " << root << '\n';
 }
 
 void	InfoBlock::addAccessLog( const std::string &add, int format ) {
@@ -336,11 +340,14 @@ void	InfoBlock::setCheckSymlinks( boolean opt ) { symlinks = opt; }
 
 void	InfoBlock::setEtag( boolean opt ) { etag = opt; }
 
-const std::string&	InfoBlock::getErrorPagePath( short status ) const {
-	std::map<short, std::string>::const_iterator pos = error_page.find(status);
-	if (pos == error_page.end())
-		return (empty);
-	return (pos->second);
+bool	InfoBlock::findErrorPath( std::string &str, short status ) const {
+	typedef std::vector<ErrorPage>::const_iterator iter;
+	for (iter it = error_page.begin(); it != error_page.end(); it ++) {
+		if (it->findError(str, status)) {
+			return (true);
+		}
+	}
+	return (false);
 }
 
 boolean	InfoBlock::getAutoIndex( void ) const { return (autoindex); }

@@ -1,0 +1,53 @@
+/* -----------------------------------------------
+ *	General Styles
+ * ----------------------------------------------- */
+html, body
+{
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	font-family: 'Roboto', sans-serif;
+}
+
+/* -----------------------------------------------
+ * Header Styles
+ * ----------------------------------------------- */
+header .login
+{
+  position: relative;
+  font-size: inherit;
+  padding: 0.5em 1em;
+  color: black;
+  outline: none;
+  border: none;
+  background-color: hsl(50, 100%, 50%);
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 0.3rem;
+}
+
+header .login:hover
+{
+	background-color: hsl(50, 100%, 60%);
+}
+
+header .login:active
+{
+	background-color: hsl(50, 100%, 40%);
+}
+
+/* -----------------------------------------------
+ * Body Styles
+ * ----------------------------------------------- */
+body main
+{
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+/* -----------------------------------------------
+ * Footer Styles
+ * ----------------------------------------------- */
