@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:11:01 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/07 13:55:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 17:09:41 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,10 @@ class EmbeddedVariable {
 		EmbeddedVariable& operator=(const EmbeddedVariable &src);
 		~EmbeddedVariable( void );
 		static void	shortFormString( std::string &str );
-		static void resolveString( std::string &res, const std::string &ref, const Client &client );
+		static void	resolveString( std::string &res, const std::string &ref, const Client &client );
+
+		static bool			checkUrl( const std::string &url );
+		static std::string	decodeUrl( const std::string &url );
 
 	private:
 		static const char		*variables[];

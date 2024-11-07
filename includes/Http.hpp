@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 18:08:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 18:17:39 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ class Http {
 	protected:
 		Http( void );
 		Http( const Http &src );
+		Http&	operator=( const Http &src );
 		static const char	*methods[];
 		static const char	*fields[];
 		bool				ready;
@@ -92,7 +93,6 @@ class Http {
 		}
 
 	private:
-		Http&	operator=( const Http &src );
 		static const t_pairs 		pairing[];
 		static const t_types		mime_types[];
 };
