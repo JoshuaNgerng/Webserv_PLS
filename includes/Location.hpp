@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:06:49 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/03 01:01:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 01:12:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,6 @@ class Location : public InfoBlock {
 		LimitExcept	limit_except;
 
 		std::pair<int, std::string>	return_;
-
-		bool		is_cgi;
-
 };
 
 #endif

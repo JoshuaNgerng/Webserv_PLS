@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 12:50:20 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/06 17:42:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 01:09:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,7 @@ CgiPipe&	CgiPipe::operator=( const CgiPipe &src ) {
 	return (*this);
 }
 
-bool	CgiPipe::generateFds( void ) {
-	int	pipefd[4];
+bool	CgiPipe::setupPipes( int pipefd[4] ) {
 	if (pipe(pipefd) < 0) {
 		return (false);
 	}
@@ -51,25 +50,64 @@ bool	CgiPipe::generateFds( void ) {
 		return (false);
 	}
 	content_output_fd = pipefd[3];
+	return (true);
+}
+
+int	CgiPipe::execvChild( int pipefd[4] ) {
+	int	check = 0;
+	if (dup2(STDIN_FILENO, pipefd[2]) < 0) {
+		check = 1;
+	}
+	if (dup2(STDOUT_FILENO, pipefd[1]) < 0) {
+		check = 1;
+	}
+	for (int i = 0; i < 4; i ++) {
+		close(pipefd[i]);
+	}
+	if (check) {
+		return (check);
+	}
+	char *buffer[2];
+	char const ** ptr = buffer;
+	ptr[0] = content_id.c_str();
+	ptr[2] = NULL;
+	execve(bin_path.c_str(), buffer, NULL);
+	return (0);
+}
+
+bool	CgiPipe::generateFds( void ) {
+	int	pipefd[4];
+	if (!setupPipes(pipefd)) {
+		return (false);
+	}
 	child_id = fork();
+	if (!child_id) {
+		int check = execvChild(pipefd);
+		exit(check);
+	}
+	close(pipefd[1]);
+	close(pipefd[2]);
 	if (child_id < 0) {
 		return (false);
 	}
 	if (child_id > 0) {
 		return (true);
 	}
-	exit(0);
 	return (true);
 }
 
 bool	CgiPipe::checkStatus( void ) {
+	if (child_id < 0) {
+		return (false);
+	}
 	int	check = waitpid(child_id, &status, WNOHANG);
 	if (check == 0) {
 		// timer ??
+		kill_child = false;
 		return (true);
 	}
 	if (WIFEXITED(status) || WIFSIGNALED(status)) {
-		std::cout << "Child process finished." << std::endl;
+		std::cout << "Child process finished\n";
 		return (false);
 	}
 	// other checks may need an int to get status
