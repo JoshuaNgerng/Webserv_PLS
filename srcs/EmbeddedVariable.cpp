@@ -6,23 +6,24 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/23 13:08:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 10:11:16 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EmbeddedVariable.hpp"
+#include "Client.hpp"
 
 const char	*EmbeddedVariable::variables[] = {
-	"arg_name", "args", "query_string", "content_length", "content_type",
+	"arg_", "args", "query_string", "content_length", "content_type",
 	"document_root", "document_url", "host", "url",
 	"remote_addr", "remote_port", "request_method",
 	"scheme", "status", NULL
 };
 
 const uint8_t	EmbeddedVariable::shortform[] = {
-	arg_name, args, query_string, content_length, content_type, document_root,
-	document_url, host, url, remote_addr, remote_port, request_method,
-	scheme, status
+	arg_, args, query_string, content_length, content_type,
+	document_root, document_uri, document_url, host, uri, url,
+	remote_addr, remote_port, request_method, scheme, status
 };
 
 static size_t   find_set( std::string &str, size_t pos ) {
@@ -57,24 +58,48 @@ void	EmbeddedVariable::shortFormString( std::string &str ) {
 
 void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, const Client &client ) {
 	str.reserve(ref.length());
-	(void)client;
 	for (size_t i = 0; i < ref.length(); i ++) {
 		const std::string *val = NULL;
-		std::string	buffer;
 		if (static_cast<unsigned char>(ref[i]) < 128) {
 			str += ref[i];
 			continue ;
 		}
 		switch (static_cast<unsigned char>(ref[i]))
 		{
-		case arg_name:
-			/* code */
-			break;
-		
+		case arg_:
+			break ;
+		case args:
+			break ;
+		case query_string:
+			break ;
+		case content_length:
+			str += to_String(client.getContentLength());
+			break ;
+		case content_type:
+			str += client.getContentType();
+			break ;
+		case document_root:
+			break ;
+		case document_url:
+			break ;
+		case host:
+			break ;
+		case url:
+			str += client.getCurrentUri();
+			break ;
+		case remote_addr:
+			break ;
+		case remote_port:
+			break ;
+		case request_method:
+			break ;
+		case scheme:
+			break ;
+		case status:
+			break ;
 		default:
-			val = &buffer;
+			str += ref[i];
 		}
-		str += *val;
 	}
 }
 

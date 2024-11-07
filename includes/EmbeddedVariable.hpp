@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:11:01 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/23 13:06:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 10:10:41 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,16 @@
 # include "Http.hpp"
 
 enum short_form {
-	arg_name = 129,
+	arg_ = 129,
 	args,
 	query_string,
 	content_length,
 	content_type,
 	document_root,
+	document_uri,
 	document_url,
 	host,
+	uri,
 	url,
 	remote_addr,
 	remote_port,

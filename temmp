@@ -1,0 +1,77 @@
+Nginx has a variety of embedded variables that can be used in configuration files to dynamically handle incoming requests, set headers, log information, or adjust processing behavior. These variables are filled with specific values depending on the HTTP request being processed.
+
+Here's an overview of the variables you mentioned:
+
+1. arg_name
+This variable is used to retrieve the value of a query string parameter.
+Example: If the URL is http://example.com/?name=John, you can access name with $arg_name (i.e., $arg_name would be "John").
+2. args
+This variable contains the entire query string from the URL (everything after the ?).
+Example: If the URL is http://example.com/?name=John&age=30, $args would be "name=John&age=30".
+3. query_string
+Similar to args, it also holds the full query string part of the URL.
+Example: In the URL http://example.com/?name=John&age=30, $query_string would be "name=John&age=30".
+4. content_length
+This variable holds the length of the request body (in bytes). It's typically used for POST or PUT requests where the body might contain data (e.g., file uploads).
+Example: If the request body contains 1024 bytes, $content_length will be 1024.
+5. content_type
+This variable represents the Content-Type header sent by the client in the HTTP request.
+Example: If the client sends a request with Content-Type: application/json, $content_type will be "application/json".
+6. document_root
+This is the root directory for the current request, as defined by the root directive in your Nginx configuration.
+Example: If you define root /var/www/html; in a server block, $document_root will be /var/www/html.
+7. document_uri (or document_url in some contexts)
+This variable contains the part of the request URI that corresponds to the document path (excluding the domain and query string).
+Example: If the request URL is http://example.com/images/photo.jpg, $document_uri would be /images/photo.jpg.
+8. host
+This variable contains the value of the Host header in the HTTP request.
+Example: For a request with the header Host: example.com, $host will be "example.com". If the Host header is absent, it defaults to the server's IP address or server_name.
+9. url
+This variable provides the full request URL, including the scheme (HTTP/HTTPS), host, and the path.
+Example: For a request to http://example.com/page, $url will be "http://example.com/page".
+10. remote_addr
+This variable contains the IP address of the client making the request.
+Example: If a client connects from IP 192.168.1.1, $remote_addr will be "192.168.1.1".
+11. remote_port
+This variable contains the port number that the client used to connect to the Nginx server.
+Example: If the client connects on port 55555, $remote_port will be 55555.
+12. request_method
+This variable stores the HTTP method (e.g., GET, POST, PUT, DELETE) of the request.
+Example: For a request using the POST method, $request_method will be "POST".
+13. scheme
+This variable holds the request scheme, which is either http or https, depending on whether the request was made over HTTP or HTTPS.
+Example: If the request is made over HTTPS, $scheme will be "https".
+14. status
+This variable holds the status code of the last response sent. It's typically used in access logs.
+Example: If Nginx returns a 200 OK response, $status will be "200".
+Example usage of some of these variables:
+Here’s an example of how you might use these variables in a custom log format or in a location block:
+
+nginx
+Copy code
+log_format custom '$remote_addr - $remote_user [$time_local] "$request_method $uri $server_protocol" '
+                  'status=$status body_bytes_sent=$body_bytes_sent '
+                  'time_taken=$request_time "$http_referer" '
+                  '"$http_user_agent" "$host"';
+
+server {
+    listen 80;
+    server_name example.com;
+    
+    location / {
+        # Access specific query parameters
+        if ($arg_name) {
+            set $user_name $arg_name;
+        }
+        
+        # Handle specific content length
+        if ($content_length > 0) {
+            # Logic for handling non-empty content
+        }
+
+        # Example of using variables to construct a URL
+        rewrite ^/old_path/(.*)$ /new_path/$1 permanent;
+    }
+}
+Conclusion:
+Nginx embedded variables offer a dynamic way to interact with incoming HTTP requests and responses. By using them, you can customize logging, access control, redirect behavior, and more, depending on the information contained in the request.
