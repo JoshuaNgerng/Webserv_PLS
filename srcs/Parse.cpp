@@ -28,6 +28,8 @@ block_level(0),
 bracket_no(0),
 semicolon(false),
 no_para(0),
+para_limit(1),
+exact_para_limit(true),
 directive_ptr(NULL),
 filename(""),
 server(NULL),
@@ -45,6 +47,8 @@ block_level(0),
 bracket_no(0),
 semicolon(false),
 no_para(0),
+para_limit(1),
+exact_para_limit(true),
 directive_ptr(NULL),
 filename(config),
 server(&server_),
@@ -67,6 +71,8 @@ Parse& Parse::operator=( const Parse &src ) {
 	bracket_no = src.bracket_no;
 	semicolon = src.semicolon;
 	no_para = src.no_para;
+	para_limit = src.para_limit;
+	exact_para_limit = src.exact_para_limit;
 	directive_ptr = src.directive_ptr;
 	filename = src.filename;
 	server = src.server;

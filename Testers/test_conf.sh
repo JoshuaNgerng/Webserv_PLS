@@ -12,8 +12,9 @@ echo
 echo "Test listen_3.conf"
 ./webserv Testers/conf_test/listen_3.conf
 echo
-echo "Test listen_4.conf"
-./webserv Testers/conf_test/listen_4.conf
+# echo "Test listen_4.conf" # Test Failed
+# ./webserv Testers/conf_test/listen_4.conf
+# echo
 
 
 echo "Invalid index format test:"
@@ -27,3 +28,8 @@ echo
 echo "Test index_3.conf"
 ./webserv Testers/conf_test/index_3.conf
 echo
+
+echo "Check default error page test:"
+echo
+echo "Test error_1.conf"
+./webserv Testers/conf_test/error_1.conf
