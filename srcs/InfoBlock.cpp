@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/06 18:00:45 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:05:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,11 @@ autoindex(off),
 autoindex_exact_size(off),
 autoindex_format(0),
 autoindex_localtime(off),
-allow(),
-deny(),
 symlinks(undefined),
-etag(undefined)
+etag(undefined),
+cgi_enabled(undefined),
+cgi_mapping()
+// limit_except()
 { }
 
 InfoBlock::InfoBlock( const InfoBlock &src ) :
@@ -50,10 +51,12 @@ autoindex(off),
 autoindex_exact_size(off),
 autoindex_format(0),
 autoindex_localtime(off),
-allow(),
-deny(),
 symlinks(undefined),
-etag(undefined) {
+etag(undefined),
+cgi_enabled(undefined),
+cgi_mapping()
+// limit_except()
+{
 	*this = src;
 }
 
@@ -74,10 +77,11 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	autoindex_exact_size = src.autoindex_exact_size;
 	autoindex_format = src.autoindex_format;
 	autoindex_localtime = src.autoindex_localtime;
-	allow = src.allow;
-	deny = src.deny;
 	symlinks = src.symlinks;
 	etag = src.etag;
+	cgi_enabled = src.cgi_enabled;
+	cgi_mapping = src.cgi_mapping;
+	// limit_except = src.limit_except;
 	return (*this);
 }
 
@@ -99,10 +103,11 @@ void	InfoBlock::reset( void ) {
 	autoindex_exact_size = undefined; 
 	autoindex_format = undefined;
 	autoindex_localtime = undefined;
-	allow.clear();
-	deny.clear();
 	symlinks = undefined;
 	etag = undefined;
+	cgi_enabled = undefined;
+	cgi_mapping.clear();
+	// limit_except.clear();
 }
 
 bool	InfoBlock::searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const {
@@ -191,14 +196,6 @@ void	InfoBlock::routingClient( Client &client, std::string *redirect ) const {
 }
 
 void	InfoBlock::defaultSetting( void ) {
-	// if (!access_log.first.length()) {
-	// 	access_log.first = "access.log";
-	// 	access_log.second = combined;
-	// }
-	// if (!error_log.first.length()) {
-	// 	access_log.first = "error.log";
-	// 	access_log.second = error;
-	// }
 	if (if_modify_since == undefined_) {
 		if_modify_since = off_;
 	}
@@ -231,6 +228,9 @@ void	InfoBlock::defaultSetting( void ) {
 	}
 	if (etag == undefined) {
 		etag = off;
+	}
+	if (cgi_enabled == undefined) {
+		cgi_enabled = off;
 	}
 }
 
@@ -268,6 +268,9 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	if (etag == undefined) {
 		etag = ref.etag;
 	}
+	if (cgi_enabled == undefined) {
+		cgi_enabled = ref.cgi_enabled;
+	}
 }
 
 /* setters */
@@ -285,22 +288,11 @@ void	InfoBlock::addErrorPage( const std::string &add ) {
 }
 
 void	InfoBlock::addTryFiles( const std::string &add ) {
-	// static int8_t	allow_var[] = {};
-	// try {
 	try_files.push_back(add);
 	EmbeddedVariable::shortFormString(try_files[try_files.size() - 1]);
-	// }
 }
 
-void	InfoBlock::addRoot( const std::string &add ) { 
-	if (root.length() > 0) {
-		std::cout << "root check " << root << ", trying to add: " << add << '\n';
-		std::cout << "test " << add.length() << '\n';
-		// throw std::invalid_argument("too_many_root");
-	}
-	root = add;
-	std::cout << "added: " << root << '\n';
-}
+void	InfoBlock::addRoot( const std::string &add ) { root = add; }
 
 void	InfoBlock::addAccessLog( const std::string &add, int format ) {
 	access_log.first = add;
@@ -332,13 +324,24 @@ void	InfoBlock::setAutoIndexFormat( int level ) { autoindex_format = level; }
 
 void	InfoBlock::toggleAutoIndexTime( boolean opt ) { autoindex_localtime = opt; }
 
-void	InfoBlock::addAllow( const std::string &path ) { allow.push_back(path); }
-
-void	InfoBlock::addDeny( const std::string &path ) { deny.push_back(path); }
-
 void	InfoBlock::setCheckSymlinks( boolean opt ) { symlinks = opt; }
 
 void	InfoBlock::setEtag( boolean opt ) { etag = opt; }
+
+void	InfoBlock::setCgiEnable( boolean opt ) { cgi_enabled = opt; }
+
+void	InfoBlock::addCgiMapping( const std::string &ext ) {
+	typedef std::pair<std::string, std::string> pairing;
+	CgiIter iter = cgi_mapping.find(ext);
+	if (iter == cgi_mapping.end()) {
+		return ;
+	}
+	cgi_mapping.insert(pairing(std::string(ext), std::string()));
+}
+
+void	InfoBlock::addCgiMapping( const std::string &ext, const std::string &interpret ) {
+	cgi_mapping[ext] = interpret;
+}
 
 bool	InfoBlock::findErrorPath( std::string &str, short status ) const {
 	typedef std::vector<ErrorPage>::const_iterator iter;

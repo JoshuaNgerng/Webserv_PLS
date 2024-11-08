@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 16:29:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 22:02:59 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,21 @@ class Client {
 		void	markforDeletion( void );
 
 		/* getters */
+
+		std::string			getAddr( void ) const;
+		uint16_t			getPort( void ) const;
+		const std::string&	getRoot( void ) const;
 		const std::string&	getCurrentUri( void ) const;
-		const std::string&	getContentName( void ) const { return (content_name); }
+		const std::string&	getCurrentUrl( void ) const;
+		const std::string&	getCurrentPath( void ) const;
+		const std::string&	getCurrentQuery( void ) const;
+		std::string			getContentType( void ) const;
+		size_t				getContentLength( void ) const;
+		const std::string&	getHost( void ) const;
+		std::string			getReqMethod( void ) const;
+		std::string			getHttpScheme( void ) const;
+		const std::string&	getContentName( void ) const;
+		const HttpRequest&	getCurrentHttpRequest( void ) const;
 
 		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;
 		std::vector<Location>::const_iterator	getLocationRef( void ) const;

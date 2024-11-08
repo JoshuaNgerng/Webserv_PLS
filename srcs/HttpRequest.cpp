@@ -6,18 +6,22 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 17:58:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:49:56 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
+#include "EmbeddedVariable.hpp"
 
 HttpRequest::HttpRequest( void ) :
 Http(),
 header_fields(),
 error(),
 method(),
+url(""),
 uri(""),
+path(""),
+query(""),
 protocol(""),
 has_body(false)
 { }
@@ -28,10 +32,14 @@ HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {
 
 HttpRequest&	HttpRequest::operator=( const HttpRequest &src ) {
 	if (this != &src) {
+		Http::operator=(src);
 		header_fields = src.header_fields;
 		error = src.error;
 		method = src.method;
+		url = src.url;
 		uri = src.uri;
+		path = src.path;
+		query = src.query;
 		protocol = src.protocol;
 		has_body = src.has_body;
 	}
@@ -71,9 +79,6 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 		return (str.length() - pos);
 	}
 	validateHeader();
-	if (content_length > body_limit) {
-		error = request_too_large;
-	}
 	if (method == POST || method == PUT) {
 		if (!(validateBody()))
 			return (str.length() - pos);
@@ -111,6 +116,28 @@ static bool	checkValue( const std::string &str ) {
 			// std::cout << "invalid_char found (" << str[i] << ")[" << static_cast<int>(str[i]) << "]\n";
 			return (false);
 		}
+	}
+	return (true);
+}
+
+bool	HttpRequest::validateUrl( void ) {
+	if (uri[0] != '/') {
+		return (false);
+	}
+	if (!(EmbeddedVariable::checkUrl(uri))) {
+		return (false);
+	}
+	std::string	buffer;
+	url = "http://";
+	buffer = getField("host");
+	if (!buffer.length()) {
+		return (false);
+	}
+	url += buffer;
+	size_t pos = uri.find('?');
+	path = uri.substr(0, pos);
+	if (pos != std::string::npos) {
+		query = uri.substr(pos + 1);
 	}
 	return (true);
 }
@@ -187,18 +214,10 @@ bool	HttpRequest::validateHeader( void ) {
 		std::cout << "Http start Error\n";
 		return (false);
 	}
-	if (uri[0] != '/') {
-		std::cout << "Invalid Uri\n";
-		return (false);
-	}
 	while (std::getline(ss, token)) {
 		std::string buffer_field;
 		std::string buffer_value;
 		// std::cout << token << '\n';
-		if (token.length() > header_field_limit) {
-			error = limit_exceed;
-			return (false);
-		}
 		if (token == "\r") {
 			check = true;
 			break ;
@@ -231,6 +250,9 @@ bool	HttpRequest::validateHeader( void ) {
 	}
 	if (!check) {
 		std::cout << "test Http Request Valid doesnt end with \\r\\n\n";
+		return (false);
+	}
+	if (!validateUrl()) {
 		return (false);
 	}
 	error = 0;
@@ -283,9 +305,33 @@ int	HttpRequest::getValidHeader( void ) const {
 	return (0);
 }
 
-const std::string&	HttpRequest::getUri( void ) const  { return (uri); }
+const std::string&	HttpRequest::getField( const char *field ) const {
+	typedef std::map<std::string, std::string>::const_iterator	iter;
+	static const std::string	empty;
+	iter it = header_fields.find(field);
+	if (it == header_fields.end()) {
+		return (empty);
+	}
+	return (it->second);
+}
+
+const std::string&	HttpRequest::getUrl( void ) const { return (url); }
+
+const std::string&	HttpRequest::getUri( void ) const { return (uri); }
+
+const std::string&	HttpRequest::getPath( void ) const { return (path); }
+
+const std::string&	HttpRequest::getQuery( void ) const { return (query); }
 
 const std::string&	HttpRequest::getHeaderStr( void ) const { return (header); }
+
+const std::string&	HttpRequest::getProtocol( void ) const { return (protocol); }
+
+std::string	HttpRequest::getContentType( void ) const {
+	return (std::string(methods[static_cast<int>(method)]));
+}
+
+uint64_t	HttpRequest::getContentLength( void ) const { return (content_length); }
 
 std::ostream&	operator<<( std::ostream &o, const HttpRequest &req ) {
 	o << "Request is" << ((req.isReady()) ? " " : " not ") << "ready\n";

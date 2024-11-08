@@ -2,3 +2,156 @@ server {
 	listen 127.0.0.1:800 [::]:8080 98;
 	root www.example.com;
 }
+
+own rules
+return have 1 - 2 para
+if first is number than assume status code
+invalid return code if wrong
+if first is not number
+than assume its a http:// or https://
+if second exist assume its a string for redirect
+assume string dont exist
+plain text can add later
+
+cgi rules
+cgi boolean statement
+add_handler .extension (at least one)
+action .extension interpreter binary (two excat)
+if no interpreter given get from first line
+
+Yes, **Apache** passes the request headers to the CGI script as environment variables when handling CGI (Common Gateway Interface) requests. This is how Apache communicates important details of the incoming HTTP request to the script.
+
+Each **HTTP header** is transformed into an environment variable. These environment variables are available to the CGI script when it runs, allowing the script to access information such as the request method (`GET`, `POST`, `PUT`, etc.), content type, user agent, and any custom headers.
+
+### Key Environment Variables Set by Apache for CGI Scripts
+
+Here are some of the most common environment variables Apache sets for CGI scripts:
+
+1. **`REQUEST_METHOD`**: The HTTP method of the request (e.g., `GET`, `POST`, `PUT`, `DELETE`).
+   - Example: `REQUEST_METHOD=POST`
+
+2. **`QUERY_STRING`**: The query string portion of the URL (i.e., the part after the `?`).
+   - Example: For a request to `/search?query=python`, `QUERY_STRING=query=python`.
+
+3. **`CONTENT_TYPE`**: The `Content-Type` header of the request, which tells the server the type of data being sent (e.g., `application/x-www-form-urlencoded`, `multipart/form-data`, etc.).
+   - Example: `CONTENT_TYPE=application/x-www-form-urlencoded`
+
+4. **`CONTENT_LENGTH`**: The length of the request body (in bytes). This is important for methods like `POST` or `PUT` where the client sends data.
+   - Example: `CONTENT_LENGTH=123`
+
+5. **`HTTP_<HEADER_NAME>`**: Each HTTP header is available as an environment variable in the form `HTTP_<HEADER_NAME>`, where the hyphens (`-`) in the header are replaced by underscores (`_`) and the header name is capitalized.
+   - Example:
+     - `HTTP_USER_AGENT` (the `User-Agent` header, which typically includes information about the client's browser and operating system).
+     - `HTTP_ACCEPT` (the `Accept` header, which tells the server the types of content the client is willing to accept).
+
+6. **`REMOTE_ADDR`**: The IP address of the client making the request.
+   - Example: `REMOTE_ADDR=192.168.1.100`
+
+7. **`REMOTE_USER`**: The username of the authenticated user, if basic authentication is used.
+   - Example: `REMOTE_USER=admin`
+
+8. **`SERVER_NAME`**: The name of the server as defined in Apache's configuration.
+   - Example: `SERVER_NAME=www.example.com`
+
+9. **`DOCUMENT_ROOT`**: The root directory for the document being requested.
+   - Example: `DOCUMENT_ROOT=/var/www/html`
+
+### Example of Accessing Headers in a Python CGI Script
+
+For example, let's say your Apache server receives a request with a `POST` method, some custom headers, and a body. Apache will pass the headers as environment variables, and you can access them in your CGI script as follows:
+
+#### `/var/www/cgi-bin/my_script.py` (Python CGI Script):
+
+```python
+#!/usr/bin/python3
+
+import os
+import sys
+
+# Get the HTTP method
+method = os.environ.get('REQUEST_METHOD')
+content_type = os.environ.get('CONTENT_TYPE')
+content_length = os.environ.get('CONTENT_LENGTH')
+
+# Get custom HTTP headers, e.g., User-Agent
+user_agent = os.environ.get('HTTP_USER_AGENT')
+accept_language = os.environ.get('HTTP_ACCEPT_LANGUAGE')
+
+# Print HTTP headers in response (for debugging)
+print("Content-type: text/plain")
+print()
+
+print(f"Request Method: {method}")
+print(f"Content-Type: {content_type}")
+print(f"Content-Length: {content_length}")
+print(f"User-Agent: {user_agent}")
+print(f"Accept-Language: {accept_language}")
+
+# Read POST body if present
+if method == 'POST':
+    length = int(content_length)
+    body = sys.stdin.read(length)
+    print(f"Request Body: {body}")
+```
+
+### How Apache Sets Environment Variables
+
+When a request comes into Apache, Apache processes it and sets all the relevant environment variables for the CGI script. These variables allow the CGI script to access details about the request.
+
+For example, if the request includes headers like:
+
+```
+POST /cgi-bin/my_script.py HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 34
+Accept-Language: en-US
+```
+
+Apache would convert this into environment variables like:
+
+- `REQUEST_METHOD=POST`
+- `CONTENT_TYPE=application/x-www-form-urlencoded`
+- `CONTENT_LENGTH=34`
+- `HTTP_USER_AGENT=Mozilla/5.0`
+- `HTTP_ACCEPT_LANGUAGE=en-US`
+- `REMOTE_ADDR=<client_ip>`
+
+### Understanding the CGI Environment in Apache
+
+Apache sets these environment variables based on the incoming HTTP request and the Apache configuration. Here’s a summary of how Apache processes and passes these variables to the CGI script:
+
+- **Request Headers**: Every HTTP header becomes an environment variable in the `HTTP_<HEADER_NAME>` format.
+- **Request Method**: The method used (`GET`, `POST`, `PUT`, etc.) is available in the `REQUEST_METHOD` variable.
+- **Content Details**: The length and type of content are in `CONTENT_LENGTH` and `CONTENT_TYPE`.
+- **Client Information**: Information like `REMOTE_ADDR` (client IP address) is available for logging or processing.
+
+### Example of Common Headers in Apache Environment Variables:
+
+If your request includes the following headers:
+
+```http
+POST /update-file.cgi HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0
+Accept: text/html,application/xhtml+xml
+Content-Type: application/json
+Content-Length: 255
+Authorization: Basic Zm9vOmJhcg==
+```
+
+Apache will set these corresponding environment variables:
+
+- `REQUEST_METHOD=POST`
+- `HTTP_USER_AGENT=Mozilla/5.0`
+- `HTTP_ACCEPT=text/html,application/xhtml+xml`
+- `CONTENT_TYPE=application/json`
+- `CONTENT_LENGTH=255`
+- `HTTP_AUTHORIZATION=Basic Zm9vOmJhcg==`
+
+### Conclusion
+
+Yes, under the hood, **Apache** passes the request headers as environment variables to the CGI script. These environment variables allow the CGI script to access important request information like HTTP method, headers, content type, and the request body. The environment variables follow a specific naming convention (`HTTP_<HEADER_NAME>`, `REQUEST_METHOD`, etc.), which the script can read to determine how to process the request.
+
+If you need any further clarification or examples, feel free to ask!

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 18:24:16 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 22:03:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -442,6 +442,54 @@ void	Client::ignoreClosingFd( void ) { ignore_close_fd = true; }
 void	Client::serverReceived( void ) { content->serverReceivedFds(); }
 
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
+
+std::string	Client::getAddr( void ) const {
+	char ip_str[INET6_ADDRSTRLEN];
+	if (client_addr.ss_family == AF_INET) {
+		struct sockaddr_in* addr_in = (struct sockaddr_in*)&client_addr;
+		inet_ntop(AF_INET, &addr_in->sin_addr, ip_str, sizeof(ip_str));
+		unsigned short port = ntohs(addr_in->sin_port);
+	}
+	else if (client_addr.ss_family == AF_INET6) {
+		struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)&client_addr;
+		inet_ntop(AF_INET6, &addr_in6->sin6_addr, ip_str, sizeof(ip_str));
+		unsigned short port = ntohs(addr_in6->sin6_port);
+	}
+	return (std::string(ip_str));
+}
+
+uint16_t	Client::getPort( void ) const {
+	if (client_addr.ss_family == AF_INET) {
+		struct sockaddr_in* addr_in = (struct sockaddr_in*)&client_addr;
+		return (ntohs(addr_in->sin_port));
+	}
+	struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)&client_addr;
+	return (ntohs(addr_in6->sin6_port));
+}
+
+const std::string&	Client::getRoot( void ) const { return (root_dir); }
+
+const std::string&	Client::getCurrentUri( void ) const { return (requests.front().getUri()); }
+
+const std::string&	Client::getCurrentUrl( void ) const { return(requests.front().getUrl()); }
+
+const std::string&	Client::getCurrentPath( void ) const { return(requests.front().getPath()); }
+
+const std::string&	Client::getCurrentQuery( void ) const { return(requests.front().getQuery()); }
+
+std::string	Client::getContentType( void ) const { return (requests.front().getContentType()); }
+
+size_t	Client::getContentLength( void ) const { return(requests.front().getContentLength()); }
+
+const std::string&	Client::getHost( void ) const { return(requests.front().getField("host")); }
+
+std::string	Client::getReqMethod( void ) const {
+	return (requests.front().getContentType());
+}
+
+std::string	Client::getHttpScheme( void ) const { return("http"); }
+
+const HttpRequest&	Client::getCurrentHttpRequest( void ) const { return(requests.front()); }
 
 const File*	Client::getContent( void ) const { return(content); }
 

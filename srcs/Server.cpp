@@ -6,13 +6,16 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 18:37:53 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:21:34 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 const char		*Server::server_name = NULL;
+
+char *const *Server::env = NULL;
+
 volatile bool	Server::running = true;
 
 Server::Server( void ) :

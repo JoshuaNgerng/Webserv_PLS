@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 17:53:32 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:21:31 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ class Server
 	typedef ListenSocket::Iterator						addrinfo_ptr;
 	public:
 		static const char *server_name;
+		static char *const *env;
 		Server( void );
 		Server( const Server &src );
 		Server&	operator=( const Server &src );
