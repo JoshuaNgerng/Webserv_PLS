@@ -6,7 +6,7 @@
 #    By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/13 16:47:15 by jngerng           #+#    #+#              #
-#    Updated: 2024/11/06 17:51:55 by jngerng          ###   ########.fr        #
+#    Updated: 2024/11/11 22:08:47 by jngerng          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ OBJ_DIR = obj
 FILES = Const CheckFile Parse Server InfoBlock ServerInfo Location Client \
 		ErrorPage ListenSocket Http HttpRequest HttpResponse \
 		AutoIndex DefaultErrorPage EmbeddedVariable LimitExcept \
-		File StaticFile
+		File StaticFile CgiPipe
 SRC = $(foreach item, $(FILES), $(SRC_DIR)/$(item).cpp)
 M_SRC = main
 OBJ = $(foreach item, $(FILES) $(M_SRC), $(OBJ_DIR)/$(item).o)
