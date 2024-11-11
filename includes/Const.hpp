@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 16:02:36 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 20:15:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,5 +143,6 @@ class InfoBlock;
 class ServerInfo;
 class Location;
 class Client;
+class HttpRequest;
 
 #endif

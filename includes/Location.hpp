@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:06:49 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 20:07:35 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 21:09:05 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,18 @@ class Location : public InfoBlock {
 		~Location( void );
 		void	addPath( const std::string &path );
 		void	addAlias( const std::string &path );
+		void	addReturn( int code );
 		void	addReturn( const std::string &add );
+		void	addReturn( int code, const std::string &add );
 		void	setInternal( void );
 		void	reset( void );
 
 		void	routingClient( Client &client ) const;
 		void	defaultSetting( void );
 		void	defaultSetting( const InfoBlock &ref );
+		int		checkReturnCode( void ) const;
 
+		const std::string&	checkReturnUri( void ) const;
 		const std::string&	getLocationPath( void ) const;
 
 	private:
@@ -39,6 +43,8 @@ class Location : public InfoBlock {
 		bool		internal;
 
 		std::pair<int, std::string>	return_;
+
+		void	routeClientReturn( Client &client ) const;
 };
 
 #endif

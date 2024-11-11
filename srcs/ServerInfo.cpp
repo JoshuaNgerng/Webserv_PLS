@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 00:07:01 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 22:29:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ void	ServerInfo::clearListenAddr( void ) {
 void	ServerInfo::emptyListenAddr( void ) {
 	typedef	std::vector<ListenSocket>::iterator	iter;
 	for (iter it = listen_sockets.begin(); it != listen_sockets.end(); it ++) {
+		// std::cout << "test empty socket:\t" << *it << '\n';
 		it->emptyAddrPtr();
 	}
 }
@@ -104,9 +105,7 @@ void	ServerInfo::routingClient( Client &client, int level, const std::string &ur
 	if (ptr != location.end()) {
 		// std::cout << "location found : " << ptr->getLocationPath() << '\n';
 		ptr->routingClient(client);
-		if (client.checkResponseStatus()) {
-			return ;
-		}
+		return ;
 	}
 	// else
 		// std::cout << "no location founded\n";

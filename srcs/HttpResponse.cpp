@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 18:13:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/09 17:48:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,17 +64,24 @@ void	HttpResponse::addField( const std::string &name, const std::string &val ) {
 	header += "\r\n";
 }
 
+void	HttpResponse::addFin( const std::string &str ) { combine += str; }
+
+void	HttpResponse::addFin( const char *str, size_t bytes ) { combine.append(str, bytes); }
+
 void	HttpResponse::addBody( const std::string &str ) { body += str; }
 
 void	HttpResponse::addBody( const char *str, size_t bytes ) { body.append(str, bytes); }
 
-void	HttpResponse::setHeader( int status, const std::string &str ) {
+void	HttpResponse::addHeaderStart( int status ) {
 	std::string	buffer;
 	if (!makeReponseHeader(buffer, status)) {
 		return ;
 	}
 	header += "HTTP/1.1 ";
 	header += buffer + "\r\n";
+}
+
+void	HttpResponse::addHeader( void ) {
 	addField("Server", Server::server_name);
 	std::time_t current_time = std::time(NULL);
 	struct tm* time_info = std::gmtime(&current_time);
@@ -83,7 +90,15 @@ void	HttpResponse::setHeader( int status, const std::string &str ) {
 		std::string date_string(date_buffer);
 		addField("Date", date_string);
 	}
+}
 
+void	HttpResponse::addHeader( int status ) {
+	addHeaderStart(status);
+	addHeader();
+}
+
+void	HttpResponse::setHeader( int status, const std::string &str ) {
+	addHeader(status);
 	if (status > 299 && status < 400) {
 		addField("Location", str);
 	}
@@ -126,6 +141,99 @@ size_t	HttpResponse::getBodyLength( void ) const { return (body.length()); }
 size_t	HttpResponse::getTotalLength( void ) const { return (combine.length()); }
 
 bool	HttpResponse::isReady( void ) const { return (ready); }
+
+bool	HttpResponse::validateHttpStart( const std::string &line ) const {
+	std::string buffer;
+	size_t i = 0, j = 0;
+	for (; i < line.length(); i ++) {
+		if (line[i] == ' ')
+			break ;
+	}
+	if (!i) {
+		return (false);
+	}
+	buffer = line.substr(0, i);
+	if (buffer != "HTTP/1.1") {
+		return (false);
+	}
+	i ++;
+	j = i;
+	for (; i < line.length(); i ++) {
+		if (line[i] == ' ')
+			break ;
+	}
+	if (j == i) {
+		return (false);
+	}
+	buffer = line.substr(j, i - j);
+	int	check = std::atoi(buffer.c_str());
+	if (check < 100 || check > 599) {
+		return (false);
+	}
+	if (line[line.length() - 1] != '\r') {
+		return (false);
+	}
+	return (true);
+}
+
+bool	HttpResponse::generateHeader( const std::string &buffer ) {
+	std::istringstream	ss(buffer);
+	std::string			line, field, val;
+	bool				content_length = false;
+	bool				content_type = false;
+	std::getline(ss, line);
+	if (!validateHttpStart(line)) {
+		addHeader(200);
+	} else {
+		header += line;
+		std::getline(ss, line);
+		if (!line.length()) {
+			addHeader();
+			return (true);
+		}
+	}
+	addHeader();
+	while (std::getline(ss, line)) {
+		size_t pos = line.find('=');
+		if (pos == std::string::npos) {
+			continue ;
+		}
+		field = line.substr(0, pos);
+		val = line.substr(pos + 1);
+		if (!validateField(field) || !validateField(val) ||
+			line[line.length() - 1] != '\r') {
+			continue ;
+		}
+		if (field == "content-length") {
+			content_length = true;
+		} else if (field == "content-type") {
+			content_type = true;
+		}
+		header += line + '\n';
+	}
+	if (!content_type) {
+		addField("Content-Type", "application/octet-stream");
+	}
+	if (!content_length) {
+		addField("Content-Length", to_String(combine.length()));
+	}
+	return (true);	
+}
+
+bool	HttpResponse::processCgiData( void ) {
+	size_t pos = combine.find("\r\n\r\n");
+	if (pos == std::string::npos) {
+		setHeader(200);
+		setContent("application/octet-stream", combine.length());
+	} else {
+		std::string	buffer = combine.substr(0, pos + 4);
+		combine.erase(0, pos + 4);
+		generateHeader(buffer);
+	}
+	combine = header + combine;
+	ready = true;
+	return (true);
+}
 
 std::ostream&	operator<<( std::ostream &o, const HttpResponse &res ) {
 	o << "Http Response " << ((!res.isReady()) ? "not " : " " ) << "ready\n";

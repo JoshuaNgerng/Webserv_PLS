@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/07 21:04:55 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 14:57:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ enum log_format {
 };
 
 class InfoBlock {
-	typedef std::map<std::string, std::string>				CgiMapping;
-	typedef std::map<std::string, std::string>::iterator	CgiIter;
+	typedef std::map<std::string, std::string>					CgiMapping;
+	typedef std::map<std::string, std::string>::const_iterator	CgiIter;
 	public:
 		InfoBlock( void );
 		InfoBlock( const InfoBlock &src );
@@ -73,7 +73,9 @@ class InfoBlock {
 		void	addCgiMapping( const std::string &ext, const std::string &interpret );
 
 		/* getters */
+		bool				isCgi( const std::string &ext ) const;
 		const std::string&	getRoot( void ) const;
+		const std::string&	getCgiBin( const std::string &ext ) const;
 
 		void	writeAccessLog( void ) const;
 		void	writeAccessLog( const std::string &log ) const;

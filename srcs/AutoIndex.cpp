@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 15:40:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/09 02:02:07 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,12 +209,14 @@ std::string	AutoIndex::generateJson( void ) {
 
 std::string	AutoIndex::generateResource( const char *dirname ) {
 	std::string	out;
+	std::cout << "autoindex dir name: " << dirname << '\n';
 	dir = opendir(dirname);
 	if (!dir) {
 		return (out);	
 	}
 	root_name = dirname;
 	root_name += '/';
+	std::cout << "huh root_name: " << root_name << '\n';
 	root_len = root_name.length();
 	switch (autoindex_format) {
 		case html:	out = generateHtml();	break;

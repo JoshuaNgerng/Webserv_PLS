@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 10:22:51 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/05 18:20:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/11 21:10:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,11 +68,12 @@ void	File::getFds( int fds[2] ) const {
 }
 
 bool	File::processFd( int &fd ) const {
-	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(fd);
-		fd = -1;
-		return (false);
-	}
+	(void)fd;
+	// if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
+		// close(fd);
+		// fd = -1;
+		// return (false);
+	// }
 	return (true);
 }
 

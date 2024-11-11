@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/05 18:08:47 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/11 17:23:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ const Http::t_types Http::mime_types[] = {
 Http::Http( void ) :
 ready(false),
 header(""), body(""), combine(""),
-content_length(0), content_type(TEXT_PLAIN) { }
+content_length(0), content_type(""), header_fields() { }
 
 Http::Http( const Http &src ) { *this = src; }
 
@@ -93,18 +93,86 @@ Http&	Http::operator=( const Http &src ) {
 	combine = src.combine;
 	content_length = src.content_length;
 	content_type = src.content_type;
+	header_fields = src.header_fields;
 	return (*this);
 }
 
-// size_t	Http::addHeader( const std::string &str ) { header += str; return (0); }
+// use for header
+bool	Http::validateField( std::string &str ) const {
+	static int diff = 'a' - 'A';
+	static const char *invalid_char = "()<>@,;:\'\"/[]?={} ~";
+	// std::cout << "test Http Request Valid test str in checkField: " << str << "\n";
+	for (size_t i = 0; i < str.length(); i ++) {
+		if ((::isupper(str[i]))) {
+			str[i] += diff;
+			continue ;
+		}
+		for (size_t j = 0; invalid_char[j]; j ++) {
+			if (str[i] < 32 || str[i] == 127 || str[i] == invalid_char[j]) {
+				// std::cout << "invalid_char found (" << str[i] << ")[" << static_cast<int>(str[i]) << "]\n";
+				return (false);
+			}
+		}
+	}
+	return (true);
+}
 
-// size_t	Http::addBody( const std::string &str ) { body += str; return (0); }
+bool	Http::validateValue( const std::string &str ) const {
+	// std::cout << "checkValue " << str << '\n';
+	for (size_t i = 0; i < str.length() - 1; i ++) {
+		if (str[i] < 32 || str[i] == 127) {
+			// std::cout << "invalid_char found (" << str[i] << ")[" << static_cast<int>(str[i]) << "]\n";
+			return (false);
+		}
+	}
+	return (true);
+}
 
-// size_t	Http::addBody( const char *str, size_t bytes ) { body.append(str, bytes); return (0); }
+bool	Http::addHeaderFields( const std::string &field, const std::string &val ) {
+	typedef std::map<std::string, std::string>::iterator iter;
+	iter it = header_fields.find(field);
+	if (it == header_fields.end()) {
+		header_fields[field] = val;
+		return (true);
+	}
+	if (field == fields[COOKIE] || field == fields[CACHE]) {
+		it->second += "; ";
+		it->second += val;
+		return (true);
+	}
+	return (false);
+}
+
+std::string&	Http::modifyHeader( void ) { return (header); }
+
+std::string&	Http::modifyBody( void ) { return (body); }
 
 void	Http::finishHttp( void ) { combine = header + body; ready = true; }
 
+size_t	Http::getBodyLength( void ) const { return (body.length()); }
+
+size_t	Http::getTotalLength( void ) const { return (combine.length()); }
+
 const char*	Http::getPtr2Http( size_t bytes ) const { return (combine.c_str() + bytes); }
+
+const char*	Http::getPtr2Body( size_t bytes ) const { return (body.c_str() + bytes); }
+
+const std::string&	Http::getHeader( void ) const { return (header); }
+
+const std::string&	Http::getBody( void ) const { return (body); }
+
+const std::string&	Http::getField( const char *str ) const {
+	typedef std::map<std::string, std::string>::const_iterator	iter;
+	static const std::string	empty;
+	if (!str) {
+		return (empty);
+	}
+	iter it = header_fields.find(str);
+	if (it == header_fields.end()) {
+		return (empty);
+	}
+	return (it->second);
+}
 
 bool	Http::isReady( void ) const { return (ready); }
 
@@ -132,7 +200,7 @@ const char	*Http::getMimeType( const std::string &ext ) {
 			return (mime_types[i].mime_type);
 		}
 	}
-	return (NULL);
+	return ("application/octet-stream");
 }
 
 int	Http::checkMethods( const std::string &str ) const {

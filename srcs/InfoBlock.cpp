@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 21:05:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/09 01:51:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,9 +157,11 @@ bool	InfoBlock::resolveUri( Client &client, const std::string &uri ) const {
 		path += uri;
 	}
 	if (is_directory) {
+		std::cout << "resolveUri is_directory check\n";
 		if (searchIndexes(client, path)) {
 			return (true);
 		} else if (autoindex == on) {
+			std::cout << "test autoindex on\n";
 			client.addDir(path);
 			return (true);
 		}
@@ -181,7 +183,9 @@ void	InfoBlock::routingClient( Client &client, std::string *redirect ) const {
 	}
 	iter end = -- try_files.end();
 	for (iter it = try_files.begin(); it != end; it ++) {
-		std::string new_uri = root + *it;
+		std::string buffer;
+		EmbeddedVariable::resolveString(buffer, *it, client);
+		std::string new_uri = root + buffer;
 		if (resolveUri(client, new_uri))
 			return ;
 	}
@@ -351,6 +355,24 @@ bool	InfoBlock::findErrorPath( std::string &str, short status ) const {
 		}
 	}
 	return (false);
+}
+
+const std::string&	InfoBlock::getRoot( void ) const { return (root); }
+
+bool	InfoBlock::isCgi( const std::string &ext ) const {
+	CgiIter iter = cgi_mapping.find(ext);
+	if (iter == cgi_mapping.end()) {
+		return (false);
+	}
+	return (true);
+}
+
+const std::string&	InfoBlock::getCgiBin( const std::string& ext ) const {
+	CgiIter iter = cgi_mapping.find(ext);
+	if (iter == cgi_mapping.end()) {
+		return (empty);
+	}
+	return (iter->second);
 }
 
 boolean	InfoBlock::getAutoIndex( void ) const { return (autoindex); }

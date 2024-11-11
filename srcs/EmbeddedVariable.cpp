@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/07 18:57:01 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 19:39:35 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,6 @@ static int	getQueyArgs( std::string &dst, const std::string &arg_name, size_t st
 void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, const Client &client ) {
 	str.reserve(ref.length());
 	for (size_t i = 0; i < ref.length(); i ++) {
-		const std::string *val = NULL;
 		if (ref[i] == '\'' || ref[i] == '"') {
 			continue ;
 		}

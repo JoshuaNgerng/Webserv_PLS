@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/07 21:52:33 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/11 17:19:16 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 // int for size of req field
 // int for clientbodymax
 class Http {
+	typedef std::map<std::string, std::string> mapping;
 	public:
 		typedef struct code_msg_pair {
 			int			status;
@@ -46,13 +47,23 @@ class Http {
 		static const char	*fetchMsg( int status );
 		static const char	*getMimeType( const std::string &ext );
 
-		// virtual size_t	addHeader( const std::string &str );
-		// virtual size_t	addBody( const std::string &str );
-		// virtual size_t	addBody( const char *str, size_t bytes );
-		virtual void	finishHttp( void );
-		const char*		getPtr2Http( size_t bytes = 0 ) const;
-		bool			isReady( void ) const;
-		void			reset( void );
+		bool				validateField( std::string &field ) const;
+		bool				validateValue( const std::string &val ) const;
+		bool				addHeaderFields( const std::string &field, const std::string &val );
+
+		std::string&		modifyHeader( void );
+		std::string&		modifyBody( void );
+
+		virtual void		finishHttp( void );
+		size_t				getBodyLength( void ) const;
+		size_t				getTotalLength( void ) const;
+		const char*			getPtr2Http( size_t bytes = 0 ) const;
+		const char*			getPtr2Body( size_t bytes = 0 ) const;
+		const std::string&	getHeader( void ) const;
+		const std::string&	getBody( void ) const;
+		const std::string&	getField( const char *str ) const;
+		bool				isReady( void ) const;
+		void				reset( void );
 
 	protected:
 		Http( void );
@@ -64,7 +75,8 @@ class Http {
 		std::string			body;
 		std::string			combine;
 		size_t				content_length;
-		type				content_type;
+		std::string			content_type;
+		mapping				header_fields;
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;

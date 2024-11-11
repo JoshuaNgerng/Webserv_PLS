@@ -6,15 +6,15 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 21:21:34 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/11 20:26:02 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-const char		*Server::server_name = NULL;
+const char*		Server::server_name = "";
 
-char *const *Server::env = NULL;
+char *const*	Server::env = NULL;
 
 volatile bool	Server::running = true;
 
@@ -55,6 +55,7 @@ Server&	Server::operator=( const Server &src )
 }
 
 Server::~Server( void ) {
+	std::cout << "Server descrutor\n";
 	// std::cout << server_no << '\n';
 	for (size_t i = 0; i < server_no && i < socket_fds.size(); i ++) {
 		close(socket_fds[i].fd);
@@ -69,15 +70,26 @@ void	Server::signalHandler( int signal ) {
 	running = false; // Set flag to indicate cleanup
 }
 
+template < typename T >
+static void printTemplate( const std::string &msg, T &stl ) {
+	typedef typename T::const_iterator iter;
+	std::cout << msg << '\n';
+	for (iter it = stl.begin(); it != stl.end(); it ++) {
+		std::cout << *it << ' ';
+	}
+	std::cout << "\n";
+}
+
 bool	Server::checkBufferfds( size_t no ) const {
 	return ((buffer_new_fd.size() + no > server_limit) ? false : true);
 }
 
 // may need to revise if use std::allocator without resever
 void	Server::addBufferfds( int fd, int events ) {
-	pollfd_t	new_fd = {0, 0, 0};
+	pollfd_t	new_fd;
 	new_fd.fd = fd;
 	new_fd.events = events;
+	new_fd.revents = 0;
 	buffer_new_fd.push_back(new_fd);
 	fd_counter ++;
 }
@@ -89,7 +101,11 @@ void	Server::addBufferfds( int fd ) {
 void	Server::addSingleFd( int fd, int event, client_ptr client ) {
 	addBufferfds(fd, event);
 	client_mapping.insert(std::pair<int, client_ptr>(fd, client));
-	std::cout << "client content name: " << client->getContentName() << '\n';
+	std::cout << "added fd: " << fd << " as " ;
+	if (event & POLLIN) { std::cout << "POLLIN"; }
+	if (event & POLLOUT) { std::cout << "POLLOUT"; }
+	std::cout << ", from " << client->getContentName() << '\n';
+	// std::cout << "client content name: " << client->getContentName() << '\n';
 }
 
 void	Server::addClientContentFd( client_ptr client ) {
@@ -140,9 +156,11 @@ void	Server::markAsDelete( Client &client ) {
 
 void	Server::error2Client( int fd, client_ptr client ) {
 	if (client->clientSocketFd() == fd) {
+		std::cout << "error2Client socket fd\n";
 		client->markforDeletion();
 		return ;
 	}
+	std::cout << "overwrite err content\n";
 	client->errorOverwriteResponse(500);
 	markAsDelete(fd);
 }
@@ -167,6 +185,7 @@ int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
 void	Server::setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer ) {
 	size_t	counter = 0;
 	for (listen_ptr it = ptr->listenBegin(); it != ptr->listenEnd(); it ++) {
+		// std::cout << "testing socket:\t" << *it << '\n';
 		for (addrinfo_ptr addr = it->begin(); addr != it->end(); addr ++) {
 			buffer.fd = setupSocketsCheckError(it, addr);
 			if (buffer.fd < 0) {
@@ -223,9 +242,9 @@ void	Server::resetFds( void ) {
 	}
 	while (it != socket_fds.end()) {
 		if (checkFdDeletion(it->fd)) {
+			std::cout << "deleting fd " << it->fd << '\n';
 			client_mapping.erase(it->fd);
 			it = socket_fds.erase(it);
-			std::cout << "it it here?\n";
 			usleep(9000);
 		} else {
 			it ++;
@@ -249,16 +268,13 @@ void	Server::resetFds( void ) {
 	buffer_new_fd.clear();
 	fds_to_be_deleted.clear();
 	fd_counter = socket_fds.size();
-	// for (size_t i = 0; i < poll_tracker; i ++) {
-	// 	std::cout << socket_fds[i].fd << ", ";
-	// }
-	// std::cout << "\n";
 }
 
 
 void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 	if (poll_fd.fd == client.clientSocketFd()) {
 		if (!client.clientRecvHttp()) {
+			std::cout << "received failed?\n";
 			markAsDelete(client);
 			return ;
 		}
@@ -271,14 +287,21 @@ void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 }
 
 void	Server::handleClientSent( pollfd_t &poll_fd, Client &client ) {
+	if (poll_fd.fd != client.clientSocketFd()) {
+		// std::cout << "trying to sent to content\n";
+		if (!client.clientSendContent()) {
+			markAsDelete(client.getContent());
+			client.errorOverwriteResponse(500);
+		}
+		return ;
+	}
 	if (!client.checkResponseReady()) {
 		// std::cout << "client check response not ready\n";
 		return ;
 	}
-	if (poll_fd.fd == client.clientSocketFd()) {
-		if (!client.clientSendResponse()) {
-			markAsDelete(client);
-		}
+	if (!client.clientSendResponse()) {
+		std::cout << "send failed?\n";
+		markAsDelete(client);
 	}
 }
 
@@ -300,15 +323,15 @@ void	Server::handleClient( size_t index ) {
 		return ;
 	}
 	if (poll_fd.revents & POLLIN) {
-		// std::cout << "test POLLIN\n";
+		std::cout << "test POLLIN " << poll_fd.fd << "\n";
 		handleClientRecv(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & POLLOUT) {
-		// std::cout << "test POLLOUT\n";
+		// std::cout << "test POLLOUT " << poll_fd.fd << "\n";
 		handleClientSent(poll_fd, *ptr);
 	}
 	if (poll_fd.revents & (POLLHUP | POLLERR)) {
-		// std::cout << "test POLLERR\n";
+		// std::cout << "test POLLERR " << poll_fd.fd << "\n";
 		error2Client(poll_fd.fd, ptr);
 	}
 	if (!ptr->giveContentFdtoServer()) {
@@ -326,13 +349,16 @@ void	Server::handleServer( size_t index ) {
 		return ;
 	}
 	Client	buffer(server_mapping[index]);
+	std::cout << "client buffer in handleSever generated\n";
 	int	fd = buffer.clientSocketFd(socket_fds[index].fd);
 	if (fd < 0) {
 		return ;
 	}
 	addBufferfds(fd, POLLIN);
 	addBufferfds(fd, POLLOUT);
+	// std::cout << "test client info push back\n";
 	client_info.push_back(buffer);
+	// std::cout << "after push back\n";
 	client_mapping[fd] = -- client_info.end();
 	buffer.ignoreClosingFd();
 	std::cout << "client socket successfully added\n";
@@ -350,6 +376,7 @@ void	Server::loopServer( void ) {
 		handleServer(index);
 	}
 	resetFds();
+	// printTemplate("socket-fds", socket_fds);
 }
 
 void	Server::startServerLoop( void ) {

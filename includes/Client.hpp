@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 22:02:59 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/09 18:10:04 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,10 @@ class Client {
 		int		clientSocketFd( int fd );
 		bool	clientRecvHttp( void );
 		bool	clientRecvContent( void );
+		bool	clientRecvStaticFile( void );
+		bool	clientRecvCgi( void );
+		bool	clientSendContent( void );
+		bool	clientSendCgi( void );
 		bool	clientSendResponse( void );
 		void	addRootDir( const std::string &str );
 		void	addRootDir( const std::string &root, const std::string &uri );
@@ -120,6 +124,7 @@ class Client {
 		void	getDefaultError( void );
 		bool	processContent( void );
 		bool	processContent( const std::string &path );
+		File*	processContentCgiHelper( const char *ext );
 		void	resetResponse( void );
 		void	reset( void );
 };

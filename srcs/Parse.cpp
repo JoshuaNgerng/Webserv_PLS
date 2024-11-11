@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 21:05:41 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/09 01:44:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,6 @@ block_level(0),
 bracket_no(0),
 semicolon(false),
 no_para(0),
-para_limit(1),
-exact_para_limit(true),
 directive_ptr(NULL),
 filename(""),
 parsing_buffer(""),
@@ -48,8 +46,6 @@ block_level(0),
 bracket_no(0),
 semicolon(false),
 no_para(0),
-para_limit(1),
-exact_para_limit(true),
 directive_ptr(NULL),
 filename(config),
 parsing_buffer(""),
@@ -73,8 +69,6 @@ Parse& Parse::operator=( const Parse &src ) {
 	bracket_no = src.bracket_no;
 	semicolon = src.semicolon;
 	no_para = src.no_para;
-	para_limit = src.para_limit;
-	exact_para_limit = src.exact_para_limit;
 	directive_ptr = src.directive_ptr;
 	filename = src.filename;
 	parsing_buffer = src.parsing_buffer;
@@ -95,11 +89,38 @@ void	Parse::setServer( Server &s ) { server = &s; }
  * 			comments begins with # and end at `\n' char
 */
 void	Parse::removeComments( std::string &content ) const {
-	for (size_t pos = content.find('#');
-		 pos != std::string::npos; pos = content.find('#'))
-	{
-		size_t pos_end = content.find('\n', pos);
-		content.erase(pos, pos_end - pos);
+	// for (size_t pos = content.find('#');
+	// 	 pos != std::string::npos; pos = content.find('#'))
+	// {
+	// 	size_t pos_end = content.find('\n', pos);
+	// 	content.erase(pos, pos_end - pos);
+	// }
+	for (size_t pos = 0; pos < content.length(); pos ++) {
+		if (content[pos] == '#') {
+			std::cout << "huh?\n";
+			size_t check = content.find('\n', pos);
+			if (check == std::string::npos) {
+				check = content.length();
+			}
+			for (size_t i = pos; i < check; i ++) {
+				content[i] = ' ';
+			}
+			pos = check;
+			// content.erase(pos, content.find('\n'));
+		} else if (content[pos] == '\'' || content[pos] == '"') {
+			char c = content[pos];
+			size_t check = content.find(c, pos + 1);
+			if (check == std::string::npos) {
+				throw 1; // error
+			}
+			for (size_t i = pos + 1; i < check; i ++) {
+				if (::isspace(content[i]))
+					content[i] *= -1;
+			}
+			content[pos] = ' ';
+			content[check] = ' ';
+			pos = check;
+		}
 	}
 }
 
@@ -155,6 +176,15 @@ bool	Parse::getNextLine( void ) {
 /**
  * check the level of block the config
 */
+
+static void	cleanToken( std::string &token ) {
+	for (size_t i = 0; i < token.length(); i ++) {
+		if (token[i] < 0) {
+			token[i] *= -1;
+		}
+	}
+}
+
 static int	checkLevel( int level, const std::string &ref ) {
 	if (!level) {
 		if (ref == "server")
@@ -242,6 +272,8 @@ void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 	std::string token;
 	while (line_stream >> token && semicolon == false)
 	{
+		cleanToken(token);
+		std::cout << "test token: " << token << '\n';
 		if (!token.length()) {
 			if (!getNextLine())
 				throw ParsingConfError(excepted_delimitor, ";");
@@ -259,6 +291,7 @@ void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 			if (no_para > para_limit)
 				throw ParsingConfError(invalid_no_parameter, directive_ptr);
 		}
+		// std::cout << "test directive " << process << "\n";
 		(this->*process)(token);
 	}
 	if (!semicolon)
@@ -277,6 +310,7 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 	void (Parse::*process)(std::string &); 
 	process = NULL;
 	int	index = checkMatch(parameter, directive);
+	// std::cout << "huh index: " << index << '\n';
 	switch (index)
 	{
 		case 0: 
@@ -313,19 +347,27 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 			process = &Parse::processAutoIndexExactSize;
 			break ;
 		case 10:
-			process = &Parse::processAutoIndexLocalTime;
+			process = &Parse::processAutoFormat;
 			break ;
 		case 11:
+			process = &Parse::processAutoIndexLocalTime;
 			break ;
 		case 12:
+			process = &Parse::processCgi;
 			break ;
 		case 13:
+			process = &Parse::processAddHandler;
 			break ;
 		case 14:
+			process = &Parse::processAction;
+			para_limit = 2;
+			break ;
+		case 15:
 			break ;
 		default:
 			return (false);
 	}
+	// std::cout << "test infoblock\n";
 	directive_ptr = parameter[index];
 	processDirective(process);
 	return (true);
@@ -389,7 +431,7 @@ void	Parse::processServer( const std::string &directive ) {
 
 void	Parse::processLocation( const std::string &directive ) {
 	static const char	*parameter[] = {
-		"alias", "internal", NULL
+		"alias", "internal", "return", NULL
 	};
 	void (Parse::*process)(std::string &);
 	process = NULL;
@@ -405,6 +447,11 @@ void	Parse::processLocation( const std::string &directive ) {
 			process = &Parse::processInternal;
 			para_limit = 0;
 			break;
+		case 2:
+			process = &Parse::processReturn;
+			para_limit = 1;
+			exact_para_limit = false;
+			break ;
 		default:
 			throw ParsingConfError(unknown_directive, directive.c_str());
 	}
@@ -482,6 +529,8 @@ void	Parse:: processContent( void ) {
 	std::string	token;
 	while (getNextLine()) {
 		while (line_stream >> token) {
+			cleanToken(token);
+			std::cout << "test token " << token << '\n';
 			processToken(token);
 		}
 	}
@@ -503,6 +552,8 @@ void	Parse:: processContent( void ) {
 void Parse::parseConfigFile( void ) {
 	fname = filename.c_str();
 	ParsingFileError::type = "[emerg]";
+	Parse::prog_name = Server::server_name;
+	std::cout << Server::server_name << '\n';
 	if (!server) {
 		throw ParsingFileError(-1);
 	}
@@ -532,7 +583,7 @@ boolean	Parse::processBoolParameter( const std::string &token, const char *direc
 	if (token == "off") {
 		return (off);
 	}
-	throw ParsingConfError(invalid_parameter, directive);
+	throw ParsingConfError(invalid_parameter, token.c_str());
 }
 
 uint64_t	Parse::processSizeParameter( std::string &token, const char *directive ) {
@@ -544,7 +595,7 @@ uint64_t	Parse::processSizeParameter( std::string &token, const char *directive 
 		out = checkSize(token.begin(), token.end());
 	}
 	catch (const std::invalid_argument &e) {
-		throw ParsingConfError(invalid_parameter, directive);
+		throw ParsingConfError(invalid_parameter, token.c_str());
 	}
 	return (out);
 }
@@ -558,7 +609,7 @@ uint64_t	Parse::processTimeParameter( std::string &token, const char *directive 
 		out = checkTime(token.begin(), token.end());
 	}
 	catch (const std::invalid_argument &e) {
-		throw ParsingConfError(invalid_parameter, directive);
+		throw ParsingConfError(invalid_parameter, token.c_str());
 	}
 	return (out);
 }
@@ -622,6 +673,10 @@ void	Parse::processIndex( std::string &token ) {
 	ptr->addIndex(token);
 }
 
+void	Parse::processTryFiles( std::string &token ) {
+	ptr->addTryFiles(token);
+}
+
 void	Parse::processAutoIndex( std::string &token ) {
 	ptr->toggleAutoIndex(processBoolParameter(token, directive_ptr));
 }
@@ -655,6 +710,7 @@ void	Parse::processAddHandler( std::string &token ) {
 void	Parse::processAction( std::string &token ) {
 	if (no_para == 1) {
 		parsing_buffer = token;
+		return ;
 	}
 	ptr->addCgiMapping(parsing_buffer, token);
 }
@@ -751,7 +807,7 @@ bool	Parse::processListenPara2( std::string &token, size_t pos ) {
 				(listen_socket.*func[i])(checkSize(token.begin() + pos, token.end()));
 			}
 			catch (std::invalid_argument &e) {
-				throw ParsingConfError(parameter[i], token); 
+				throw ParsingConfError(directive_ptr, parameter[i], token); 
 			}
 			return (true);
 		}
@@ -798,12 +854,12 @@ void	Parse::processListen( std::string &token ) {
 			return ;
 		size_t	pos = token.find('=');
 		if (pos == std::string::npos) {
-			throw ParsingConfError(invalid_parameter, directive_ptr);
+			throw ParsingConfError(invalid_parameter, token.c_str());
 		}
 		if (processListenPara2(token, pos))
 			return ;
 		if (token.compare(0, pos, "so_keepalive")) {
-			throw ParsingConfError(invalid_parameter, directive_ptr);	
+			throw ParsingConfError(invalid_parameter, token.c_str());	
 		}
 		try {
 			processListenKeepAlive(token, pos);
@@ -835,11 +891,34 @@ void	Parse::processAlias( std::string &token ) {
 }
 
 void	Parse::processInternal( std::string &token ) {
-	(void)token;
+	(void)token;  // location.setInternal();
 }
 
-void	Parse::processTryFiles( std::string &token ) {
-	ptr->addTryFiles(token);
+void	Parse::processReturn( std::string &token ) {
+	if (no_para == 1) {
+		if (!token.compare(0, 7, "http://") || !token.compare(0, 8, "https://")) {
+			// std::cout << "bruh " << token << '\n';
+			location.addReturn(302, token);
+			return ;
+		}
+		if (!all_of(token.begin(), token.end(), ::isdigit)) {
+			// std::cout << "err test1\n";
+			throw ParsingConfError(directive_ptr, token); // invalide return code err
+		}
+		int	check = std::atoi(token.c_str());
+		if (check < 100 || check > 599) {
+			// std::cout << "err test2\n";
+			throw ParsingConfError(directive_ptr, token); // invalide return code err
+		}
+		location.addReturn(check);
+		return ;
+	}
+	// std::cout << "huh " << token << '\n';
+	if (location.checkReturnUri().length() > 0) {
+		// std::cout << "err test3 " << location.checkReturnCode() << ' ' << location.checkReturnUri() <<'\n';
+		throw ParsingConfError(directive_ptr, location.checkReturnUri());
+	}
+	location.addReturn(token);
 }
 
 //getters
@@ -913,6 +992,12 @@ Parse::ParsingConfError::ParsingConfError( const char *para, const std::string &
 	msgInit(para, token);
 }
 
+Parse::ParsingConfError::ParsingConfError(
+	const char *directive, const char *para, const std::string &token
+) {
+	msgInit(directive, para, token);
+}
+
 Parse::ParsingConfError::ParsingConfError( const std::string &token, const char *directive ) {
 	msgInit(token, directive);
 }
@@ -964,12 +1049,28 @@ void	Parse::ParsingConfError::msgInit( const std::string &token, const char *dir
 	msg.append(":") += to_String(*line_no);	
 }
 
-void	Parse::ParsingConfError::msgInit( const char *parameter, const std::string &token ) {
+void	Parse::ParsingConfError::msgInit(
+	const char *directive, const char *parameter, const std::string &token
+) {
+	(void)directive;
 	msg = Parse::prog_name;
 	msg += ": ";
 	msg += type;
 	msg += " invalid ";
 	msg += parameter;
+	msg.append("\"") += token + '\"';
+	msg += " in ";
+	msg += Parse::fname;
+	msg.append(":") += to_String(*line_no);	
+}
+
+void	Parse::ParsingConfError::msgInit( const char *directive, const std::string &token ) {
+	msg = Parse::prog_name;
+	msg += ": ";
+	msg += type;
+	msg += " invalid ";
+	msg += directive;
+	msg += " code ";
 	msg.append("\"") += token + '\"';
 	msg += " in ";
 	msg += Parse::fname;

@@ -6,11 +6,12 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 21:01:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 22:43:57 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
+#include "Client.hpp"
 
 Location::Location( void ) :
 path(""),
@@ -31,15 +32,29 @@ Location& Location::operator=( const Location &src ) {
 	path = src.path;
 	alias = src.alias;
 	internal = src.internal;
-	cgi_enabled = src.cgi_enabled;
-	cgi_mapping = src.cgi_mapping;
 	return_ = src.return_;
 	return (*this);
 }
 
 Location::~Location( void ) { }
 
+void Location::routeClientReturn( Client &client ) const {
+	int check = return_.first;
+	std::cout << "test return code " << check << '\n';
+	if (check > 299 && check < 400) {
+		std::cout << "add redirect\n";
+		client.addContent(check, return_.second);
+		return ;
+	}
+	client.addContent(check);
+	// client. add Body?
+}
+
 void	Location::routingClient( Client &client ) const {
+	if (return_.first > 0) {
+		routeClientReturn(client);
+		return ;
+	}
 	// if proxy server and if cgi handle diff
 	// if (alias.length() > 0) {
 	// 	root = alias; // logic for alias
@@ -59,8 +74,15 @@ void	Location::addAlias( const std::string &path_ ) {
 	alias = path_;
 }
 
-void	Location::setInternal( void ) {
-	internal = true;
+void	Location::setInternal( void ) { internal = true; }
+
+void	Location::addReturn( int code ) { return_.first = code; }
+
+void	Location::addReturn( const std::string &uri ) { return_.second = uri; }
+
+void	Location::addReturn( int code, const std::string &uri ) {
+	addReturn(code);
+	addReturn(uri);
 }
 
 void	Location::reset( void ) {
@@ -70,6 +92,12 @@ void	Location::reset( void ) {
 	internal = false;
 	return_.first = 0;
 	return_.second.clear();
+}
+
+int	Location::checkReturnCode( void ) const { return (return_.first); }
+
+const std::string&	Location::checkReturnUri( void ) const {
+	return (return_.second);
 }
 
 const std::string&	Location::getLocationPath( void ) const {
