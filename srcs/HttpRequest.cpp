@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 11:53:07 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 16:25:10 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,18 +47,22 @@ HttpRequest&	HttpRequest::operator=( const HttpRequest &src ) {
 HttpRequest::~HttpRequest( void ) { }
 
 size_t	HttpRequest::addBody( const std::string &str, size_t pos ) {
-	// std::cout << "added Body?\n";
+	std::cerr << "added Body pos " <<  pos << ", buffer len " << str.length() <<"\n";
 	size_t excepted_bytes = content_length - body.length();
 	if (str.length() - pos > excepted_bytes)
 	{
+		std::cerr << "add Body excced excepted\n";
 		body.append(str, pos, excepted_bytes);
 		ready = true;
 		return (str.length() - pos - excepted_bytes);
 	}
 	body.append(str, pos);
 	if (body.length() != content_length) {
+		std::cerr << "body still needed, " << body.length() << " expected: "
+		<< content_length << '\n';
 		return (0);
 	}
+	std::cerr << "add all in body ready to go\n";
 	ready = true;
 	return (0);
 }
@@ -91,7 +95,7 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 		if (!(validateBody()))
 			return (str.length() - pos);
 		has_body = true;
-		// std::cout << "has body?\n";
+		std::cerr << "start addBody, " << pos << '\n';
 		return (addBody(str, pos));
 	}
 	else

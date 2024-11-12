@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/09 17:48:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 15:48:44 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,14 @@
 
 HttpResponse::HttpResponse( void ) :
 status(0),
-proxy(false)
+proxy(false),
+bytes_sent(0)
 { }
 
 HttpResponse::HttpResponse( bool proxy_ ) :
 status(0),
-proxy(proxy_)
+proxy(proxy_),
+bytes_sent(0)
 { }
 
 HttpResponse::HttpResponse( const HttpResponse &src ) : Http(src) { *this = src; }
@@ -33,6 +35,7 @@ HttpResponse&	HttpResponse::operator=( const HttpResponse &src ) {
 	}
 	status = src.status;
 	proxy = src.proxy;
+	bytes_sent = src.bytes_sent;
 	return (*this);
 }
 
@@ -140,7 +143,20 @@ size_t	HttpResponse::getBodyLength( void ) const { return (body.length()); }
 
 size_t	HttpResponse::getTotalLength( void ) const { return (combine.length()); }
 
+size_t	HttpResponse::getRemainderLength( void ) const {
+	if (bytes_sent > combine.length()) { return (0); }
+	return (combine.length() - bytes_sent);
+}
+
 bool	HttpResponse::isReady( void ) const { return (ready); }
+
+bool	HttpResponse::sendStateTotal( size_t bytes ) {
+	bytes_sent += bytes;
+	if (bytes_sent >= combine.length()) {
+		return (false);
+	}
+	return (true);
+}
 
 bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 	std::string buffer;

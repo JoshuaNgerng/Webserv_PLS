@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/12 14:08:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 16:27:08 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,7 +176,7 @@ bool	Client::clientRecvHttp( void ) {
 	char	buffer[buffer_size + 1];
 	std::cout << "test socket_fd: " << socket_fd << '\n';
 	ssize_t	r = recv(socket_fd, buffer, buffer_size, recv_flag);
-	std::cout << "test client recv: " << r << '\n';
+	std::cerr << "test client recv: " << r << '\n';
 	if (r == 0) {
 		return (false);//delete if socket fd is zero or less ?
 	}
@@ -185,21 +185,30 @@ bool	Client::clientRecvHttp( void ) {
 	}
 	buffer[r] = '\0';
 	std::string	str;
-	str.append(buffer, 0, r);
-	if (!requests.size()) { 
+	str.append(buffer, r);
+	std::cerr << "buffer str length " << str.length() << ", expected: " << r << '\n';
+	if (!requests.size() || requests.back().isReady()) {
+		std::cerr << "add new request at start, size: " << requests.size() << "\n";
 		HttpRequest new_req;
 		requests.push(new_req);
 	}
 	size_t pos = requests.back().addRequest(str);
 	// std::cout << "Queued request from: " << socket_fd << "\n" << requests.back();
 	while (pos) {
-		HttpRequest new_req;
-		requests.push(new_req);
+		if (requests.back().isReady()) {
+			std::cerr << "add new req in loop\n";
+			HttpRequest new_req;
+			requests.push(new_req);
+		}
 		str.erase(0, str.length() - pos);
 		pos = requests.back().addRequest(str);
+		std::cout << "add recv buffer in loop\n";
 		// std::cout << "Queued request from: " << socket_fd << "\n" << new_req;
 	}
-	routeRequest();
+	if (requests.front().isReady()) {
+		std::cerr << "request start routing\n";
+		routeRequest();
+	}
 	// if (response_ready) {
 		// std::cout << "Show HttpResponse\n" << response << '\n';
 	// }
