@@ -23,7 +23,7 @@
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', document.getElementById('fileInput').files[0]);
-    const response = await fetch('/upload', {
+    const response = await fetch('/cgi-bin/upload.py', {
         method: 'POST',
         body: formData
     }).then( response => response.text())

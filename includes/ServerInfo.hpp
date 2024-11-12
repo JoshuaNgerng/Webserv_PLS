@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 16:51:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/02 03:08:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@ class ServerInfo : public InfoBlock {
 		std::vector<ListenSocket>::const_iterator	listenBegin( void ) const;
 		std::vector<ListenSocket>::const_iterator	listenEnd( void ) const;
 		std::vector<Location>::const_iterator		getLocEnd( void ) const;
-		void	matchUri( Client &client ) const;
+		void	routingClient( Client &client, int level = 0, const std::string &uri = std::string() ) const;
+		void	defaultSetting( void );
 
 	private:
 		// keys/options // try_files not implemented yet

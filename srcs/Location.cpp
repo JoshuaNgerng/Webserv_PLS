@@ -6,20 +6,18 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 20:37:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 22:43:57 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
+#include "Client.hpp"
 
 Location::Location( void ) :
 path(""),
 alias(""),
 internal(false),
-cgi_mapping(),
-limit_except(),
-return_(),
-is_cgi(false)
+return_()
 { }
 
 Location::Location( const Location &src ) : InfoBlock(src) {
@@ -35,19 +33,37 @@ Location& Location::operator=( const Location &src ) {
 	alias = src.alias;
 	internal = src.internal;
 	return_ = src.return_;
-	cgi_mapping = src.cgi_mapping;
-	is_cgi = src.is_cgi;
 	return (*this);
 }
 
 Location::~Location( void ) { }
 
-void	Location::matchUri( Client &client, bool autoindex_ ) const {
+void Location::routeClientReturn( Client &client ) const {
+	int check = return_.first;
+	std::cout << "test return code " << check << '\n';
+	if (check > 299 && check < 400) {
+		std::cout << "add redirect\n";
+		client.addContent(check, return_.second);
+		return ;
+	}
+	client.addContent(check);
+	// client. add Body?
+}
+
+void	Location::routingClient( Client &client ) const {
+	if (return_.first > 0) {
+		routeClientReturn(client);
+		return ;
+	}
 	// if proxy server and if cgi handle diff
 	// if (alias.length() > 0) {
 	// 	root = alias; // logic for alias
 	// } resolve roo alias before server setup
-	InfoBlock::matchUri(client, autoindex_);
+	InfoBlock::routingClient(client);
+}
+
+void	Location::defaultSetting( const InfoBlock &ref ) {
+	InfoBlock::defaultSetting(ref);
 }
 
 void	Location::addPath( const std::string &path_ ) {
@@ -58,8 +74,15 @@ void	Location::addAlias( const std::string &path_ ) {
 	alias = path_;
 }
 
-void	Location::setInternal( void ) {
-	internal = true;
+void	Location::setInternal( void ) { internal = true; }
+
+void	Location::addReturn( int code ) { return_.first = code; }
+
+void	Location::addReturn( const std::string &uri ) { return_.second = uri; }
+
+void	Location::addReturn( int code, const std::string &uri ) {
+	addReturn(code);
+	addReturn(uri);
 }
 
 void	Location::reset( void ) {
@@ -69,8 +92,12 @@ void	Location::reset( void ) {
 	internal = false;
 	return_.first = 0;
 	return_.second.clear();
-	cgi_mapping.clear();
-	is_cgi = false;
+}
+
+int	Location::checkReturnCode( void ) const { return (return_.first); }
+
+const std::string&	Location::checkReturnUri( void ) const {
+	return (return_.second);
 }
 
 const std::string&	Location::getLocationPath( void ) const {

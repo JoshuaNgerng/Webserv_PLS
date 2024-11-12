@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cheader.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jngerng <jngerng@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 18:28:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/02 03:51:46 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/06 15:40:35 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,26 +29,10 @@
 # include <dirent.h>
 # include <sys/types.h>
 # include <sys/stat.h>
+# include <sys/wait.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include <limits.h>
-
-
-# ifndef UCHAR_MAX
-#  define UCHAR_MAX 255
-# endif
-
-# ifndef UINT_MAX
-#  define UINT_MAX 4294967295
-# endif
-
-# ifndef ULONG_MAX
-#  define ULONG_MAX 18446744073709551615
-# endif
-
-# ifndef NULL
-#  define NULL (0)
-# endif
 
 # ifndef size_t
 typedef unsigned long size_t;

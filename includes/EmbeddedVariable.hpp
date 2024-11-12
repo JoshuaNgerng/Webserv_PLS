@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:11:01 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/23 13:06:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 17:09:41 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,21 @@
 # include "Http.hpp"
 
 enum short_form {
-	arg_name = 129,
+	arg_ = 129,
 	args,
 	query_string,
 	content_length,
 	content_type,
 	document_root,
+	document_uri,
 	document_url,
 	host,
+	uri,
 	url,
 	remote_addr,
 	remote_port,
 	request_method,
-	scheme,
-	status
+	scheme
 };
 
 class EmbeddedVariable {
@@ -38,7 +39,10 @@ class EmbeddedVariable {
 		EmbeddedVariable& operator=(const EmbeddedVariable &src);
 		~EmbeddedVariable( void );
 		static void	shortFormString( std::string &str );
-		static void resolveString( std::string &res, const std::string &ref, const Client &client );
+		static void	resolveString( std::string &res, const std::string &ref, const Client &client );
+
+		static bool			checkUrl( const std::string &url );
+		static std::string	decodeUrl( const std::string &url );
 
 	private:
 		static const char		*variables[];

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/31 14:34:41 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 14:08:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,63 +14,64 @@
 #include "Server.hpp"
 #include "AutoIndex.hpp"
 #include "DefaultErrorPage.hpp"
+#include "StaticFile.hpp"
+#include "CgiPipe.hpp"
 
 Client::Client( void ) :
 server_ref(),
 location_ref(),
 ignore_close_fd(false),
+to_be_deleted(false),
 socket_len(0),
 socket_fd(-1),
-content_fd(-1),
+content_name(),
+content(NULL),
 has_content_fd(true),
 is_content_fd_in_server(false),
 content_length(0),
 status_code(0),
 is_directory(false),
 is_cgi(false),
-response_ready(false),
+is_proxy(false),
 requests(),
 response(),
-start_connection(),
-no_request(),
-current_time(),
-empty_event(),
+start_connection(0),
+no_request(0),
+current_time(0),
+empty_event(0),
 bytes_sent(0),
-emergency_overwrite(false),
-completed(false),
-to_be_deleted(false)
+emergency_overwrite(false)
 { }
 
 Client::Client( server_ptr &it ) :
 server_ref(it),
 location_ref(it->getLocEnd()),
-ignore_close_fd(true),
+ignore_close_fd(false),
+to_be_deleted(false),
 socket_len(0),
 socket_fd(-1),
-content_fd(-1),
+content_name(),
+content(NULL),
 has_content_fd(true),
 is_content_fd_in_server(false),
 content_length(0),
 status_code(0),
 is_directory(false),
 is_cgi(false),
-response_ready(false),
+is_proxy(false),
 requests(),
 response(),
-start_connection(),
-no_request(),
-current_time(),
+start_connection(0),
+no_request(0),
+current_time(0),
 empty_event(),
 bytes_sent(0),
-emergency_overwrite(false),
-completed(false),
-to_be_deleted(false)
+emergency_overwrite(false)
 { }
 
 Client::Client( const Client &src ) {
-	std::cout << "client copy constructor called\n";
+	// std::cout << "client copy constructor called\n";
 	*this = src;
-	ignore_close_fd = false;
 }
 
 Client&	Client::operator=( const Client &src ) {
@@ -83,25 +84,32 @@ Client&	Client::operator=( const Client &src ) {
 	client_addr = src.client_addr;
 	socket_len = src.socket_len;
 	socket_fd = src.socket_fd;
-	content_fd = src.content_fd;
 	content_name = src.content_name;
+	content = src.content;
 	has_content_fd = src.has_content_fd;
 	is_content_fd_in_server = src.is_content_fd_in_server;
 	content_length = src.content_length;
 	status_code = src.status_code;
 	is_directory = src.is_directory;
 	is_cgi = src.is_cgi;
-	response_ready = src.response_ready;
+	is_proxy = src.is_proxy;
 	requests = src.requests;
 	response = src.response;
+	// std::cout << "bruuuhh\n";
 	start_connection = src.start_connection;
+	// std::cout << "huh2\n";
 	no_request = src.no_request;
+	// std::cout << "huh3\n";
 	current_time = src.current_time;
+	// std::cout << "huh4\n";
 	empty_event = src.empty_event;
+	// std::cout << "huh5\n";
 	bytes_sent = src.bytes_sent;
-	emergency_overwrite = src.emergency_overwrite;
-	completed = src.completed;
+	// std::cout << "huh6\n";
 	to_be_deleted = src.to_be_deleted;
+	// std::cout << "huh7\n";
+	emergency_overwrite = src.emergency_overwrite;
+	// std::cout << "huh8\n";
 	return (*this);
 }
 
@@ -109,12 +117,12 @@ Client::~Client( void ) {
 	std::cout << "client descrutor called\n";
 	if (!ignore_close_fd) {
 		if (socket_fd > 0) {
-			std::cout << "close socket fd\n";
+			std::cout << "close socket fd " << socket_fd << "\n";
 			close(socket_fd);
 		}
-		if (content_fd > 0) {
-			std::cout << "close content fd\n";
-			close(content_fd);
+		if (content) {
+			std::cout << "close content: " << *content << "\n";
+			delete content;
 		}
 	}
 }
@@ -137,84 +145,37 @@ int	Client::clientSocketFd( int listen_fd ) {
 	return (socket_fd);
 }
 
-int	Client::getStaticFileFd( void ) {
-	std::cout << "client getting file: " << content_name << '\n';
-	return (content_fd = open(content_name.c_str(), O_RDONLY));
-}
-
-bool	Client::getCgiPipeFd( void ) {
-	int	pipe_fd[2];
-	if (content_fd > 0) {
-		close(content_fd);
-	}
-	content_fd = -1;
-	if (pipe(pipe_fd) < 0) {
-		return (false);
-	}
-	content_fd = pipe_fd[1];
-	// int pid = fork();
-	close(pipe_fd[0]);
-	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(content_fd);
-		content_fd = -1;
-		status_code = 500;
-		return (false);
-	}
-	return (true);
-}
-
-bool	Client::getProxySocketFd( void ) {
-	if (content_fd > 0) {
-		close(content_fd);
-	}
-	
-	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(content_fd);
-		content_fd = -1;
-		status_code = 500;
-		return (false);
-	}
-	return (true);
-}
-
-bool	Client::processContentFd( int (Client::*func)( void ) ) {
-	if (content_fd > 0) {
-		close(content_fd);
-	}
-	content_fd = (this->*func)();
-	if (content_fd < 0) {
-		status_code = 500;
-		return (false);
-	}
-	if (fcntl(content_fd, F_SETFL, O_NONBLOCK) < 0) {
-		close(content_fd);
-		content_fd = -1;
-		status_code = 500;
-		return (false);
-	}
-	return (true);	
-}
+void	Client::detachContent( void ) { content = NULL; }
 
 void	Client::reset( void ) {
 	if (requests.size() > 0)
 		requests.pop();
-	response.reset();
-	if (content_fd > 0)
-		close(content_fd);
-	content_fd = -1;
+	if (content) {
+		delete content;
+		content = NULL;
+	}
 	content_name.clear();
 	has_content_fd = true;
 	content_length = 0;
 	status_code = 0;
+	resetResponse();
+	if (requests.size() > 0)
+		routeRequest();
+	is_cgi = false;
+}
+
+void	Client::resetResponse( void ) {
 	is_directory = false;
 	is_cgi = false;
-	response_ready = false;
+	bytes_sent = 0;
+	response.reset();
+	emergency_overwrite = false;
 }
 
 bool	Client::clientRecvHttp( void ) {
-	char	buffer[recv_buffer_size + 1];
+	char	buffer[buffer_size + 1];
 	std::cout << "test socket_fd: " << socket_fd << '\n';
-	ssize_t	r = recv(socket_fd, buffer, recv_buffer_size, recv_flag);
+	ssize_t	r = recv(socket_fd, buffer, buffer_size, recv_flag);
 	std::cout << "test client recv: " << r << '\n';
 	if (r == 0) {
 		return (false);//delete if socket fd is zero or less ?
@@ -223,61 +184,176 @@ bool	Client::clientRecvHttp( void ) {
 		return (false);
 	}
 	buffer[r] = '\0';
-	std::string	str(buffer);
+	std::string	str;
+	str.append(buffer, 0, r);
 	if (!requests.size()) { 
 		HttpRequest new_req;
 		requests.push(new_req);
 	}
 	size_t pos = requests.back().addRequest(str);
+	// std::cout << "Queued request from: " << socket_fd << "\n" << requests.back();
 	while (pos) {
 		HttpRequest new_req;
 		requests.push(new_req);
 		str.erase(0, str.length() - pos);
 		pos = requests.back().addRequest(str);
+		// std::cout << "Queued request from: " << socket_fd << "\n" << new_req;
 	}
-	std::cout << requests.front();
 	routeRequest();
-	return (true);
+	// if (response_ready) {
+		// std::cout << "Show HttpResponse\n" << response << '\n';
+	// }
+	return (true); // need to pause if header not valid
 }
 
 // true fd still active false fd not active remove from Server
 bool	Client::clientRecvContent( void ) {
-	char	buffer[recv_buffer_size + 1];
-	ssize_t	r = recv(socket_fd, buffer, recv_buffer_size, recv_flag);
-	if (r == 0 || r < 0) {
+	if (!content || !content->checkStatus()) {
+		std::cout << "content error\n";
+		return (false);
+	}
+	std::cout << "test input fd " << content->getInputFd() << '\n';
+	if (is_proxy) {  } // r = recv(content->getInputFd(), buffer, buffer_size, recv_flag);
+	if (is_cgi) {
+		return (clientRecvCgi());;
+	}
+	return (clientRecvStaticFile());
+}
+
+bool	Client::clientRecvStaticFile( void ) {
+	char	buffer[buffer_size + 1];
+	ssize_t	r = read(content->getInputFd(), buffer, buffer_size);
+	if (r < 0) {
+		std::cout << "client recv file close or failed: " << strerror(errno) <<"\n";
+		return (false);
+	} else if (r == 0) {
 		if (response.getBodyLength() != content_length) {
+			std::cout << "what huh? length recieved " << response.getBodyLength() << " expected " << content_length << "\n";
+			std::cout << response << '\n';
 			status_code = 500;
 			processResponseError();
 		}
 		return (false);
 	}
 	buffer[r] = '\0';
-	response.addBody(buffer);
+	response.addBody(buffer, static_cast<size_t>(r));
 	if (response.getBodyLength() == content_length) {
-		response.finishResponseMsg();
-		response_ready = true;
+		response.finishHttp();
+		std::cout << "response for " << requests.front().getUri() << " is ready\n";
+		// std::cout << "Show HttpResponse\n" << response << '\n';
 		return (false);
+	} else {
+		std::cout << "response for " << requests.front().getUri() << " is not ready\n";
 	}
 	return (true);
 }
 
-bool	Client::clientSendResponse( void ) {
-	std::cout << "clientSendResponse\n" << response;
-	ssize_t	no_bytes = send(socket_fd,
-		response.getPtrPos(bytes_sent), response.getTotalLength() - bytes_sent, 0);
+bool	Client::clientRecvCgi( void ) {
+	char	buffer[buffer_size + 1];
+	ssize_t r = read(content->getInputFd(), buffer, buffer_size);
+	std::cout << "test reading r " << r << '\n';
+	if (r < 0) {
+		std::cout << "client recv content close or failed: " << strerror(errno) <<"\n";
+		return (false);
+	} else if (r == 0) {
+		std::cout << "content fd: " << content->getInputFd() << " ";
+		response.processCgiData();
+		bytes_sent = 0;
+		return (false);
+	}
+	buffer[r] = '\0';
+	response.addFin(buffer, static_cast<size_t>(r));
+	std::cout << "test cgi recv " << response.getPtr2Http() << '\n';
+	return (true);
+}
+
+bool	Client::clientSendContent( void ) {
+	if (!content || !content->checkStatus()) {
+		return (false);
+	}
+	std::cout << "test output fd " << content->getOutputFd() << '\n';
+	return (clientSendCgi());
+}
+
+bool	Client::clientSendCgi( void ) {
+	// std::cout << "client Send Response\n" << response;
+	size_t len = requests.front().getBodyLength();
+	// std::cout << "testing req " << requests.front() << std::endl;
+	ssize_t	no_bytes = write(content->getOutputFd(),
+		requests.front().getPtr2Body(bytes_sent), len - bytes_sent);
 	if (no_bytes <= 0) {
+		const char *errmsg = strerror(errno);
+		// if (!no_bytes) {
+			// std::cout << "test len " << len << "\n";
+		// } else if (no_bytes < 0) {
+			// std::cout << "some error\n";
+		// }
+		std::cout << "error sending to cgi: " << errmsg << "\n";
+		// reset();
 		return (false);
 	}
 	bytes_sent += no_bytes;
-	if (bytes_sent == response.getTotalLength()) {
+	if (bytes_sent != len) {
+		// std::cout << response  "\nSent Response to: " << socket_fd << "\n";
+		// reset()
+		return (true);
+	} // else done
+	std::cout << "finish writing\n";
+	return (false);	
+}
+
+bool	Client::clientSendResponse( void ) {
+	// std::cout << "client Send Response\n" << response;
+	ssize_t	no_bytes = send(socket_fd,
+		response.getPtr2Http(bytes_sent), response.getTotalLength() - bytes_sent, 0);
+	if (no_bytes <= 0) {
+		std::cout << "error sending to client " << response.getPtr2Http() << "\nbytes send:" << bytes_sent << "\n";
 		reset();
+		return (false);
+	}
+	bytes_sent += no_bytes;
+	if (bytes_sent != response.getTotalLength()) {
+		// std::cout << response << "\nSent Response to: " << socket_fd << "\n";
+		// reset();
+		return (true);
+	}
+	std::cout << "error sending to client " << response.getPtr2Http() << "\nbytes send:" << bytes_sent
+		<< "no_bytes: " << no_bytes << "\n";
+	return (false);
+}
+
+bool	Client::checkContentStatus( void ) {
+	std::cout << "checkContent called\n";
+	if (is_cgi) {
+		std::cout << "checking cgi\n";
+		if (!content->checkStatus()) {
+			std::cout << "checking cgi status failed\n";
+			return (false);
+		}
+		if (!response.getTotalLength()) {
+			response.setHeader(200);
+			response.setContent();
+			response.finishHttp();
+		} else {
+			response.processCgiData();
+			bytes_sent = 0;
+		}
+		return (true);
+	}
+	std::cout << "checking static file\n";
+	if (response.getBodyLength() != content_length) {
+		return (false);
+	} else {
+		if (!response.isReady()) {
+			response.finishHttp();
+		}
 	}
 	return (true);
 }
 
 void	Client::processResponseSuccess( void ) {
-	response.setHeader(status_code, content_name);
 	if (is_directory) {
+		std::cout << "doing autoindex?\n";
 		const InfoBlock	*ptr = &(*server_ref);
 		if (location_ref != server_ref->getLocEnd() && location_ref->getAutoIndex() == on) {
 			ptr = &(*location_ref);
@@ -285,56 +361,117 @@ void	Client::processResponseSuccess( void ) {
 		AutoIndex	gen(*ptr);
 		response.addBody(gen.generateResource(content_name));
 		content_length = response.getBodyLength();
+		response.setHeader(status_code);
+		// std::cout << "test autoindex content: " << gen.generateResource(path) << '\n';
 		response.setContent(Http::getMimeType(gen.getExtension()), content_length);
+		response.finishHttp();
 		return ;
 	}
-	const char *ext = CheckFile::fetchExtension(content_name);
-	// check if cgi, is_cgi = true;
-	if (!processContentFd(&Client::getStaticFileFd)) {
+	if (!processContent()) {
 		processResponseError();
-		return ;
 	}
-	response.setContent(Http::getMimeType(ext), content_length);
 }
 
 void	Client::processResponseRedirect( void ) {
+	std::cout << "Redirect " << status_code << '\n';
 	has_content_fd = false;
 	response.setHeader(status_code, content_name);
-;}
+	response.setContent();
+	response.finishHttp();
+}
 
 void	Client::getDefaultError( void ) {
 	std::cout << "getting default error " << status_code << '\n';
 	response.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
 	content_length = response.getBodyLength();
 	response.setContent(Http::getMimeType("html"), content_length);
-	response.finishResponseMsg();
-	response_ready = true;
+	response.finishHttp();
 	has_content_fd = false;
+	if (content) {
+		delete content;
+	}
+	content = NULL;
 }
 
+File*	Client::processContentCgiHelper( const char* ext ) {
+	bool	cgi_check = false;
+	std::string	bin, check;
+	if (location_ref != server_ref->getLocEnd()) {
+		cgi_check = location_ref->isCgi(ext);
+	}
+	if (!cgi_check) {
+		cgi_check = server_ref->isCgi(ext);
+	}
+	if (!cgi_check) {
+		response.setHeader(status_code);
+		response.setContent(Http::getMimeType(ext), content_length);
+		return (new StaticFile());
+	}
+	is_cgi = true;
+	if (location_ref != server_ref->getLocEnd()) {
+		bin = location_ref->getCgiBin(ext);
+	}
+	if (!bin.length()) {
+		bin = server_ref->getCgiBin(ext);
+	}
+	return (new CgiPipe(bin, *this));
+}
+
+bool	Client::processContent( void ) {
+	std::string path = root_dir + content_name;
+	return (processContent(path));
+}
+
+bool	Client::processContent( const std::string &path ) {
+	const char *ext = CheckFile::fetchExtension(content_name);
+	if (content) {
+		std::cout << "dup\n";
+		delete content;
+		content = NULL;
+	}
+	content = processContentCgiHelper(ext);
+	content->setContentPath(path);
+	if (!content->processFds()) {
+		std::cout << "PrcoessFds FAiled\n";
+		delete content;
+		content = NULL;
+		status_code = 500;
+		return (false);
+	}
+	// sleep(2);
+	return (true);
+}
+
+
 void	Client::processResponseError( void ) {
-	response.setHeader(status_code, content_name);
+	resetResponse();
+	std::cout << "error status_code " << status_code << '\n';
 	content_name.clear();
+	response.setHeader(status_code);
 	if (location_ref != server_ref->getLocEnd()) {
 		location_ref->findErrorPath(content_name, status_code);
 	}
-	if (!content_name.length())
+	if (!content_name.length()) {
 		server_ref->findErrorPath(content_name, status_code);
-	std::cout << "client process error\n";
+	}
+	// std::cout << "client process error\n";
 	if (!content_name.length()) {
 		getDefaultError();
 		return ;
 	}
-	CheckFile	check(content_name);
+	std::string	path = root_dir + content_name; 
+	CheckFile	check(path);
 	check.checking(F_OK | R_OK);
 	if (check.getAccessbility() < 0) {
 		getDefaultError();
 		return ;
 	}
-	if (content_fd > 0) {
-		close(content_fd);
+	if (content) {
+		std::cout << "client clear at processResError\n";
+		delete content;
+		content = NULL;
 	}
-	if (!processContentFd(&Client::getStaticFileFd)) {
+	if (!processContent()) {
 		getDefaultError();
 		return ;
 	}
@@ -348,26 +485,30 @@ void	Client::processResponseError( void ) {
 
 void	Client::errorOverwriteResponse( void ) {
 	emergency_overwrite = true;
+	resetResponse();
+	response.setHeader(status_code);
 	getDefaultError();
 }
 
 void	Client::errorOverwriteResponse( int status ) {
+	std::cout << "called overwriteError\n";
 	status_code = status;
-	if (emergency_overwrite) {
+	if (!emergency_overwrite) {
 		processResponseError();
 		emergency_overwrite = true;
 		return ;
 	}
-	getDefaultError();
+	errorOverwriteResponse();
 }
 
 void	Client::markforDeletion( void ) { to_be_deleted = true; }
 
 void	Client::routeRequest( void ) {
 	HttpRequest &req = requests.front();
-	if (!req.getValidHeader()) {
-		std::cout << "bad req for invalid header\n";
-		status_code = 400;
+	int	check = req.getValidHeader();
+	if (check > 0) {
+		// std::cout << "bad req for invalid header\n";
+		status_code = check;
 		emergency_overwrite = true;
 		processResponseError();
 		return ;
@@ -375,7 +516,7 @@ void	Client::routeRequest( void ) {
 	if (server_ref->isMergeSlash()) {
 		req.normalizeUri();
 	}
-	server_ref->matchUri(*this);
+	server_ref->routingClient(*this);
 	if (status_code > 199 && status_code < 300) {
 		processResponseSuccess();
 		return ;
@@ -387,8 +528,12 @@ void	Client::routeRequest( void ) {
 	processResponseError();
 }
 
-const std::string&	Client::getCurrentUri( void ) const {
-	return (requests.front().getUri());
+void	Client::addRootDir( const std::string &str ) {
+	root_dir = str;
+}
+
+void	Client::addRootDir( const std::string &root, const std::string &uri ) {
+	root_dir = root + uri;
 }
 
 void	Client::addContent( int status_code_, const std::string &str, size_t content_length_ ) {
@@ -415,23 +560,76 @@ bool	Client::checkResponseStatus( void ) const {
 	return ((status_code < 300) ? true : false);
 }
 
-bool	Client::checkResponseReady( void ) const { return (response_ready); }
+bool	Client::checkResponseReady( void ) const { return (response.isReady()); }
 
 bool	Client::giveContentFdtoServer( void ) const {
-	return (is_content_fd_in_server);
+	if (!content) {
+		return (false);
+	}
+	return (content->getFds());
 }
 
 bool	Client::toBeDeleted( void ) const { return (to_be_deleted); }
 
-void	Client::serverReceived( void ) { is_content_fd_in_server = true; }
+void	Client::ignoreClosingFd( void ) { ignore_close_fd = true; }
+
+void	Client::serverReceived( void ) { content->serverReceivedFds(); }
 
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
 
-int	Client::getContentFd( void ) const { return(content_fd); }
+std::string	Client::getAddr( void ) const {
+	char ip_str[INET6_ADDRSTRLEN];
+	if (client_addr.ss_family == AF_INET) {
+		struct sockaddr_in* addr_in = (struct sockaddr_in*)&client_addr;
+		inet_ntop(AF_INET, &addr_in->sin_addr, ip_str, sizeof(ip_str));
+	}
+	else if (client_addr.ss_family == AF_INET6) {
+		struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)&client_addr;
+		inet_ntop(AF_INET6, &addr_in6->sin6_addr, ip_str, sizeof(ip_str));
+	}
+	return (std::string(ip_str));
+}
+
+uint16_t	Client::getPort( void ) const {
+	if (client_addr.ss_family == AF_INET) {
+		struct sockaddr_in* addr_in = (struct sockaddr_in*)&client_addr;
+		return (ntohs(addr_in->sin_port));
+	}
+	struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)&client_addr;
+	return (ntohs(addr_in6->sin6_port));
+}
+
+const std::string&	Client::getRoot( void ) const { return (root_dir); }
+
+const std::string&	Client::getContentName( void ) const { return(content_name); }
+
+const std::string&	Client::getCurrentUri( void ) const { return (requests.front().getUri()); }
+
+const std::string&	Client::getCurrentUrl( void ) const { return(requests.front().getUrl()); }
+
+const std::string&	Client::getCurrentPath( void ) const { return(requests.front().getPath()); }
+
+const std::string&	Client::getCurrentQuery( void ) const { return(requests.front().getQuery()); }
+
+std::string	Client::getContentType( void ) const { return (requests.front().getContentType()); }
+
+size_t	Client::getContentLength( void ) const { return(requests.front().getContentLength()); }
+
+const std::string&	Client::getHost( void ) const { return(requests.front().getField("host")); }
+
+std::string	Client::getReqMethod( void ) const {
+	return (requests.front().getContentType());
+}
+
+std::string	Client::getHttpScheme( void ) const { return("http"); }
+
+const HttpRequest&	Client::getCurrentHttpRequest( void ) const { return(requests.front()); }
+
+const File*	Client::getContent( void ) const { return(content); }
 
 std::ostream&	operator<<( std::ostream &o, const Client &ref ) {
 	o << "Client socket fd: " << ref.clientSocketFd() << '\n';
-	o << "Client response fd: " << ref.getContentFd() << '\n';
+	o << "Client response fd: " << *(ref.getContent()) << '\n';
 	// << ", response content status: " << ((ref.isDataReady()) ? "ready" : "not ready") << '\n';
 	// o << "Request status: " << ((ref.checkRequest()) ? "complete" : "not ready") << '\n';
 	// o << "Request from Client\n" << ref.getRequest() << '\n';

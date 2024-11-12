@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 12:52:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 21:40:06 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ class Parse
 		uint16_t			getBracketNo( void ) const;
 		const std::string&	getFilename( void ) const;
 
-		// Server				&getServer( void ) const;
 		ServerInfo			getServerInfo( void ) const;
 
 		Location			getlocation(); // have make yet
@@ -73,6 +72,7 @@ class Parse
 		boolean		processBoolParameter( const std::string &token, const char *directive );
 		uint64_t	processSizeParameter( std::string &token, const char *directive );
 		uint64_t	processTimeParameter( std::string &token, const char *directive );
+		void		checkParameterEnd( void );
 
 		/* process Generic InfoBlock */
 		void	processClientBodyTempPath( std::string &token );
@@ -89,9 +89,10 @@ class Parse
 		void	processAutoIndexExactSize( std::string &token );
 		void	processAutoFormat( std::string &token );
 		void	processAutoIndexLocalTime( std::string &token );
-		void	processAccessLog( std::string &token );
-		void	processErrorLog( std::string &token );
-		
+		void	processCgi( std::string &token );
+		void	processAddHandler( std::string &token );
+		void	processAction( std::string &token );
+
 		/* process Server specfic directive */
 		void	processListen( std::string &token );
 		void	processListenAddress( std::string &token );
@@ -103,10 +104,13 @@ class Parse
 		void	processMergeSlash( std::string &token );
 		void	processServerName( std::string &token );
 		void	processTryFiles( std::string &token );
+		// void	processAccessLog( std::string &token );
+		// void	processErrorLog( std::string &token );
 
 		/* process Location specfic directive */
 		void	processAlias( std::string &token );
 		void	processInternal( std::string &token );
+		void	processReturn( std::string &token );
 
 		static uint64_t		buffer;
 		std::istringstream	content_stream; // no
@@ -117,8 +121,11 @@ class Parse
 		short			bracket_no;
 		bool			semicolon;
 		uint16_t		no_para;
+		uint16_t		para_limit;
+		bool			exact_para_limit;
 		const char		*directive_ptr;
 		std::string		filename;
+		std::string		parsing_buffer;
 
 		Server			*server;
 		InfoBlock		*ptr;
@@ -142,15 +149,17 @@ class Parse
 				static const char		*type;
 				static const uint64_t	*line_no;
 				ParsingConfError( int type, const char *directive );
-				ParsingConfError( const char *para, const std::string &token );
+				ParsingConfError( const char *directive, const std::string &token );
+				ParsingConfError( const char *directive, const char *para, const std::string &token );
 				ParsingConfError( const std::string &token, const char *directive );
 				~ParsingConfError( void ) throw();
 				virtual const char *what() const throw();
 			private:
 				void	msgInit( int type, const char *directive );
-				void	msgInit( const char *para, const std::string &token );
+				void	msgInit( const char *directive, const char *para, const std::string &token );
 				void	msgInit( const std::string &token, const char *directive );
-				std::string	msg;	
+				void	msgInit( const char *directive, const std::string &token );
+				std::string	msg;
 		};
 };
 

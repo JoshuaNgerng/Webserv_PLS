@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 17:13:15 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/07 21:21:31 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ class Server
 	typedef ListenSocket::Iterator						addrinfo_ptr;
 	public:
 		static const char *server_name;
+		static char *const *env;
 		Server( void );
 		Server( const Server &src );
 		Server&	operator=( const Server &src );
@@ -29,6 +30,7 @@ class Server
 		void		startServerLoop( void );
 		static void	signalHandler( int signal );
 
+		void		normalizeDefaultSetting( void );
 		void		clearListenAddr( void );
 		void		addServerInfo( ServerInfo &ref );
 		pollfd_t*	getSocketfds( void );
@@ -59,11 +61,10 @@ class Server
 		nfds_t	server_no;
 		nfds_t	server_limit;
 		nfds_t	fd_counter;
-		nfds_t	buffer_counter;
-		nfds_t	poll_tracker;
 
 		std::vector<pollfd_t>		socket_fds;
 		std::vector<pollfd_t>		buffer_new_fd;
+		std::list<int>				fds_to_be_deleted;
 		std::vector<serverinfo_ptr>	server_mapping; // server_index to ServerInfo_index
 		std::vector<addrinfo_ptr>	socketfd_mapping;
 		std::map<int, client_ptr>	client_mapping; // client fd to client index
@@ -74,8 +75,9 @@ class Server
 		void	setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer );
 		int		setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr );
 		void	loopServer( void );
+		bool	checkFdDeletion( int fd );
 		void	resetFds( void );
-		bool	checkBufferfds( void ) const;
+		bool	checkBufferfds( size_t no = 0 ) const;
 		void	addBufferfds( int fd );
 		void	addBufferfds( int fd, int events );
 		void	handleServer( size_t index );
@@ -83,10 +85,12 @@ class Server
 		void	handleClientRecv( pollfd_t &pollfd, Client &client );
 		void	handleClientSent( pollfd_t &pollfd, Client &client );
 		void	addClientContentFd( client_ptr client );
+		void	addSingleFd( int fd, int events, client_ptr client );
 
 		void	error2Client( int fd, client_ptr client );
-		void	markAsDelete( pollfd_t &pollfd );
-		void	markAsDelete( pollfd_t &pollfd, Client &client );
+		void	markAsDelete( int fd );
+		void	markAsDelete( const File *ptr );
+		void	markAsDelete( Client &client );
 		void	fetchClientData( int fd );
 
 		// bool	receiveData( int fd , std::string &output ) const;
@@ -95,7 +99,6 @@ class Server
 		// void	fetchData( Client &client );
 		// bool	receiveFromClient( Client &ptr, int fd );
 
-		uint32_t	findAvaliableSlot( void ) const;
 		Client&		getClient( int client_fd );
 		// bool		clientReponseStatus( Client &ptr ) const;
 		// bool		fetchReponseData( Client &client ) ;

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 00:38:44 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 00:37:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/10/31 23:18:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ const char *DefaultErrorPage::template_html =
 "<head><title>*</title></head>\n"
 "<body>\n"
 "<center><h1>*</h1></center>\n"
-"<hr><center>webserv (#)</center>\n"
+"<hr><center> # </center>\n"
 "</body>\n"
 "</html>\n";
 

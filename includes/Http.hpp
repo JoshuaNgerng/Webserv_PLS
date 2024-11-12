@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/24 18:21:13 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/11 17:19:16 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 // int for size of req field
 // int for clientbodymax
 class Http {
+	typedef std::map<std::string, std::string> mapping;
 	public:
 		typedef struct code_msg_pair {
 			int			status;
@@ -35,18 +36,47 @@ class Http {
 			C_TYPE, C_LEN
 		};
 		enum type {
-			TEXT, HTML, JS, CSS,
+			TEXT_PLAIN, HTML, JS, CSS,
 			JPEG, PNG, OCTECT
 		};
+
+		static const char	*fields[];
+
 		virtual ~Http( void );
+
 		static const char	*fetchMsg( int status );
 		static const char	*getMimeType( const std::string &ext );
+
+		bool				validateField( std::string &field ) const;
+		bool				validateValue( const std::string &val ) const;
+		bool				addHeaderFields( const std::string &field, const std::string &val );
+
+		std::string&		modifyHeader( void );
+		std::string&		modifyBody( void );
+
+		virtual void		finishHttp( void );
+		size_t				getBodyLength( void ) const;
+		size_t				getTotalLength( void ) const;
+		const char*			getPtr2Http( size_t bytes = 0 ) const;
+		const char*			getPtr2Body( size_t bytes = 0 ) const;
+		const std::string&	getHeader( void ) const;
+		const std::string&	getBody( void ) const;
+		const std::string&	getField( const char *str ) const;
+		bool				isReady( void ) const;
+		void				reset( void );
 
 	protected:
 		Http( void );
 		Http( const Http &src );
+		Http&	operator=( const Http &src );
 		static const char	*methods[];
-		static const char	*fields[];
+		bool				ready;
+		std::string			header;
+		std::string			body;
+		std::string			combine;
+		size_t				content_length;
+		std::string			content_type;
+		mapping				header_fields;
 
 		int	checkMethods( const std::string &str ) const;
 		int	checkField( const std::string &str ) const;
@@ -77,7 +107,6 @@ class Http {
 		}
 
 	private:
-		Http&	operator=( const Http &src );
 		static const t_pairs 		pairing[];
 		static const t_types		mime_types[];
 };

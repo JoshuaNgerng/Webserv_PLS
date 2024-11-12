@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/30 01:34:05 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 14:35:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,9 @@ size_t	CheckFile::getFilesize( void ) const { return (filesize); }
 const struct tm*	CheckFile::getTime( void ) const { return(timeinfo); }
 
 const char*	CheckFile::fetchExtension( void ) const {
-	for (size_t i = 0; filename[i]; i ++) {
+	size_t len = -1;
+	while (filename[++len]);
+	for (size_t i = len - 2; i != 0; i --) {
 		if (filename[i] == '.') {
 			return (&filename[i + 1]);
 		}
@@ -83,12 +85,11 @@ const char*	CheckFile::fetchExtension( void ) const {
 }
 
 const char*	CheckFile::fetchExtension( const std::string &fname ) {
-	for (size_t i = 0; fname[i]; i ++) {
-		if (fname[i] == '.') {
-			return (fname.c_str() + i + 1);
-		}
+	size_t pos = fname.find_last_of('.');
+	if (pos == std::string::npos || pos == fname.length()) {
+		return (NULL);
 	}
-	return (NULL);
+	return (fname.c_str() + pos + 1);
 }
 
 bool	CheckFile::fileToStringStream( std::stringstream &dst, std::ifstream &file ) {

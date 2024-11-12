@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/24 18:20:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/11 17:23:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,41 +47,142 @@ const char *Http::fields[] = {
 };
 
 const Http::t_types Http::mime_types[] = {
-    {"aac", "audio/aac"}, 
-    {"abw", "application/x-abiword"}, 
-    {"apng", "image/apng"},
-    {"avi", "video/x-msvideo"},
-    {"bmp", "image/bmp"},
-    {"css", "text/css"},
-    {"csv", "text/csv"},
-    {"doc", "application/msword"},
-    {"gif", "image/gif"},
-    {"html", "text/html"},
+	{"aac", "audio/aac"}, 
+	{"abw", "application/x-abiword"}, 
+	{"apng", "image/apng"},
+	{"avi", "video/x-msvideo"},
+	{"bmp", "image/bmp"},
+	{"css", "text/css"},
+	{"csv", "text/csv"},
+	{"doc", "application/msword"},
+	{"gif", "image/gif"},
+	{"html", "text/html"},
 	{"htm", "text/html"},
-    {"ico", "image/vnd.microsoft.icon"},
-    {"jpeg", "image/jpeg"},
-    {"jpg", "image/jpeg"},
-    {"js", "text/javascript"},
-    {"json", "application/json"},
-    {"mp3", "audio/mpeg"},
-    {"mp4", "video/mp4"},
-    {"pdf", "application/pdf"},
-    {"png", "image/png"},
-    {"svg", "image/svg+xml"},
-    {"txt", "text/plain"},
-    {"xml", "application/xml"},
-    // Add more MIME types as needed
-    {NULL, NULL}
+	{"ico", "image/vnd.microsoft.icon"},
+	{"jpeg", "image/jpeg"},
+	{"jpg", "image/jpeg"},
+	{"js", "text/javascript"},
+	{"json", "application/json"},
+	{"mp3", "audio/mpeg"},
+	{"mp4", "video/mp4"},
+	{"pdf", "application/pdf"},
+	{"png", "image/png"},
+	{"svg", "image/svg+xml"},
+	{"txt", "text/plain"},
+	{"xml", "application/xml"},
+	// Add more MIME types as needed
+	{NULL, NULL}
 };
 
-Http::Http( void ) { }
+Http::Http( void ) :
+ready(false),
+header(""), body(""), combine(""),
+content_length(0), content_type(""), header_fields() { }
 
-Http::Http( const Http &src ) { (void)src; }
+Http::Http( const Http &src ) { *this = src; }
 
 Http::~Http( void ) { }
 
 Http&	Http::operator=( const Http &src ) {
-	(void)src; return (*this);
+	if (this == &src) {
+		return (*this);
+	}
+	ready = src.ready;
+	header = src.header;
+	body = src.body;
+	combine = src.combine;
+	content_length = src.content_length;
+	content_type = src.content_type;
+	header_fields = src.header_fields;
+	return (*this);
+}
+
+// use for header
+bool	Http::validateField( std::string &str ) const {
+	static int diff = 'a' - 'A';
+	static const char *invalid_char = "()<>@,;:\'\"/[]?={} ~";
+	// std::cout << "test Http Request Valid test str in checkField: " << str << "\n";
+	for (size_t i = 0; i < str.length(); i ++) {
+		if ((::isupper(str[i]))) {
+			str[i] += diff;
+			continue ;
+		}
+		for (size_t j = 0; invalid_char[j]; j ++) {
+			if (str[i] < 32 || str[i] == 127 || str[i] == invalid_char[j]) {
+				// std::cout << "invalid_char found (" << str[i] << ")[" << static_cast<int>(str[i]) << "]\n";
+				return (false);
+			}
+		}
+	}
+	return (true);
+}
+
+bool	Http::validateValue( const std::string &str ) const {
+	// std::cout << "checkValue " << str << '\n';
+	for (size_t i = 0; i < str.length() - 1; i ++) {
+		if (str[i] < 32 || str[i] == 127) {
+			// std::cout << "invalid_char found (" << str[i] << ")[" << static_cast<int>(str[i]) << "]\n";
+			return (false);
+		}
+	}
+	return (true);
+}
+
+bool	Http::addHeaderFields( const std::string &field, const std::string &val ) {
+	typedef std::map<std::string, std::string>::iterator iter;
+	iter it = header_fields.find(field);
+	if (it == header_fields.end()) {
+		header_fields[field] = val;
+		return (true);
+	}
+	if (field == fields[COOKIE] || field == fields[CACHE]) {
+		it->second += "; ";
+		it->second += val;
+		return (true);
+	}
+	return (false);
+}
+
+std::string&	Http::modifyHeader( void ) { return (header); }
+
+std::string&	Http::modifyBody( void ) { return (body); }
+
+void	Http::finishHttp( void ) { combine = header + body; ready = true; }
+
+size_t	Http::getBodyLength( void ) const { return (body.length()); }
+
+size_t	Http::getTotalLength( void ) const { return (combine.length()); }
+
+const char*	Http::getPtr2Http( size_t bytes ) const { return (combine.c_str() + bytes); }
+
+const char*	Http::getPtr2Body( size_t bytes ) const { return (body.c_str() + bytes); }
+
+const std::string&	Http::getHeader( void ) const { return (header); }
+
+const std::string&	Http::getBody( void ) const { return (body); }
+
+const std::string&	Http::getField( const char *str ) const {
+	typedef std::map<std::string, std::string>::const_iterator	iter;
+	static const std::string	empty;
+	if (!str) {
+		return (empty);
+	}
+	iter it = header_fields.find(str);
+	if (it == header_fields.end()) {
+		return (empty);
+	}
+	return (it->second);
+}
+
+bool	Http::isReady( void ) const { return (ready); }
+
+void	Http::reset( void ) {
+	ready = false;
+	header.clear();
+	body.clear();
+	combine.clear();
+	content_length = 0;
+	content_type = TEXT_PLAIN;
 }
 
 const char	*Http::fetchMsg( int status ) {
@@ -99,7 +200,7 @@ const char	*Http::getMimeType( const std::string &ext ) {
 			return (mime_types[i].mime_type);
 		}
 	}
-	return (NULL);
+	return ("application/octet-stream");
 }
 
 int	Http::checkMethods( const std::string &str ) const {

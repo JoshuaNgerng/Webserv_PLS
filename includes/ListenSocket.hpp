@@ -22,7 +22,6 @@ class ListenSocket {
 		ListenSocket&	operator=( const ListenSocket &src );
 		~ListenSocket( void );
 
-
 		bool	addAddress( const std::string &addr, const std::string &port );
 		int		addListenPollFd( std::vector<pollfd_t> &listen ) const;
 		void	setDefaultServer( void );

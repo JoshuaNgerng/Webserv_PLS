@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 16:17:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/09 01:51:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,11 @@ autoindex(off),
 autoindex_exact_size(off),
 autoindex_format(0),
 autoindex_localtime(off),
-allow(),
-deny(),
 symlinks(undefined),
-etag(undefined)
+etag(undefined),
+cgi_enabled(undefined),
+cgi_mapping()
+// limit_except()
 { }
 
 InfoBlock::InfoBlock( const InfoBlock &src ) :
@@ -50,10 +51,12 @@ autoindex(off),
 autoindex_exact_size(off),
 autoindex_format(0),
 autoindex_localtime(off),
-allow(),
-deny(),
 symlinks(undefined),
-etag(undefined) {
+etag(undefined),
+cgi_enabled(undefined),
+cgi_mapping()
+// limit_except()
+{
 	*this = src;
 }
 
@@ -74,10 +77,11 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	autoindex_exact_size = src.autoindex_exact_size;
 	autoindex_format = src.autoindex_format;
 	autoindex_localtime = src.autoindex_localtime;
-	allow = src.allow;
-	deny = src.deny;
 	symlinks = src.symlinks;
 	etag = src.etag;
+	cgi_enabled = src.cgi_enabled;
+	cgi_mapping = src.cgi_mapping;
+	// limit_except = src.limit_except;
 	return (*this);
 }
 
@@ -99,117 +103,200 @@ void	InfoBlock::reset( void ) {
 	autoindex_exact_size = undefined; 
 	autoindex_format = undefined;
 	autoindex_localtime = undefined;
-	allow.clear();
-	deny.clear();
 	symlinks = undefined;
 	etag = undefined;
+	cgi_enabled = undefined;
+	cgi_mapping.clear();
+	// limit_except.clear();
 }
 
-bool	InfoBlock::matchUriSingle( const std::string &name ) const {
-	CheckFile	file_info(name);
+bool	InfoBlock::searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const {
+	std::string	path(root);
+	path += fname;
+	std::cout << "checking file: " << path << '\n';
+	client.addRootDir(root);
+	CheckFile	file_info(path);
 	file_info.checking(F_OK | R_OK);
 	if (file_info.getAccessbility() < 0) {
-		return (false);
-	}
-	if (file_info.getType() != file || file_info.getType() != systemlink) {
-		return (false);
-	}
-	return (true);
-}
-
-void	InfoBlock::matchUriSingle( Client &client, const std::string &uri, bool autoindex_ ) const {
-	CheckFile	file_info(uri);
-	file_info.checking(F_OK | R_OK);
-	if (file_info.getAccessbility() < 0) {
+		std::cout << "file cant access\n";
 		client.addContent(404);
-		return ;
+		return (false);
 	}
 	if (file_info.getType() == directory) {
-		if (uri[uri.length() - 1] != '/') {
-			std::string	buffer(uri);
-			buffer += '/';
-			client.addContent(308, buffer);
-			return ;
-		}
-		if (autoindex_) {
-			client.addDir(uri);
-			return;
-		}
-		for (std::vector<std::string>::const_iterator it = index.begin(); it != index.end(); it ++) {
-			std::string	buffer(uri);
-			buffer += *it;
-			if (matchUriSingle(buffer)) {
-				client.addContent(200, buffer, file_info.getFilesize());
-				return ;
-			}
-		}
+		std::cout << "directory " << path << '\n';
+		client.addContent(308, fname + '/');
+		return (true);
+	}
+	if (file_info.getType() != file && file_info.getType() != systemlink) {
+		std::cout << "file type error: " << static_cast<int>(file_info.getType()) << '\n';
 		client.addContent(404);
-		return ;
+		return (false);
 	}
-	if (file_info.getType() != file || file_info.getType() != systemlink) {
-		client.addContent(403);
-		return ;
+	std::cout << "client add Content: " << fname << '\n';
+	client.addContent(200, fname, file_info.getFilesize());
+	return (true);
+} 
+
+bool	InfoBlock::searchIndexes( Client &client, const std::string &uri ) const {
+	typedef std::vector<std::string>::const_iterator	iter;
+	client.addRootDir(uri);
+	for (iter it = index.begin(); it != index.end(); it ++) {
+		if (searchSingleFile(client, uri, *it)) {
+			return (true);
+		}
 	}
-	client.addContent(200, uri, file_info.getFilesize());
+	client.addContent(404);
+	return (false);
 }
 
-void	InfoBlock::matchUri( Client &client, bool autoindex_ ) const {
+bool	InfoBlock::resolveUri( Client &client, const std::string &uri ) const {
+	std::string	path = root;
+	bool		is_directory = false;
+	if (uri[uri.length() - 1] == '/') {
+		is_directory = true;
+		path += uri;
+	}
+	if (is_directory) {
+		std::cout << "resolveUri is_directory check\n";
+		if (searchIndexes(client, path)) {
+			return (true);
+		} else if (autoindex == on) {
+			std::cout << "test autoindex on\n";
+			client.addDir(path);
+			return (true);
+		}
+		client.addContent(403);
+		return (false);
+	}
+	std::cout << "test resolve Uri path: " << path << " uri: " << uri << '\n';
+	if (searchSingleFile(client, path, uri)) {
+		return (true);
+	}
+	return (false);
+}
+
+void	InfoBlock::routingClient( Client &client, std::string *redirect ) const {
 	typedef std::vector<std::string>::const_iterator	iter;
-	std::string	buffer;
 	if (!try_files.size()) {
-		std::string	path(root);
-		path += client.getCurrentUri();
-		matchUriSingle(client, path, autoindex_);
+		resolveUri(client, client.getCurrentUri());
 		return ;
 	}
 	iter end = -- try_files.end();
-	std::string	path;
-	path.reserve(root.length());
 	for (iter it = try_files.begin(); it != end; it ++) {
+		std::string buffer;
 		EmbeddedVariable::resolveString(buffer, *it, client);
-		path = root + buffer;
-		matchUriSingle(client, path, autoindex_);
-		if (client.checkResponseStatus())
+		std::string new_uri = root + buffer;
+		if (resolveUri(client, new_uri))
 			return ;
-		buffer.clear();
 	}
 	const std::string &str = *end;
 	if (str[0] == '=') {
 		client.addContent(::atoi(str.c_str() + 1));
 		return ;
 	}
-	buffer = root + '/';
-	buffer += str;
-	matchUriSingle(client, buffer, autoindex_);
+	if (redirect) {
+		*redirect = str;
+	}
 }
 
-bool	InfoBlock::findErrorPath( std::string &str, int status ) const {
-	str = getErrorPagePath(status);
-	if (!str.length())
-		return (false);
-	return (true);
+void	InfoBlock::defaultSetting( void ) {
+	if (if_modify_since == undefined_) {
+		if_modify_since = off_;
+	}
+	if (!root.length()) {
+		root = "public";
+	}
+	if (!client_body_timeout) {
+		client_body_timeout = 0;
+	}
+	if (!client_max_body_size) {
+		client_max_body_size = 0;
+	}
+	if (!index.size()) {
+		index.push_back("index.html");
+	}
+	if (autoindex == undefined) {
+		autoindex = off;
+	}
+	if (autoindex_exact_size == undefined) {
+		autoindex_exact_size = on;
+	}
+	if (autoindex_localtime == undefined) {
+		autoindex_localtime = on;
+	}
+	if (autoindex_format == none) {
+		autoindex_format = html;
+	}
+	if (symlinks == undefined) {
+		symlinks = on;
+	}
+	if (etag == undefined) {
+		etag = off;
+	}
+	if (cgi_enabled == undefined) {
+		cgi_enabled = off;
+	}
+}
+
+void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
+	if (if_modify_since == undefined_) {
+		if_modify_since = ref.if_modify_since;
+	}
+	if (!root.length()) {
+		root = ref.root;
+	}
+	if (!client_body_timeout) {
+		client_body_timeout = ref.client_body_timeout;
+	}
+	if (!client_max_body_size) {
+		client_max_body_size = ref.client_max_body_size;
+	}
+	if (!index.size()) {
+		index = ref.index; // not sure if this best idea
+	}
+	if (autoindex == undefined) {
+		autoindex = ref.autoindex;
+	}
+	if (autoindex_exact_size == undefined) {
+		autoindex_exact_size = ref.autoindex_exact_size;
+	}
+	if (autoindex_localtime == undefined) {
+		autoindex_localtime = ref.autoindex_localtime;
+	}
+	if (autoindex_format == none) {
+		autoindex_format = ref.autoindex_format;
+	}
+	if (symlinks == undefined) {
+		symlinks = ref.symlinks;
+	}
+	if (etag == undefined) {
+		etag = ref.etag;
+	}
+	if (cgi_enabled == undefined) {
+		cgi_enabled = ref.cgi_enabled;
+	}
 }
 
 /* setters */
 void	InfoBlock::addIndex( const std::string &add ) { index.push_back(add); }
 
-void	InfoBlock::addErrorPage( uint16_t error_code, const std::string &path ) {
-	error_page[error_code] = path;
+void	InfoBlock::addErrorPage( void ) {
+	ErrorPage	buffer;
+	error_page.push_back(buffer);
+}
+
+void	InfoBlock::addErrorPage( const std::string &add ) {
+	if (!error_page.back().inputStr(add)) {
+		throw std::invalid_argument("add Error Page");
+	}
 }
 
 void	InfoBlock::addTryFiles( const std::string &add ) {
-	// static int8_t	allow_var[] = {};
-	// try {
 	try_files.push_back(add);
 	EmbeddedVariable::shortFormString(try_files[try_files.size() - 1]);
-	// }
 }
 
-void	InfoBlock::addRoot( const std::string &add ) { 
-	if (root.length())
-		throw std::invalid_argument("too_many_root");
-	root = add;
-}
+void	InfoBlock::addRoot( const std::string &add ) { root = add; }
 
 void	InfoBlock::addAccessLog( const std::string &add, int format ) {
 	access_log.first = add;
@@ -241,19 +328,51 @@ void	InfoBlock::setAutoIndexFormat( int level ) { autoindex_format = level; }
 
 void	InfoBlock::toggleAutoIndexTime( boolean opt ) { autoindex_localtime = opt; }
 
-void	InfoBlock::addAllow( const std::string &path ) { allow.push_back(path); }
-
-void	InfoBlock::addDeny( const std::string &path ) { deny.push_back(path); }
-
 void	InfoBlock::setCheckSymlinks( boolean opt ) { symlinks = opt; }
 
 void	InfoBlock::setEtag( boolean opt ) { etag = opt; }
 
-const std::string&	InfoBlock::getErrorPagePath( short status ) const {
-	std::map<short, std::string>::const_iterator pos = error_page.find(status);
-	if (pos == error_page.end())
+void	InfoBlock::setCgiEnable( boolean opt ) { cgi_enabled = opt; }
+
+void	InfoBlock::addCgiMapping( const std::string &ext ) {
+	typedef std::pair<std::string, std::string> pairing;
+	CgiIter iter = cgi_mapping.find(ext);
+	if (iter == cgi_mapping.end()) {
+		return ;
+	}
+	cgi_mapping.insert(pairing(std::string(ext), std::string()));
+}
+
+void	InfoBlock::addCgiMapping( const std::string &ext, const std::string &interpret ) {
+	cgi_mapping[ext] = interpret;
+}
+
+bool	InfoBlock::findErrorPath( std::string &str, short status ) const {
+	typedef std::vector<ErrorPage>::const_iterator iter;
+	for (iter it = error_page.begin(); it != error_page.end(); it ++) {
+		if (it->findError(str, status)) {
+			return (true);
+		}
+	}
+	return (false);
+}
+
+const std::string&	InfoBlock::getRoot( void ) const { return (root); }
+
+bool	InfoBlock::isCgi( const std::string &ext ) const {
+	CgiIter iter = cgi_mapping.find(ext);
+	if (iter == cgi_mapping.end()) {
+		return (false);
+	}
+	return (true);
+}
+
+const std::string&	InfoBlock::getCgiBin( const std::string& ext ) const {
+	CgiIter iter = cgi_mapping.find(ext);
+	if (iter == cgi_mapping.end()) {
 		return (empty);
-	return (pos->second);
+	}
+	return (iter->second);
 }
 
 boolean	InfoBlock::getAutoIndex( void ) const { return (autoindex); }

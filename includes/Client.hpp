@@ -6,12 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/31 14:40:24 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 12:54:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
+# include "File.hpp"
 # include "ServerInfo.hpp"
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
@@ -31,20 +32,30 @@ class Client {
 		int		clientSocketFd( int fd );
 		bool	clientRecvHttp( void );
 		bool	clientRecvContent( void );
+		bool	clientRecvStaticFile( void );
+		bool	clientRecvCgi( void );
+		bool	clientSendContent( void );
+		bool	clientSendCgi( void );
+		bool	checkContentStatus( void );
 		bool	clientSendResponse( void );
+		void	addRootDir( const std::string &str );
+		void	addRootDir( const std::string &root, const std::string &uri );
 		void	addContent( int status_code, const std::string &str = std::string(),
 							size_t	content_length = 0 );
 		void	addDir( const std::string &str );
+		void	ignoreClosingFd( void );
 		void	serverReceived( void );
 
 		/* getters */
 		int		clientSocketFd( void ) const;
-		int		getContentFd( void ) const;
 		bool	checkResponseStatus( void ) const;
 		bool	checkContentFd( void ) const;
 		bool	checkResponseReady( void ) const;
 		bool	giveContentFdtoServer( void ) const;
 		bool	toBeDeleted( void ) const;
+		void	detachContent( void );
+		
+		const File*	getContent( void ) const;
 
 		/* com from client to server */
 		void	errorOverwriteResponse( int status );
@@ -52,8 +63,21 @@ class Client {
 		void	markforDeletion( void );
 
 		/* getters */
+
+		std::string			getAddr( void ) const;
+		uint16_t			getPort( void ) const;
+		const std::string&	getRoot( void ) const;
 		const std::string&	getCurrentUri( void ) const;
-		const std::string&	getContentName( void ) const { return (content_name); }
+		const std::string&	getCurrentUrl( void ) const;
+		const std::string&	getCurrentPath( void ) const;
+		const std::string&	getCurrentQuery( void ) const;
+		std::string			getContentType( void ) const;
+		size_t				getContentLength( void ) const;
+		const std::string&	getHost( void ) const;
+		std::string			getReqMethod( void ) const;
+		std::string			getHttpScheme( void ) const;
+		const std::string&	getContentName( void ) const;
+		const HttpRequest&	getCurrentHttpRequest( void ) const;
 
 		std::vector<ServerInfo>::const_iterator	getServerRef( void ) const;
 		std::vector<Location>::const_iterator	getLocationRef( void ) const;
@@ -63,24 +87,26 @@ class Client {
 	private:
 		static const int	recv_flag = 0;
 		static const int	send_flag = 0;
-		static const size_t	recv_buffer_size = 8192;
+		static const size_t	buffer_size = 8192;
 		/* server related info + data fd*/
 		server_ptr	server_ref;
 		loc_ptr		location_ref;
 
 		bool				ignore_close_fd;
+		bool				to_be_deleted;
 		sockaddr_storage_t	client_addr;
 		socklen_t			socket_len;
 		int					socket_fd;
-		int					content_fd;
+		std::string			root_dir;
 		std::string			content_name;
+		File				*content;
 		bool				has_content_fd;
 		bool				is_content_fd_in_server;
 		size_t				content_length;
 		int					status_code;
 		bool				is_directory;
 		bool				is_cgi;
-		bool				response_ready;
+		bool				is_proxy;
 
 		/* http related info + data info */
 		std::queue<HttpRequest>	requests;
@@ -91,8 +117,6 @@ class Client {
 		time_t					empty_event;
 		size_t					bytes_sent;
 		bool					emergency_overwrite;
-		bool					completed;
-		bool					to_be_deleted;
 
 		Client( void );
 		void	routeRequest( void );
@@ -100,10 +124,10 @@ class Client {
 		void	processResponseRedirect( void );
 		void	processResponseError( void );
 		void	getDefaultError( void );
-		bool	processContentFd( int (Client::*func)( void ) );
-		int		getStaticFileFd( void );
-		bool	getCgiPipeFd( void );
-		bool	getProxySocketFd( void );
+		bool	processContent( void );
+		bool	processContent( const std::string &path );
+		File*	processContentCgiHelper( const char *ext );
+		void	resetResponse( void );
 		void	reset( void );
 };
 

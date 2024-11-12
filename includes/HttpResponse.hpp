@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/30 23:58:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/09 17:50:00 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 # define HTTPRESPONSE_HPP
 # include "Http.hpp"
 
-class HttpResponse : Http {
+class HttpResponse : public Http {
 	public:
 		HttpResponse( void );
 		HttpResponse( const HttpResponse &src );
@@ -22,25 +22,30 @@ class HttpResponse : Http {
 		~HttpResponse( void );
 		HttpResponse&	operator=( const HttpResponse &src );
 
+		void	addFin( const std::string &str );
+		void	addFin( const char *str, size_t bytes );
+		void	addBody( const std::string &str );
+		void	addBody( const char *str, size_t bytes );
 		void	setHeader( int status, const std::string & = std::string() );
 		void	setContent( const std::string &type, uint64_t len );
-		void	addBody( const std::string &str );
-		void	finishResponseMsg( void );
+		void	setContent( void );
 		void	reset( void );
 
 		size_t	getBodyLength( void ) const;
 		size_t	getTotalLength( void ) const;
 		bool	isReady( void ) const;
-		const char *getPtrPos( size_t no_bytes_send ) const;
+
+		bool	processCgiData( void );
 
 	private:
-		int			status;
-		std::string	header;
-		std::string	body;
-		bool		proxy;
-		std::string	final;
-		bool		ready;
+		int		status;
+		bool	proxy;
 
+		bool	validateHttpStart( const std::string &line ) const;
+		bool	generateHeader( const std::string &buffer );
+		void	addHeaderStart( int status );
+		void	addHeader( void );
+		void	addHeader( int status );
 		void	addField( const char *name, const std::string &val );
 		void	addField( const char *name, const char *val );
 		void	addField( const std::string &name, const std::string &val );

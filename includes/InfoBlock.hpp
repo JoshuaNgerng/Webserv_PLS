@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/10/23 13:05:59 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/08 14:57:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 # include "EmbeddedVariable.hpp"
 # include "AutoIndex.hpp"
 # include "CheckFile.hpp"
-// # include "Client.hpp"
+# include "ErrorPage.hpp"
+# include "LimitExcept.hpp"
 
 enum if_modify_level {
 	undefined_,
@@ -30,20 +31,26 @@ enum log_format {
 };
 
 class InfoBlock {
+	typedef std::map<std::string, std::string>					CgiMapping;
+	typedef std::map<std::string, std::string>::const_iterator	CgiIter;
 	public:
 		InfoBlock( void );
 		InfoBlock( const InfoBlock &src );
 		InfoBlock&	operator=( const InfoBlock &src );
 		virtual ~InfoBlock( void );
 
-		bool	findErrorPath( std::string &str, int status ) const;
-		void	matchUri( Client &client, bool autoindex ) const;
+		bool	findErrorPath( std::string &str, short status ) const;
+		// void	matchUri( Client &client, bool autoindex ) const;
+		void	routingClient( Client &client, std::string *redirect = NULL ) const;
+		void	defaultSetting( void );
+		void	defaultSetting( const InfoBlock &ref );
 
 		virtual void	reset( void );
 
 		/* setters */
 		void	addIndex( const std::string &add );
-		void	addErrorPage( uint16_t error_code, const std::string &path );
+		void	addErrorPage( void );
+		void	addErrorPage( const std::string &add );
 		void	addTryFiles( const std::string &add );
 		void	addRoot( const std::string &add );
 		void	addAccessLog( const std::string &add, int format );
@@ -58,32 +65,33 @@ class InfoBlock {
 		void	setAutoIndexFormat( int level );
 		void	toggleAutoIndexTime( boolean opt );
 
-		void	addAllow( const std::string &path );
-		void	addDeny( const std::string &path );
-
 		void	setCheckSymlinks( boolean opt );
 		void	setEtag( boolean opt );
-		void	setChunkEncoding( boolean opt );
+
+		void	setCgiEnable( boolean opt );
+		void	addCgiMapping( const std::string &ext );
+		void	addCgiMapping( const std::string &ext, const std::string &interpret );
 
 		/* getters */
-		const std::string&	getErrorPagePath( short status ) const;
+		bool				isCgi( const std::string &ext ) const;
 		const std::string&	getRoot( void ) const;
+		const std::string&	getCgiBin( const std::string &ext ) const;
 
-		void				writeAccessLog( void ) const;
-		void				writeAccessLog( const std::string &log ) const;
-		void				writeErrorLog( void ) const;
-		void				writeErrorLog( const std::string &log ) const;
-		bool				isIndex( const std::string &str ) const;
-		bool				ifModifySince( void ) const;
-		bool				isEtag( void ) const;
-		boolean				getAutoIndex( void ) const;
-		int					getAutoFormat( void ) const;
-		boolean				getAutoSize( void ) const;
-		boolean				getAutoTimeFormat( void ) const;
+		void	writeAccessLog( void ) const;
+		void	writeAccessLog( const std::string &log ) const;
+		void	writeErrorLog( void ) const;
+		void	writeErrorLog( const std::string &log ) const;
+		boolean	isIndex( const std::string &str ) const;
+		boolean	ifModifySince( void ) const;
+		boolean	isEtag( void ) const;
+		boolean	getAutoIndex( void ) const;
+		int		getAutoFormat( void ) const;
+		boolean	getAutoSize( void ) const;
+		boolean	getAutoTimeFormat( void ) const;
 
 	protected:
 		std::string						empty;
-		std::map<short, std::string>	error_page;
+		std::vector<ErrorPage>			error_page;
 		std::vector<std::string>		try_files;
 
 		std::pair<std::string, int>		access_log;
@@ -101,14 +109,17 @@ class InfoBlock {
 		int								autoindex_format;
 		boolean							autoindex_localtime;
 
-		std::vector<std::string>		allow;
-		std::vector<std::string>		deny;
-
 		boolean							symlinks;
 		boolean							etag;
 
-		bool	matchUriSingle( const std::string &name ) const;
-		void	matchUriSingle( Client &client, const std::string &uri ,bool autoindex ) const;
+		boolean							cgi_enabled;
+		CgiMapping						cgi_mapping;
+
+		// LimitExcept						limit_except;
+
+		bool	searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const;
+		bool	searchIndexes( Client &client, const std::string &uri ) const;
+		bool	resolveUri( Client &client, const std::string &uri ) const;
 };
 
 #endif
