@@ -36,3 +36,4 @@ webserv
 .vscode/*
 .vscode
 *.txt
+public/cgi-bin/list/*
