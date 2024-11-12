@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 15:48:44 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 18:19:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,12 @@
 
 HttpResponse::HttpResponse( void ) :
 status(0),
-proxy(false),
-bytes_sent(0)
+proxy(false)
 { }
 
 HttpResponse::HttpResponse( bool proxy_ ) :
 status(0),
-proxy(proxy_),
-bytes_sent(0)
+proxy(proxy_)
 { }
 
 HttpResponse::HttpResponse( const HttpResponse &src ) : Http(src) { *this = src; }
@@ -33,9 +31,9 @@ HttpResponse&	HttpResponse::operator=( const HttpResponse &src ) {
 	if (this == &src) {
 		return (*this);
 	}
+	Http::operator=(src);
 	status = src.status;
 	proxy = src.proxy;
-	bytes_sent = src.bytes_sent;
 	return (*this);
 }
 
@@ -134,29 +132,13 @@ void	HttpResponse::setContent( void ) {
 }
 
 void	HttpResponse::reset( void ) {
+	Http::reset();
 	status = 0;
 	proxy = false;
 	ready = false;
 }
 
-size_t	HttpResponse::getBodyLength( void ) const { return (body.length()); }
-
-size_t	HttpResponse::getTotalLength( void ) const { return (combine.length()); }
-
-size_t	HttpResponse::getRemainderLength( void ) const {
-	if (bytes_sent > combine.length()) { return (0); }
-	return (combine.length() - bytes_sent);
-}
-
 bool	HttpResponse::isReady( void ) const { return (ready); }
-
-bool	HttpResponse::sendStateTotal( size_t bytes ) {
-	bytes_sent += bytes;
-	if (bytes_sent >= combine.length()) {
-		return (false);
-	}
-	return (true);
-}
 
 bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 	std::string buffer;
@@ -248,11 +230,12 @@ bool	HttpResponse::processCgiData( void ) {
 	}
 	combine = header + combine;
 	ready = true;
+	bytes_sent = 0;
 	return (true);
 }
 
 std::ostream&	operator<<( std::ostream &o, const HttpResponse &res ) {
 	o << "Http Response " << ((!res.isReady()) ? "not " : " " ) << "ready\n";
-	o << res.getPtr2Http(0) << '\n';
+	o << res.getPtr2Http() << '\n';
 	return (o);
 }

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/11 17:19:16 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 18:17:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,14 +55,22 @@ class Http {
 		std::string&		modifyBody( void );
 
 		virtual void		finishHttp( void );
+		size_t				getHeaderLength( void ) const;
 		size_t				getBodyLength( void ) const;
 		size_t				getTotalLength( void ) const;
-		const char*			getPtr2Http( size_t bytes = 0 ) const;
-		const char*			getPtr2Body( size_t bytes = 0 ) const;
+		size_t				getRemainderHeader( void ) const;
+		size_t				getRemainderBody( void ) const;
+		size_t				getRemainderHttp( void ) const;
+		const char*			getPtr2Header( void ) const;
+		const char*			getPtr2Body( void ) const;
+		const char*			getPtr2Http( void ) const;
 		const std::string&	getHeader( void ) const;
 		const std::string&	getBody( void ) const;
 		const std::string&	getField( const char *str ) const;
 		bool				isReady( void ) const;
+		bool				checkSendHeader( size_t bytes = 0 );
+		bool				checkSendBody( size_t bytes = 0 );
+		bool				checkSendHttp( size_t bytes = 0 );
 		void				reset( void );
 
 	protected:
@@ -74,6 +82,7 @@ class Http {
 		std::string			header;
 		std::string			body;
 		std::string			combine;
+		size_t				bytes_sent;
 		size_t				content_length;
 		std::string			content_type;
 		mapping				header_fields;
@@ -109,6 +118,8 @@ class Http {
 	private:
 		static const t_pairs 		pairing[];
 		static const t_types		mime_types[];
+
+		bool	checkSend( size_t bytes, size_t len );
 };
 
 #endif

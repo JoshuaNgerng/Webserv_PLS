@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 15:48:38 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 18:19:34 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,17 +31,12 @@ class HttpResponse : public Http {
 		void	setContent( void );
 		void	reset( void );
 
-		size_t	getBodyLength( void ) const;
-		size_t	getTotalLength( void ) const;
-		size_t	getRemainderLength( void ) const;
 		bool	isReady( void ) const;
-		bool	sendStateTotal( size_t byte = 0 );
 		bool	processCgiData( void );
 
 	private:
 		int		status;
 		bool	proxy;
-		size_t	bytes_sent;
 
 		bool	validateHttpStart( const std::string &line ) const;
 		bool	generateHeader( const std::string &buffer );

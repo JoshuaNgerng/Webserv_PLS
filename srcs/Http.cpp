@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/11 17:23:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 18:25:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ const Http::t_types Http::mime_types[] = {
 
 Http::Http( void ) :
 ready(false),
-header(""), body(""), combine(""),
+header(""), body(""), combine(""), bytes_sent(0),
 content_length(0), content_type(""), header_fields() { }
 
 Http::Http( const Http &src ) { *this = src; }
@@ -91,6 +91,7 @@ Http&	Http::operator=( const Http &src ) {
 	header = src.header;
 	body = src.body;
 	combine = src.combine;
+	bytes_sent = src.bytes_sent;
 	content_length = src.content_length;
 	content_type = src.content_type;
 	header_fields = src.header_fields;
@@ -149,13 +150,23 @@ std::string&	Http::modifyBody( void ) { return (body); }
 
 void	Http::finishHttp( void ) { combine = header + body; ready = true; }
 
+size_t	Http::getHeaderLength( void ) const { return (header.length()); }
+
 size_t	Http::getBodyLength( void ) const { return (body.length()); }
 
 size_t	Http::getTotalLength( void ) const { return (combine.length()); }
 
-const char*	Http::getPtr2Http( size_t bytes ) const { return (combine.c_str() + bytes); }
+size_t	Http::getRemainderHeader( void ) const { return (header.length() - bytes_sent); }
 
-const char*	Http::getPtr2Body( size_t bytes ) const { return (body.c_str() + bytes); }
+size_t	Http::getRemainderBody( void ) const { return (body.length() - bytes_sent); }
+
+size_t	Http::getRemainderHttp( void ) const { return (combine.length() - bytes_sent); }
+
+const char*	Http::getPtr2Header( void ) const { return (header.c_str() + bytes_sent); }
+
+const char*	Http::getPtr2Body( void ) const { return (body.c_str() + bytes_sent); }
+
+const char*	Http::getPtr2Http( void ) const { return (combine.c_str() + bytes_sent); }
 
 const std::string&	Http::getHeader( void ) const { return (header); }
 
@@ -176,13 +187,34 @@ const std::string&	Http::getField( const char *str ) const {
 
 bool	Http::isReady( void ) const { return (ready); }
 
+bool	Http::checkSend( size_t bytes, size_t len ) {
+	bytes_sent += bytes;
+	if (bytes_sent >= len) {
+		return (true);
+	}
+	return (false);
+}
+
+bool	Http::checkSendHeader( size_t bytes ) {
+	return (checkSend(bytes, header.length()));
+}
+
+bool	Http::checkSendBody( size_t bytes ) {
+	return (checkSend(bytes, body.length()));
+}
+
+bool	Http::checkSendHttp( size_t bytes ) {
+	return (checkSend(bytes, combine.length()));
+}
+
 void	Http::reset( void ) {
 	ready = false;
 	header.clear();
 	body.clear();
 	combine.clear();
 	content_length = 0;
-	content_type = TEXT_PLAIN;
+	content_type = "text/plain";
+	bytes_sent = 0;
 }
 
 const char	*Http::fetchMsg( int status ) {

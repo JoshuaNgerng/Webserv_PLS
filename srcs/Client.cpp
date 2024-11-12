@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/12 16:27:08 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 18:23:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ start_connection(0),
 no_request(0),
 current_time(0),
 empty_event(0),
-bytes_sent(0),
 emergency_overwrite(false)
 { }
 
@@ -65,7 +64,6 @@ start_connection(0),
 no_request(0),
 current_time(0),
 empty_event(),
-bytes_sent(0),
 emergency_overwrite(false)
 { }
 
@@ -95,21 +93,12 @@ Client&	Client::operator=( const Client &src ) {
 	is_proxy = src.is_proxy;
 	requests = src.requests;
 	response = src.response;
-	// std::cout << "bruuuhh\n";
 	start_connection = src.start_connection;
-	// std::cout << "huh2\n";
 	no_request = src.no_request;
-	// std::cout << "huh3\n";
 	current_time = src.current_time;
-	// std::cout << "huh4\n";
 	empty_event = src.empty_event;
-	// std::cout << "huh5\n";
-	bytes_sent = src.bytes_sent;
-	// std::cout << "huh6\n";
 	to_be_deleted = src.to_be_deleted;
-	// std::cout << "huh7\n";
 	emergency_overwrite = src.emergency_overwrite;
-	// std::cout << "huh8\n";
 	return (*this);
 }
 
@@ -167,7 +156,6 @@ void	Client::reset( void ) {
 void	Client::resetResponse( void ) {
 	is_directory = false;
 	is_cgi = false;
-	bytes_sent = 0;
 	response.reset();
 	emergency_overwrite = false;
 }
@@ -186,9 +174,7 @@ bool	Client::clientRecvHttp( void ) {
 	buffer[r] = '\0';
 	std::string	str;
 	str.append(buffer, r);
-	std::cerr << "buffer str length " << str.length() << ", expected: " << r << '\n';
 	if (!requests.size() || requests.back().isReady()) {
-		std::cerr << "add new request at start, size: " << requests.size() << "\n";
 		HttpRequest new_req;
 		requests.push(new_req);
 	}
@@ -196,17 +182,13 @@ bool	Client::clientRecvHttp( void ) {
 	// std::cout << "Queued request from: " << socket_fd << "\n" << requests.back();
 	while (pos) {
 		if (requests.back().isReady()) {
-			std::cerr << "add new req in loop\n";
 			HttpRequest new_req;
 			requests.push(new_req);
 		}
 		str.erase(0, str.length() - pos);
 		pos = requests.back().addRequest(str);
-		std::cout << "add recv buffer in loop\n";
-		// std::cout << "Queued request from: " << socket_fd << "\n" << new_req;
 	}
 	if (requests.front().isReady()) {
-		std::cerr << "request start routing\n";
 		routeRequest();
 	}
 	// if (response_ready) {
@@ -267,7 +249,6 @@ bool	Client::clientRecvCgi( void ) {
 	} else if (r == 0) {
 		std::cout << "content fd: " << content->getInputFd() << " ";
 		response.processCgiData();
-		bytes_sent = 0;
 		return (false);
 	}
 	buffer[r] = '\0';
@@ -286,10 +267,10 @@ bool	Client::clientSendContent( void ) {
 
 bool	Client::clientSendCgi( void ) {
 	// std::cout << "client Send Response\n" << response;
-	size_t len = requests.front().getBodyLength();
+	HttpRequest	&req = requests.front();
 	// std::cout << "testing req " << requests.front() << std::endl;
 	ssize_t	no_bytes = write(content->getOutputFd(),
-		requests.front().getPtr2Body(bytes_sent), len - bytes_sent);
+		req.getPtr2Body(), req.getRemainderBody());
 	if (no_bytes <= 0) {
 		const char *errmsg = strerror(errno);
 		// if (!no_bytes) {
@@ -301,8 +282,7 @@ bool	Client::clientSendCgi( void ) {
 		// reset();
 		return (false);
 	}
-	bytes_sent += no_bytes;
-	if (bytes_sent != len) {
+	if (!req.checkSendBody(no_bytes)) {
 		// std::cout << response  "\nSent Response to: " << socket_fd << "\n";
 		// reset()
 		return (true);
@@ -314,20 +294,18 @@ bool	Client::clientSendCgi( void ) {
 bool	Client::clientSendResponse( void ) {
 	// std::cout << "client Send Response\n" << response;
 	ssize_t	no_bytes = send(socket_fd,
-		response.getPtr2Http(bytes_sent), response.getTotalLength() - bytes_sent, 0);
+		response.getPtr2Http(), response.getRemainderHttp(), 0);
 	if (no_bytes <= 0) {
-		std::cout << "error sending to client " << response.getPtr2Http() << "\nbytes send:" << bytes_sent << "\n";
+		std::cout << "error sending to client " << response.getPtr2Http() << "\n";
 		reset();
 		return (false);
 	}
-	bytes_sent += no_bytes;
-	if (bytes_sent != response.getTotalLength()) {
+	if (!response.checkSendHttp(no_bytes)) {
 		// std::cout << response << "\nSent Response to: " << socket_fd << "\n";
 		// reset();
 		return (true);
 	}
-	std::cout << "error sending to client " << response.getPtr2Http() << "\nbytes send:" << bytes_sent
-		<< "no_bytes: " << no_bytes << "\n";
+	std::cout << "error sending to client " << response.getPtr2Http() << "\n";
 	return (false);
 }
 
@@ -345,7 +323,6 @@ bool	Client::checkContentStatus( void ) {
 			response.finishHttp();
 		} else {
 			response.processCgiData();
-			bytes_sent = 0;
 		}
 		return (true);
 	}

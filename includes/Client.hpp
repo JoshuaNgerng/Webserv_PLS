@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/12 12:54:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 17:29:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,6 @@ class Client {
 		size_t					no_request;
 		time_t					current_time;
 		time_t					empty_event;
-		size_t					bytes_sent;
 		bool					emergency_overwrite;
 
 		Client( void );

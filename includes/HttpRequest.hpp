@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 15:25:21 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/11 17:19:46 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 18:16:47 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class HttpRequest : public Http {
 		HttpRequest( const HttpRequest &src );
 		HttpRequest& operator=( const HttpRequest &src );
 		~HttpRequest( void );
+
 		const std::string&	getUrl( void ) const;
 		const std::string&	getUri( void ) const;
 		const std::string&	getPath( void ) const;
