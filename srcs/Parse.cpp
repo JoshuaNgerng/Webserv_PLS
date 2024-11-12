@@ -35,7 +35,9 @@ server(NULL),
 ptr(NULL),
 serverinfo(),
 location(),
-listen_socket()
+listen_socket(),
+isServer(false),
+isLocation(false)
 { }
 
 Parse::Parse( const char *config, Server &server_ ) :
@@ -53,7 +55,9 @@ server(&server_),
 ptr(NULL),
 serverinfo(),
 location(),
-listen_socket()
+listen_socket(),
+isServer(false),
+isLocation(false)
 { }
 
 Parse::Parse( const Parse &src ) {
@@ -77,6 +81,8 @@ Parse& Parse::operator=( const Parse &src ) {
 	serverinfo = src.serverinfo;
 	location = src.location;
 	listen_socket = src.listen_socket;
+	isServer = src.isServer;
+	isLocation = src.isLocation;
 	return (*this);
 }
 
@@ -186,6 +192,7 @@ static void	cleanToken( std::string &token ) {
 }
 
 static int	checkLevel( int level, const std::string &ref ) {
+	std::cout << "check level: " << level << ", ref: " << ref << '\n';
 	if (!level) {
 		if (ref == "server")
 			return (1);
@@ -472,12 +479,31 @@ void	Parse::processToken( const std::string &token ) {
 	if (token == "{")
 	{
 		bracket_no ++;
+		if (bracket_no > 2) {
+			throw ParsingConfError(unknown_directive, "{");
+		}
+		if (bracket_no == 1 && isServer == false) {
+			std::cout << "3" << '\n';
+			throw ParsingConfError(unknown_directive, token.c_str());
+		}
+		if (bracket_no == 2 && isLocation == false) {
+			std::cout << "5" << '\n';
+			throw ParsingConfError(unknown_directive, token.c_str());
+		}
 		return ;
 	}
 	else if (token == "}")
 	{
 		bracket_no --;
 		block_level --;
+		if (block_level == 0 && isServer == true) {
+			std::cout << "7" << '\n';
+			isServer = false;
+		}
+		if (block_level == 1 && isLocation == true) {
+			std::cout << "6" << '\n';
+			isLocation = false;
+		}
 		if (bracket_no < 0) {
 			throw ParsingConfError(extra_delimitor, "}");
 		}
@@ -494,6 +520,26 @@ void	Parse::processToken( const std::string &token ) {
 		return ;
 	}
 	block_level = checkLevel(block_level, token);
+
+	// working on this part
+	if (block_level == 0 && token != "server") {
+		std::cout << "1" << '\n';
+		throw ParsingConfError(unknown_directive, token.c_str());
+	}
+
+
+	if (block_level == 1 && token == "server") {
+		std::cout << "2" << '\n';
+		isServer = true;
+	}
+
+	if (block_level == 2 && token == "location") {
+		std::cout << "4" << '\n';
+		isLocation = true;
+	}
+	
+
+
 	std::cout << "block level: " << block_level << ", token: " << token << '\n';
 	para_limit = 1;
 	exact_para_limit = true;

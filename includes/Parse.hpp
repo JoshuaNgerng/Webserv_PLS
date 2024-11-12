@@ -132,6 +132,8 @@ class Parse
 		ServerInfo		serverinfo;
 		Location		location; // have make yet
 		ListenSocket	listen_socket;
+		bool			isServer;
+		bool			isLocation;
 		// use errorvalue in exception class construction
 
 		class ParsingFileError : public std::exception {
