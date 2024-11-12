@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/12 18:23:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 00:18:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -562,6 +562,14 @@ void	Client::ignoreClosingFd( void ) { ignore_close_fd = true; }
 void	Client::serverReceived( void ) { content->serverReceivedFds(); }
 
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
+
+const sockaddr_storage_t&	Client::getAddr( const LimitExcept& ) const {
+	return (client_addr);
+}
+
+Http::http_method	Client::getReqMethod( const LimitExcept& ) const {
+	return (requests.front().getMethod());
+}
 
 std::string	Client::getAddr( void ) const {
 	char ip_str[INET6_ADDRSTRLEN];

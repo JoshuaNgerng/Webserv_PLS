@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 18:25:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 22:01:27 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,11 +235,11 @@ const char	*Http::getMimeType( const std::string &ext ) {
 	return ("application/octet-stream");
 }
 
-int	Http::checkMethods( const std::string &str ) const {
+int	Http::checkMethods( const std::string &str ) {
 	return (iterEnumStrcmp(GET, DELETE, str, methods));
 }
 
-int	Http::checkField( const std::string &str ) const {
+int	Http::checkField( const std::string &str ) {
 	return (iterEnumStrcmp(HOST, C_LEN, str, fields));
 }
 

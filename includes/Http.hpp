@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 18:17:18 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 22:01:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,9 @@ class Http {
 		bool				checkSendHttp( size_t bytes = 0 );
 		void				reset( void );
 
+		static int	checkMethods( const std::string &str );
+		static int	checkField( const std::string &str );
+
 	protected:
 		Http( void );
 		Http( const Http &src );
@@ -87,8 +90,6 @@ class Http {
 		std::string			content_type;
 		mapping				header_fields;
 
-		int	checkMethods( const std::string &str ) const;
-		int	checkField( const std::string &str ) const;
 	
 		bool	makeReponseHeader( std::string &str, int status ) const;
 
@@ -104,8 +105,8 @@ class Http {
 		}
 
 		template < typename E >
-		int	iterEnumStrcmp( E start, E end,
-			const std::string &str, const char *const *ref ) const {
+		static int	iterEnumStrcmp( E start, E end,
+			const std::string &str, const char *const *ref ) {
 			for (int i = static_cast<int>(start);
 				 i <= static_cast<int>(end); i ++) {
 				if (str == ref[i]) {

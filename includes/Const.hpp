@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 18:33:17 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/08 20:15:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/12 23:55:07 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,5 +144,6 @@ class ServerInfo;
 class Location;
 class Client;
 class HttpRequest;
+class LimitExcept;
 
 #endif
