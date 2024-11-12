@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- This design and layout are inspired by Jon Duckett's book "HTML and CSS: Design and Build Websites." -->
+    <!-- The image is sourced from Jon Duckett's book or adapted from the examples in the book. -->
+    <title></title>
+    <style type="text/css">
+        header, section, footer, aside, nav, article, figure, figcaption {
+            display: block;
+        }
+
+        body {
+            font-family: Georgia, Times, serif;
+            line-height: 1.4em;
+            color: #666666;
+            background-color: #f9f8f6;
+            background-image: url("images/dark-wood.jpg");
+            background-position: center;
+            margin: 0px;
+        }
+
+        main {
+            background-color: #ffffff;
+            width: 940px;
+            margin: 20px auto 20px auto;
+            border: 2px solid #000000;
+        }
+
+        header {
+            height: 160px;
+            background-image: url("images/header.jpg");
+        }
+
+        h1 {
+            text-indent: -9999px;
+            width: 940px;
+            height: 130px;
+            margin: 0px;
+        }
+
+        nav, footer {
+            clear: both;
+            color: #fff;
+            background-color: #aeaca8;
+            height: 30px;
+        }
+
+        nav ul {
+            margin: 0px;
+            padding: 5px 30px 5px 30px;
+            float: left;
+        }
+
+        nav li {
+            display: inline;
+            margin-right: 40px;
+        }
+
+        nav li a {
+            color: #ffffff;
+        }
+
+        /* nav li:last-child {
+            float: right;
+            margin-right: 0px;
+        }
+
+        nav li:last-child a {
+            font-size: 150%;
+            line-height: 0px;
+        } */
+
+        nav li a:hover, nav li a.current {
+            color: #000000;
+        }
+
+        #search-form {
+            float: right;
+            padding-top: 4px;
+            padding-right: 15px;
+        }
+
+        #search-form input[type="text"] {
+            color: #666666;
+            background-color: #ffffff;
+            /* width: 200px; */
+            padding: 1px 12px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+        }
+
+        #search-form input[type="text"] {
+            border-color: #985d6a;
+            outline: none;
+        }
+
+        #search-form button[type="submit"] {
+            font-size: 85%;
+            color: #ffffff;
+            background-color: #de6581;
+            border: 1px solid #de6581;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+
+        #search-form button[type="submit"]:hover {
+            background-color: #985d6a;
+            border: 1px solid #985d6a;
+            color: #ffffff;
+        }
+
+        /* #search-form button[type="submit"]:focus {
+            outline: none;
+        } */
+
+        section.courses {
+            float: left;
+            width: 659px;
+            border-right: 1px solid #eeeeee;
+        }
+
+        article {
+            clear: both;
+            /* overflow: auto; */
+            position: relative;
+            width: 98%;
+
+            overflow: hidden;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 19px;
+            right: -10px;
+            font-size: 180%;
+            line-height: 0;
+            color: #666666;
+            cursor: pointer;
+            /* padding: 0px 4px 4px 16px; */
+        }
+
+        .remove-btn:hover {
+            color: red;
+        }
+
+        figure {
+            float: left;
+            width: 290px;
+            height: 220px;
+            padding: 5px;
+            margin: 20px;
+            border: 1px solid #eeeeee;
+        }
+
+        figure img {
+            overflow: hidden;
+            width: 290px;
+            height: 190px;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        figcaption {
+            font-size: 90%;
+            text-align: left;
+        }
+
+        hgroup {
+            margin-top: 40px;
+        }
+
+        aside {
+            width: 177px;
+            float: left;
+            padding-left: 20px;
+        }
+
+        aside section a {
+            display: block;
+            padding: 10px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        aside section a:hover {
+            color: #985d6a;
+            background-color: #efefef;
+        }
+
+        textarea {
+            width: 177px;
+            height: 167px;
+            box-sizing: border-box;
+        }
+
+        aside button[type="submit"] {
+            background-color: #efefef;
+            width:  100%;
+            margin-bottom: 25px;
+            border: 0px;
+            border-bottom: 1px solid #666666;
+        }
+        aside button[type="submit"]:hover {
+            color: #985d6a;
+            background-color: #efefef;
+            cursor: pointer;
+        }
+
+        .contact-details {
+            display: none;
+        }
+
+        a {
+            color: #de6581;
+            text-decoration: none;
+        }
+
+        h1, h2, h3 {
+            font-weight: normal;
+        }
+
+        h2 {
+            margin: 10px 0px 5px 0px;
+            padding: 0px;
+        }
+
+        h3 {
+            margin: 0px 0px 10px 0px;
+            color: #de658a;
+        }
+
+        aside h2 {
+            padding: 30px 0px 10px 0px;
+            color: #de6581;
+        }
+
+        footer {
+            font-size: 80%;
+            padding: 7px 0 0 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <main>
+        <!-- start of header -->
+        <header>
+            <h1>yoko's kitchen</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" id="home-link" class="current">home</a></li>
+                    <li><a href="#">classes</a></li>
+                    <li><a href="#">catering</a></li>
+                    <li><a href="#">about</a></li>
+                    <li><a href="#" id="contact-link">contact</a></li>
+                    <!-- <li><a href="">+</a></li> -->
+                </ul>
+
+                <form action="/search" method="GET" id="search-form">
+                    <input type="text" name="query" id="search-bar" placeholder="Search courses..." />
+                    <button type="submit">Search</button>
+                </form>
+            </nav>
+        </header>
+        <!-- end of header -->
+
+        <!-- start of courses -->
+        <section class="courses">
+            <article data-id="1">
+                <div class="remove-btn">_</div>
+                <figure>
+                    <img src="images/bok-choi.jpg" alt="Bok Choi" />
+                    <figcaption>Bok Choi</figcaption>
+                </figure>
+                <hgroup>
+                    <h2>Japanese Vegetarian</h2>
+                    <h3>Five week course in London</h3>
+                </hgroup>
+                <p>A five week introduction to traditional Japanese vegetarian meals, teaching you a selection of rice and noodle dishes.</p>
+            </article>
+            <article data-id="2">
+                <div class="remove-btn">_</div>
+                <figure>
+                    <img src="images/teriyaki.jpg" alt="Teriyaki sauce" />
+                    <figcaption>Teriyaki Sauce</figcaption>
+                </figure>
+                <hgroup>
+                    <h2>Sauces Masterclass</h2>
+                    <h3>One day workshop</h3>
+                </hgroup>
+                <p>An intensive one-day course looking at how to create the most delicious sauces for use in a range of Japanese cookery.</p>
+            </article>
+        </section>
+        <!-- end of courses -->
+
+        <aside>
+            <section class="add-course">
+                <h2>Add New Course</h2>
+                <form method="POST" id="form">
+                    <label for="course-image">Course Image URL:</label><br />
+                    <input type="file" name="course-image" id="course-image" required><br /><br />
+
+                    <label for="course-title">Course Title:</label><br />
+                    <input type="text" name="course-title" id="course-title" maxlength="30" required><br /><br />
+
+                    <label for="course-subtitle">Course Subtitle:</label><br />
+                    <input type="text" name="course-subtitle" id="course-subtitle" maxlength="30" required><br /><br />
+
+                    <label for="course-description">Course Description:</label><br />
+                    <textarea name="course-description" id="course-description" maxlength="30" required></textarea><br /><br />
+
+                    <button type="submit">Add Course</button>
+                </form>
+            </section>
+            <section class="contact-details">
+                <h2>Contact</h2>
+                <form action="" method="POST" id="form">
+                    <label for="first-name">First Name:</label><br />
+                    <input type="text" id="first-name" name="first-name" required><br /><br />
+
+                    <label for="last-name">Last Name:</label><br />
+                    <input type="text" id="last-name" name="last-name" required><br /><br />
+
+                    <button type="submit">CGI</button>
+                </form>
+            </section>
+        </aside>
+
+        <!-- start of aside -->
+        <!-- <aside> -->
+            <!-- <section class="popular-recipe">
+                <h2>Popular Recipes</h2>
+                <a href="">Yakitori (grilled chicken)</a>
+                <a href="">Tsukune (minced chicken patties)</a>
+                <a href="">Okonomiyaki (savory pancakes)</a>
+                <a href="">Mizutaki (chicken stew)</a>
+            </section> -->
+            <!-- <section class="contact-details">
+                <h2>Contact</h2>
+                <form action="">
+                    <label for="first-name">First Name:</label>
+                    <input type="text" id="first-name" name="first-name" required>
+
+                    <label for="last-name">Last Name:</label>
+                    <input type="text" id="last-name" name="last-name" required>
+
+                    <button type="submit">CGI</button>
+                </form> -->
+                <!-- <p>Yoko's Kitchen<br />
+                   27 Redchurch Street<br />
+                   Shoreditch<br />
+                   London E2 7DP</p> -->
+            <!-- </section> -->
+        <!-- </aside> -->
+        <!-- end of aside -->
+
+
+        <!-- start of footer -->
+        <footer>
+            &copy 2011 Yoko's Kitchen
+        </footer>
+        <!-- end of footer -->
+    </main>
+
+    <script>
+        const coursesSection = document.querySelector('section.courses');
+        const courseForm = document.querySelector('section.add-course form');
+
+        function loadCourses() {
+            fetch('/courses')
+            .then(response => response.json())
+            .then(courses => {
+                coursesSection.innerHTML = '';
+                courses.forEach(course => {
+                    const courseElement = document.createElement('article');
+                    courseElement.setAttribute('data-id', course.id);
+                    courseElement.innerHTML = `
+                        <div class="remove-btn">_</div>
+                        <figure>
+                            <img src="${course.image}" alt="${course.title}" />
+                            <figcaption>${course.title}</figcaption>
+                        </figure>
+                        <hgroup>
+                            <h2>${course.title}</h2>
+                            <h3>${course.subtitle}</h3>
+                        </hgroup>
+                        <p>${course.description}</p>
+                    `;
+
+                    const removeButton = courseElement.querySelector(".remove-btn");
+                    removeButton.addEventListener('click', () => {
+                        const courseId = courseElement.getAttribute('data-id');
+                        deleteCourse(courseId);
+                    })
+
+                    coursesSection.appendChild(courseElement);
+                })
+            })
+        }
+
+
+        function deleteCourse(courseId) {
+            fetch(`/courses/${courseId}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadCourses();
+                    console.log(`Course ${courseId} deleted successfully.`);
+                } else {
+                    console.log('Error deleting the course', response.status);
+                }
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            })
+        }
+
+        courseForm.addEventListener('submit', e => {
+            e.preventDefault();
+
+            const image = document.getElementById('course-image').files[0];
+            const title = document.getElementById('course-title').value;
+            const subtitle = document.getElementById('course-subtitle').value;
+            const description = document.getElementById('course-description').value;
+
+            const formData = new FormData();
+            formData.append('course-image', image);
+            formData.append('course-title', title);
+            formData.append('course-subtitle', subtitle);
+            formData.append('course-description', description);
+            fetch('/courses', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(newcourse => {
+                loadCourses();
+                courseForm.reset();
+            })
+        })
+
+        // loadCourses();
+
+        function filterArticles(query) {
+            const articles = document.querySelectorAll('article');
+            if (query === '') {
+                articles.forEach(article => {
+                    article.style.display = 'block';
+                    article.style.visibility = 'visible';
+                })
+            }
+            else {
+                articles.forEach(article => {
+                    const title = article.querySelector('h2').textContent.toLowerCase();
+                    const description = article.querySelector('p').textContent.toLowerCase();
+                    if (title.includes(query) || description.includes(query))
+                        article.style.display = 'block';
+                    else
+                        article.style.display = 'none';
+                })
+                const visibleArticles = Array.from(articles).filter(article => article.style.display !== 'none');
+                if (visibleArticles.length === 0) {
+                    articles.forEach(article => {
+                        article.style.visibility = 'hidden';
+                        article.style.display = 'block';
+                    })
+                } else {
+                    articles.forEach(article => {
+                        article.style.visibility = 'visible';
+                    })
+                }
+            }
+        }
+
+        document.getElementById('search-form').addEventListener('submit', e => {
+            e.preventDefault();
+
+            const searchQuery = document.getElementById('search-form').querySelector('input[type="text"]').value.toLowerCase();
+            filterArticles(searchQuery);
+        })
+
+        const homeLink = document.getElementById('home-link');
+        const contactLink = document.getElementById('contact-link');
+        const addCourseAside = document.querySelector('.add-course');
+        const contactAside = document.querySelector('.contact-details');
+
+        function showHome() {
+            addCourseAside.style.display = 'block';
+            contactAside.style.display = 'none';
+
+            homeLink.classList.add('current');
+            contactLink.classList.remove('current');
+        }
+
+        function showContact() {
+            addCourseAside.style.display = 'none';
+            contactAside.style.display = 'block';
+
+            homeLink.classList.remove('current');
+            contactLink.classList.add('current');
+        }
+
+        homeLink.addEventListener('click', e => {
+            e.preventDefault();
+            showHome();
+        })
+
+        contactLink.addEventListener('click', e => {
+            e.preventDefault();
+            showContact();
+        })
+
+        showHome();
+
+
+        // document.getElementById('add-course-form').onsubmit = function(e) {
+        //     e.preventDefault();
+
+        //     const formData = new FormData();
+        //     const courseImage = document.getElementById('course-image').files[0];
+        //     const courseTitle = document.getElementById('course-title').value;
+        //     const courseSubtitle = document.getElementById('course-subtitle').value;
+        //     const courseDescription = document.getElementById('course-description').value;
+
+        //     formData.append('title', courseTitle);
+        //     formData.append('subtitle', courseSubtitle);
+        //     formData.append('description', courseDescription);
+        //     formData.append('image', courseImage);
+
+        //     fetch('/courses', {
+        //         method: 'POST',
+        //         body: formData
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log('Course added to server:', data)
+
+        //         const imageUrl = URL.createObjectUrl(courseImage);
+        //         const newCourseHTML = document.createElement('article');
+        //         newArticle.innerHTML = `
+        //             <figure>
+        //                 <img src="${imageUrl}" alt="${courseTitle}" />
+        //                 <figcaption>${courseTitle}</figcaption>
+        //             </figure>
+        //             <hgroup>
+        //                 <h2>${courseTitle}</h2>
+        //                 <h3>${courseSubtitle}</h3>
+        //             </hgroup>
+        //             <p>${courseDescription}</p>
+        //         `;
+
+        //         document.querySelector('.courses').appendChild(newArticle);
+        //         document.getElementById('course-form').reset();
+        //     })
+        //     .catch(error => console.log('Error:', error));
+        // }
+        // document.getElementById('course-form').addEventListener('submit', e => {
+        //     e.preventDefault();
+
+        //     const imageInput = document.getElementById('course-image');
+        //     const courseTitle = document.getElementById('course-title').value;
+        //     const courseSubtitle = document.getElementById('course-subtitle').value;
+        //     const courseDescription = document.getElementById('course-description').value;
+
+        //     const imageFile = imageInput.files[0];
+        //     const imageUrl = URL.createObjectURL(imageFile);
+
+        //     const newArticle = document.createElement('article');
+        //     newArticle.innerHTML = `
+        //         <figure>
+        //             <img src="${imageUrl}" alt="${courseTitle}" />
+        //             <figcaption>${courseTitle}</figcaption>
+        //         </figure>
+        //         <hgroup>
+        //             <h2>${courseTitle}</h2>
+        //             <h3>${courseSubtitle}</h3>
+        //         </hgroup>
+        //         <p>${courseDescription}</p>
+        //     `;
+
+        //     document.getElementsByClassName('courses')[0].appendChild(newArticle);
+        //     document.getElementById('course-form').reset();
+
+        // });
+    </script>
+</body>
+</html>
