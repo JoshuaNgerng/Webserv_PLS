@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:06:49 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/08 21:09:05 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 03:50:43 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ class Location : public InfoBlock {
 
 	private:
 		std::string	path;
-		std::string	alias;
 		bool		internal;
 
 		std::pair<int, std::string>	return_;

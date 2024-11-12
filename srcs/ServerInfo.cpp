@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/08 22:29:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 02:03:20 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,20 @@ void	ServerInfo::defaultSetting( void ) {
 	InfoBlock::defaultSetting();
 	for (iter it = location.begin(); it != location.end(); it ++) {
 		it->defaultSetting(*this);
+	}
+	if (!listen_sockets.size()) {
+		ListenSocket	buffer;
+		listen_sockets.push_back(buffer);
+		listen_sockets[0].addAddress("::", "80");
+	}
+	if (!server_name.size()) {
+		server_name.push_back("");
+	}
+	if (!client_header_buffer_size) {
+		client_header_buffer_size = 1000;
+	}
+	if (!client_header_timeout) {
+		client_header_timeout = 60;
 	}
 }
 

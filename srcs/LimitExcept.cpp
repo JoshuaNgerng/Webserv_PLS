@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 22:45:19 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 00:50:39 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 03:12:02 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "Client.hpp"
 
 LimitExcept::LimitExcept( void ) { }
-
 
 LimitExcept::LimitExcept( const LimitExcept &src ) { *this = src; }
 
@@ -68,7 +67,19 @@ static addrinfo_t*	getAddrInfo( void ) {
 	return (res);
 }
 
-static void	addNetworkHelper( std::map<LimitExcept::NetworkRange, bool>& dst,  )
+void	LimitExcept::addNetworkHelper(
+			NetworkMapping &dst, bool cond, bool status, int len, int limit,
+			const addrinfo_t *ptr
+) {
+	if (!status) {
+		len = limit;
+	} else {
+		if (len > limit) {
+			throw std::invalid_argument("LimitExcept prefix too large");
+		}
+	}
+	dst.insert(std::pair<NetworkRange, bool>(NetworkRange(ptr, len), cond));
+}
 
 void	LimitExcept::addNetwork( const std::string &str, bool cond ) {
 	addrinfo_t	*addr = NULL;
@@ -90,23 +101,9 @@ void	LimitExcept::addNetwork( const std::string &str, bool cond ) {
 	}
 	for (const addrinfo_t *ptr = addr; ptr != NULL; ptr = ptr->ai_next) {
 		if (ptr->ai_family == AF_INET) {
-			if (!status) {
-				len = 32;
-			} else {
-				if (len > 32) {
-					throw std::invalid_argument("LimitExcept prefix too large");
-				}
-			}
-			network_ranges_v4.insert(std::pair(NetworkRange(ptr, len), cond));
+			addNetworkHelper(network_ranges_v4, cond, status, len, 32, ptr);
 		} else {
-			if (!status) {
-				len = 128;
-			} else {
-				if (len > 128) {
-					throw std::invalid_argument("LimitExcept prefix too large");
-				}
-			}
-			network_ranges_v6.insert(std::pair(NetworkRange(ptr, len), cond));
+			addNetworkHelper(network_ranges_v6, cond, status, len, 128, ptr);
 		}
 	}
 	freeaddrinfo(addr);

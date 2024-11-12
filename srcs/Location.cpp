@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/08 22:43:57 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 03:53:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 Location::Location( void ) :
 path(""),
-alias(""),
 internal(false),
 return_()
 { }
@@ -51,14 +50,14 @@ void Location::routeClientReturn( Client &client ) const {
 }
 
 void	Location::routingClient( Client &client ) const {
+	if (internal) {
+		client.addContent(403);
+		return ;
+	}
 	if (return_.first > 0) {
 		routeClientReturn(client);
 		return ;
 	}
-	// if proxy server and if cgi handle diff
-	// if (alias.length() > 0) {
-	// 	root = alias; // logic for alias
-	// } resolve roo alias before server setup
 	InfoBlock::routingClient(client);
 }
 
@@ -71,7 +70,11 @@ void	Location::addPath( const std::string &path_ ) {
 }
 
 void	Location::addAlias( const std::string &path_ ) {
-	alias = path_;
+	alias = true;
+	if (root.length()) {
+		std::invalid_argument("root and alias conflict");
+	}
+	root = path_;
 }
 
 void	Location::setInternal( void ) { internal = true; }
@@ -88,7 +91,6 @@ void	Location::addReturn( int code, const std::string &uri ) {
 void	Location::reset( void ) {
 	InfoBlock::reset();
 	path.clear();
-	alias.clear();
 	internal = false;
 	return_.first = 0;
 	return_.second.clear();

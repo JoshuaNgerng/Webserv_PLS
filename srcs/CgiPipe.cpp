@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 12:50:20 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/12 14:09:04 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 04:09:36 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,6 +282,7 @@ bool	CgiPipe::checkStatus( void ) {
 		if (status != 404) {
 			status = 500;
 		}
+		ptr->addContent(status);
 		return (false);
 	}
 	std::cout << "true\n";

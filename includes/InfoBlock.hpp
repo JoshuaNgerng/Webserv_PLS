@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/08 14:57:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 03:38:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,10 @@ class InfoBlock {
 
 		bool	findErrorPath( std::string &str, short status ) const;
 		// void	matchUri( Client &client, bool autoindex ) const;
-		void	routingClient( Client &client, std::string *redirect = NULL ) const;
+		void	routingClient(
+					Client &client, const std::string &location = std::string(),
+					std::string *redirect = NULL
+				) const;
 		void	defaultSetting( void );
 		void	defaultSetting( const InfoBlock &ref );
 
@@ -115,11 +118,15 @@ class InfoBlock {
 		boolean							cgi_enabled;
 		CgiMapping						cgi_mapping;
 
-		// LimitExcept						limit_except;
+		LimitExcept						limit_except;
+
+		bool							alias;
+		const std::string				*root_ptr;
+		const std::vector<std::string>	*index_ptr;
 
 		bool	searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const;
 		bool	searchIndexes( Client &client, const std::string &uri ) const;
-		bool	resolveUri( Client &client, const std::string &uri ) const;
+		bool	resolveUri( Client &client, const std::string &root_, const std::string &uri ) const;
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/12 12:50:24 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 04:13:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,19 +155,6 @@ void	Server::markAsDelete( Client &client ) {
 	markAsDelete(client.getContent());
 }
 
-void	Server::error2Client( int fd, client_ptr client ) {
-	if (client->clientSocketFd() == fd) {
-		std::cout << "error2Client socket fd\n";
-		client->markforDeletion();
-		return ;
-	}
-	if (!client->checkContentStatus()) {
-		std::cout << "overwrite err content\n";
-		client->errorOverwriteResponse(500);
-	}
-	markAsDelete(fd);
-}
-
 int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
 	int error = 1;
 	int	fd = -1;
@@ -273,6 +260,27 @@ void	Server::resetFds( void ) {
 	fd_counter = socket_fds.size();
 }
 
+void	Server::cleanUpClient( int fd, client_ptr client ) {
+	if (client->clientSocketFd() == fd) {
+		client->markforDeletion();
+		return ;
+	}
+	client->checkContentFd();
+	markAsDelete(fd);
+}
+
+void	Server::error2Client( int fd, client_ptr client ) {
+	if (client->clientSocketFd() == fd) {
+		// std::cout << "error2Client socket fd\n";
+		client->markforDeletion();
+		return ;
+	}
+	// if (!client->checkContentStatus()) {
+		// std::cout << "overwrite err content\n";
+	client->errorOverwriteResponse(500);
+	// }
+	markAsDelete(fd);
+}
 
 void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 	if (poll_fd.fd == client.clientSocketFd()) {
@@ -286,7 +294,6 @@ void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 	if (!client.clientRecvContent()) {
 		std::cout << "client recv content in server failed\n";
 		markAsDelete(client.getContent());
-		return ;
 	}
 }
 
@@ -331,7 +338,9 @@ void	Server::handleClient( size_t index ) {
 	} else if (poll_fd.revents & POLLOUT) {
 		// std::cout << "test POLLOUT " << poll_fd.fd << "\n";
 		handleClientSent(poll_fd, *ptr);
-	} else if (poll_fd.revents & (POLLHUP | POLLERR)) {
+	} else if (poll_fd.revents & POLLHUP) {
+		cleanUpClient(poll_fd.fd, ptr);
+	} else if (poll_fd.revents & POLLERR) {
 		std::cout << "test POLLERR " << poll_fd.fd << "\n";
 		error2Client(poll_fd.fd, ptr);
 	}
@@ -388,16 +397,9 @@ void	Server::startServerLoop( void ) {
 	if (!socket_fds.size()) {
 		setupSockets();
 	}
-	if (!server_no) {
-		return ;
-	}
 	std::cout << "running" << running << "\n";
-	// size_t	i = 0, limit = 10;
 	while (running) {
 		loopServer();
-		// if (i == limit)
-			// break ;
-		// i ++;
 	}
 }
 

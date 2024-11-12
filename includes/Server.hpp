@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/07 21:21:31 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 03:58:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,7 @@ class Server
 		void	markAsDelete( const File *ptr );
 		void	markAsDelete( Client &client );
 		void	fetchClientData( int fd );
+		void	cleanUpClient( int fd, client_ptr client );
 
 		// bool	receiveData( int fd , std::string &output ) const;
 		// bool	receiveRequest( Client &client );
