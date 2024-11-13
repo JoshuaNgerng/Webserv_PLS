@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 02:09:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 02:37:15 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,7 +178,7 @@ std::string	AutoIndex::generateXml( void ) {
 }
 
 std::string	AutoIndex::generateJson( void ) {
-	std::string	out("[\n");
+	std::string	out("[");
 	std::string	fname;
 	std::string	time;
 	uint64_t	size;
@@ -189,7 +189,7 @@ std::string	AutoIndex::generateJson( void ) {
 			check = iterDir(fname, time, size);
 			continue ;
 		}
-		out += "{ \"name\":\"";
+		out += "\n{ \"name\":\"";
 		out += fname;
 		out += "\", \"type\":\"";
 		if (check == 1) {
@@ -203,10 +203,11 @@ std::string	AutoIndex::generateJson( void ) {
 			out += ", \"size\":";
 			out += to_String(size);
 		}
-		out += " },\n";
+		out += " },";
 		check = iterDir(fname, time, size);
 	}
-	out += ']';
+	out.erase(out.length() - 1, 1);
+	out += "\n]";
 	return (out);
 }
 

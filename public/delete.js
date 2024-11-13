@@ -1,7 +1,7 @@
 // Function to fetch the file list from the server and populate the dropdown
 function loadFileList() {
     // Send GET request to fetch the file list (in JSON format)
-    fetch('/json/list')
+    fetch('/json/list/')
         .then(response => response.json())
         .then(data => {
             // Populate the file select dropdown with the file names
@@ -28,7 +28,7 @@ function deleteFile() {
     }
 
     // Send DELETE request to delete the selected file
-    fetch('/cgi-bin/delete_file.py', {
+    fetch('/cgi-bin/delete_file.pl', {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

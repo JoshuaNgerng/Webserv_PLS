@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 00:24:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 02:26:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,7 +200,8 @@ bool	Client::clientRecvHttp( void ) {
 	int	check = requests.front().getValidHeader();
 	if (check > 0) {
 		routeError(check);
-	} else  if (requests.front().isReady()) {
+	} else if (requests.front().isReady()) {
+		std::cout << "test start " << getCurrentPath() << '\n';
 		routeRequest();
 	}
 	if (requests.front().isHeaderReady()) {

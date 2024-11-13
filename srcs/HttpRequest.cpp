@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 00:45:42 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 02:29:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 }
 
 bool	HttpRequest::validateUrl( void ) {
-	// std::cout << "huh?\n";
+	std::cout << "huh? " << uri << "\n";
 	if (uri[0] != '/') {
 		return (false);
 	}
@@ -178,7 +178,7 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	if (j == i)
 		return (false);
 	uri = start.substr(j, i - j);
-	// std::cout << "uri called " << uri << "\n";
+	std::cout << "uri called " << uri << "\n";
 	i ++;
 	j = i;
 	// std::cout << "test error 3\n";
