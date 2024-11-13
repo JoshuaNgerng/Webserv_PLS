@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 00:17:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 13:44:55 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ class Client {
 	typedef std::list<Client>::const_iterator		client_ptr;
 	typedef std::vector<ServerInfo>::const_iterator	server_ptr;
 	typedef std::vector<Location>::const_iterator	loc_ptr;
+
 	public:
 		Client( server_ptr &it );
 		Client( const Client &src );
@@ -45,6 +46,12 @@ class Client {
 		void	addDir( const std::string &str );
 		void	ignoreClosingFd( void );
 		void	serverReceived( void );
+
+		void	setStartConnectionTime( void );
+		void	setStartBodyTime( void );
+		void	setNewCurrentTime( void );
+		void	setTimeForContent( void );
+		int		checkTimer( int fd );
 
 		/* getters */
 		int		clientSocketFd( void ) const;
@@ -92,14 +99,15 @@ class Client {
 		static const int	send_flag = 0;
 		static const size_t	buffer_size = 8192;
 		/* server related info + data fd*/
-		server_ptr	server_ref;
-		loc_ptr		location_ref;
+		server_ptr			server_ref;
+		loc_ptr				location_ref;
 
 		bool				ignore_close_fd;
 		bool				to_be_deleted;
 		sockaddr_storage_t	client_addr;
 		socklen_t			socket_len;
 		int					socket_fd;
+
 		std::string			root_dir;
 		std::string			content_name;
 		File				*content;
@@ -114,18 +122,23 @@ class Client {
 		/* http related info + data info */
 		std::queue<HttpRequest>	requests;
 		HttpResponse			response;
+		size_t					header_size;
+		size_t					header_timeout;
 		time_t					start_connection;
-		size_t					no_request;
 		time_t					current_time;
-		time_t					empty_event;
 		bool					emergency_overwrite;
+		size_t					body_timeout;
+		time_t					start_recv_body;
+		time_t					start_recv_cgi;
 
 		Client( void );
+		void	routeError( int status );
 		void	routeRequest( void );
 		void	processResponseSuccess( void );
 		void	processResponseRedirect( void );
 		void	processResponseError( void );
 		void	getDefaultError( void );
+		bool	checkBodySize( const HttpRequest &req );
 		bool	processContent( void );
 		bool	processContent( const std::string &path );
 		File*	processContentCgiHelper( const char *ext );

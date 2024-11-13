@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 22:01:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 00:28:23 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ const Http::t_types Http::mime_types[] = {
 };
 
 Http::Http( void ) :
-ready(false),
+header_ready(false), ready(false),
 header(""), body(""), combine(""), bytes_sent(0),
 content_length(0), content_type(""), header_fields() { }
 
@@ -87,6 +87,7 @@ Http&	Http::operator=( const Http &src ) {
 	if (this == &src) {
 		return (*this);
 	}
+	header_ready = src.header_ready;
 	ready = src.ready;
 	header = src.header;
 	body = src.body;
@@ -186,6 +187,8 @@ const std::string&	Http::getField( const char *str ) const {
 }
 
 bool	Http::isReady( void ) const { return (ready); }
+
+bool	Http::isHeaderReady( void ) const { return (header_ready); }
 
 bool	Http::checkSend( size_t bytes, size_t len ) {
 	bytes_sent += bytes;

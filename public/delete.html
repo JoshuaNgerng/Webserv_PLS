@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete File</title>
+    <script src="delete.js"> </script>
+</head>
+<body>
+    <h1>Delete File</h1>
+
+    <!-- Form to list files and delete them -->
+    <form onsubmit="event.preventDefault(); deleteFile();">
+        <label for="file-select">Select a file to delete:</label>
+        <select id="file-select" name="file">
+            <!-- File options will be injected here by the JavaScript -->
+        </select>
+        <br><br>
+        <button type="submit">Delete File</button>
+    </form>
+</body>
+</html>

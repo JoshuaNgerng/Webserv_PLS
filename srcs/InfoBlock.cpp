@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 03:52:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 02:12:42 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,6 @@ InfoBlock::InfoBlock( void ) :
 empty(""),
 error_page(),
 try_files(),
-access_log(),
-error_log(),
 if_modify_since(0),
 root(""),
 client_body_timeout(0),
@@ -33,18 +31,20 @@ symlinks(undefined),
 etag(undefined),
 cgi_enabled(undefined),
 cgi_mapping(),
+cgi_timeout(0),
 limit_except(),
 alias(false),
 root_ptr(&root),
-index_ptr(&index)
-{ }
+index_ptr(&index),
+try_files_ptr(&try_files)
+{ 
+	std::cout << "test default constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
+}
 
 InfoBlock::InfoBlock( const InfoBlock &src ) :
 empty(""),
 error_page(),
 try_files(),
-access_log(),
-error_log(),
 if_modify_since(0),
 root(""),
 client_body_timeout(0),
@@ -58,21 +58,23 @@ symlinks(undefined),
 etag(undefined),
 cgi_enabled(undefined),
 cgi_mapping(),
+cgi_timeout(0),
 limit_except(),
 alias(false),
 root_ptr(&root),
-index_ptr(&index) {
+index_ptr(&index),
+try_files_ptr(&try_files)
+{
+	std::cout << "test copy constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
 	*this = src;
 }
 
 InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
-	if (this == &src ) {
+	if (this == &src) {
 		return (*this);
 	}
 	error_page = src.error_page;
 	try_files = src.try_files;
-	access_log = src.access_log;
-	error_log = src.error_log;
 	if_modify_since = src.if_modify_since;
 	root = src.root;
 	client_body_timeout = src.client_body_timeout;
@@ -86,10 +88,14 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	etag = src.etag;
 	cgi_enabled = src.cgi_enabled;
 	cgi_mapping = src.cgi_mapping;
+	cgi_timeout = src.cgi_timeout;
 	limit_except = src.limit_except;
 	alias = src.alias;
-	root_ptr = src.root_ptr;
-	index_ptr = src.index_ptr;
+	// root_ptr = &root;
+	// index_ptr = &index;
+	// try_files_ptr = &try_files;
+	std::cout << "test copy operator " << try_files.size() << " & " << try_files_ptr->size() << '\n';
+	std::cout << "check?\n";
 	return (*this);
 }
 
@@ -98,10 +104,6 @@ InfoBlock::~InfoBlock( void ) { }
 void	InfoBlock::reset( void ) {
 	error_page.clear();
 	try_files.clear();
-	access_log.first.clear();
-	access_log.second = 0;
-	error_log.first.clear();
-	error_log.second = 0;
 	if_modify_since = undefined_;
 	root.clear();
 	client_body_timeout = 0;
@@ -119,7 +121,9 @@ void	InfoBlock::reset( void ) {
 	alias = false;
 }
 
-bool	InfoBlock::searchSingleFile( Client &client, const std::string &root_, const std::string &fname ) const {
+bool	InfoBlock::searchSingleFile(
+	Client &client, const std::string &root_, const std::string &fname
+) const {
 	std::string	path(root_);
 	client.addRootDir(path);
 	path += fname;
@@ -157,13 +161,16 @@ bool	InfoBlock::searchIndexes( Client &client, const std::string &root_ ) const 
 	return (false);
 }
 
-bool	InfoBlock::resolveUri( Client &client, const std::string &root_, const std::string &uri ) const {
+bool	InfoBlock::resolveUri(
+	Client &client, const std::string &root_, const std::string &uri
+) const {
 	std::string	path(root_);
 	bool		is_directory = false;
 	if (uri[uri.length() - 1] == '/') {
 		is_directory = true;
 		path += uri;
 	}
+	std::cout << "test here 2\n";
 	if (is_directory) {
 		std::cout << "resolveUri is_directory check\n";
 		if (searchIndexes(client, path)) {
@@ -187,20 +194,25 @@ void	InfoBlock::routingClient(
 	Client &client, const std::string &location_, std::string *redirect
 ) const {
 	typedef std::vector<std::string>::const_iterator	iter;
-	std::string	current_root(*root_ptr);
+	std::string	current_uri(client.getCurrentPath());
 	if (alias) {
-		current_root = current_root.substr(0, current_root.find(location_));
+		current_uri.erase(0, location_.length());
 	}
-	if (!try_files.size()) {
-		resolveUri(client, current_root, client.getCurrentUri());
+	if (!CheckFile::checkAccessbility(root_ptr->c_str(), X_OK)) {
+		// std::cout << "root_dir dont exist\n";
+		client.addContent(404);
 		return ;
 	}
-	iter end = -- try_files.end();
-	for (iter it = try_files.begin(); it != end; it ++) {
+	if (!try_files_ptr->size()) {
+		resolveUri(client, *root_ptr, current_uri);
+		return ;
+	}
+	iter end = -- try_files_ptr->end();
+	for (iter it = try_files_ptr->begin(); it != end; it ++) {
 		std::string buffer;
-		EmbeddedVariable::resolveString(buffer, *it, client);
-		std::string new_uri = current_root + buffer;
-		if (resolveUri(client, current_root, new_uri))
+		EmbeddedVariable::resolveString(buffer, *it, client, current_uri);
+		std::string new_uri = *root_ptr + buffer;
+		if (resolveUri(client, *root_ptr, new_uri))
 			return ;
 	}
 	const std::string &str = *end;
@@ -214,6 +226,9 @@ void	InfoBlock::routingClient(
 }
 
 void	InfoBlock::defaultSetting( void ) {
+	std::cout << "test deafult main \n";
+	std::cout << "test try_files size " << try_files.size() << " " << try_files_ptr->size() << '\n';
+	std::cout << "test limit size " << client_max_body_size << '\n';
 	if (if_modify_since == undefined_) {
 		if_modify_since = off_;
 	}
@@ -221,10 +236,10 @@ void	InfoBlock::defaultSetting( void ) {
 		root = "public";
 	}
 	if (!client_body_timeout) {
-		client_body_timeout = 0;
+		client_body_timeout = 60;
 	}
 	if (!client_max_body_size) {
-		client_max_body_size = 0;
+		client_max_body_size = 1048576;
 	}
 	if (!index.size()) {
 		index.push_back("index.html");
@@ -250,6 +265,9 @@ void	InfoBlock::defaultSetting( void ) {
 	if (cgi_enabled == undefined) {
 		cgi_enabled = off;
 	}
+	if (!cgi_timeout) {
+		cgi_timeout = 300;
+	}
 }
 
 void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
@@ -268,6 +286,10 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	if (!index.size()) {
 		index_ptr = &ref.index;
 	}
+	// std::cout << "test default ref try_files" << ref.try_files.size() << '\n';
+	if (!try_files.size() && ref.try_files.size() > 0) {
+		try_files_ptr = &ref.try_files;
+	}
 	if (autoindex == undefined) {
 		autoindex = ref.autoindex;
 	}
@@ -280,6 +302,7 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	if (autoindex_format == none) {
 		autoindex_format = ref.autoindex_format;
 	}
+	std::cout << "parsing autoindex format " << autoindex_format << '\n';
 	if (symlinks == undefined) {
 		symlinks = ref.symlinks;
 	}
@@ -288,6 +311,9 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	}
 	if (cgi_enabled == undefined) {
 		cgi_enabled = ref.cgi_enabled;
+	}
+	if (!cgi_timeout) {
+		cgi_timeout = ref.cgi_timeout;
 	}
 }
 
@@ -315,16 +341,6 @@ void	InfoBlock::addRoot( const std::string &add ) {
 		std::invalid_argument("root and alias conflict");
 	}
 	root = add;
-}
-
-void	InfoBlock::addAccessLog( const std::string &add, int format ) {
-	access_log.first = add;
-	access_log.second = format;
-}
-
-void	InfoBlock::addErrorLog( const std::string &add, int format ) {
-	error_log.first = add;
-	error_log.second = format;
 }
 
 void	InfoBlock::setModifySince( int level ) {
@@ -366,6 +382,8 @@ void	InfoBlock::addCgiMapping( const std::string &ext, const std::string &interp
 	cgi_mapping[ext] = interpret;
 }
 
+void	InfoBlock::setCgiTimeout( size_t time ) { cgi_timeout = time; }
+
 bool	InfoBlock::findErrorPath( std::string &str, short status ) const {
 	typedef std::vector<ErrorPage>::const_iterator iter;
 	for (iter it = error_page.begin(); it != error_page.end(); it ++) {
@@ -394,6 +412,8 @@ const std::string&	InfoBlock::getCgiBin( const std::string& ext ) const {
 	return (iter->second);
 }
 
+size_t	InfoBlock::getCgiTimeout( void ) const { return (cgi_timeout); }
+
 boolean	InfoBlock::getAutoIndex( void ) const { return (autoindex); }
 
 int	InfoBlock::getAutoFormat( void ) const { return (autoindex_format); }
@@ -401,3 +421,7 @@ int	InfoBlock::getAutoFormat( void ) const { return (autoindex_format); }
 boolean	InfoBlock::getAutoSize( void ) const { return (autoindex_exact_size); }
 
 boolean	InfoBlock::getAutoTimeFormat( void ) const { return (autoindex_localtime); }
+
+size_t	InfoBlock::getBodySizeLimit( void ) const { return (client_max_body_size); }
+
+size_t	InfoBlock::getBodyTimeout( void ) const { return (client_body_timeout); }

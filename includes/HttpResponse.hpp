@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 18:19:34 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 19:20:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ class HttpResponse : public Http {
 	public:
 		HttpResponse( void );
 		HttpResponse( const HttpResponse &src );
-		HttpResponse( bool proxy_ );
 		~HttpResponse( void );
 		HttpResponse&	operator=( const HttpResponse &src );
 
@@ -32,11 +31,11 @@ class HttpResponse : public Http {
 		void	reset( void );
 
 		bool	isReady( void ) const;
+		bool	processCgiDataHeader( void );
 		bool	processCgiData( void );
 
 	private:
 		int		status;
-		bool	proxy;
 
 		bool	validateHttpStart( const std::string &line ) const;
 		bool	generateHeader( const std::string &buffer );

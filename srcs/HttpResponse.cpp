@@ -6,22 +6,14 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 18:19:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 19:21:10 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpResponse.hpp"
 #include "Server.hpp"
 
-HttpResponse::HttpResponse( void ) :
-status(0),
-proxy(false)
-{ }
-
-HttpResponse::HttpResponse( bool proxy_ ) :
-status(0),
-proxy(proxy_)
-{ }
+HttpResponse::HttpResponse( void ) : status(0) { }
 
 HttpResponse::HttpResponse( const HttpResponse &src ) : Http(src) { *this = src; }
 
@@ -33,7 +25,6 @@ HttpResponse&	HttpResponse::operator=( const HttpResponse &src ) {
 	}
 	Http::operator=(src);
 	status = src.status;
-	proxy = src.proxy;
 	return (*this);
 }
 
@@ -134,7 +125,6 @@ void	HttpResponse::setContent( void ) {
 void	HttpResponse::reset( void ) {
 	Http::reset();
 	status = 0;
-	proxy = false;
 	ready = false;
 }
 
@@ -177,8 +167,6 @@ bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 bool	HttpResponse::generateHeader( const std::string &buffer ) {
 	std::istringstream	ss(buffer);
 	std::string			line, field, val;
-	bool				content_length = false;
-	bool				content_type = false;
 	std::getline(ss, line);
 	if (!validateHttpStart(line)) {
 		addHeader(200);
@@ -190,43 +178,60 @@ bool	HttpResponse::generateHeader( const std::string &buffer ) {
 			return (true);
 		}
 	}
-	addHeader();
-	while (std::getline(ss, line)) {
-		size_t pos = line.find('=');
+	for (; line.length(); std::getline(ss, line)) {
+		size_t pos = line.find(':');
 		if (pos == std::string::npos) {
 			continue ;
 		}
 		field = line.substr(0, pos);
 		val = line.substr(pos + 1);
-		if (!validateField(field) || !validateField(val) ||
+		if (!validateField(field) || !validateValue(val) ||
 			line[line.length() - 1] != '\r') {
 			continue ;
 		}
 		if (field == "content-length") {
-			content_length = true;
+			content_length = std::atoll(val.c_str());
 		} else if (field == "content-type") {
-			content_type = true;
+			content_type = val;
 		}
 		header += line + '\n';
 	}
-	if (!content_type) {
-		addField("Content-Type", "application/octet-stream");
-	}
-	if (!content_length) {
-		addField("Content-Length", to_String(combine.length()));
-	}
+	header += "\r\n";
 	return (true);	
 }
 
-bool	HttpResponse::processCgiData( void ) {
-	size_t pos = combine.find("\r\n\r\n");
+bool	HttpResponse::processCgiDataHeader( void ) {
+	size_t	pos = combine.find("\r\n\r\n");
 	if (pos == std::string::npos) {
-		setHeader(200);
-		setContent("application/octet-stream", combine.length());
-	} else {
-		std::string	buffer = combine.substr(0, pos + 4);
-		combine.erase(0, pos + 4);
-		generateHeader(buffer);
+		return (false);
+	}
+	std::string	buffer = combine.substr(0, pos);
+	combine.erase(0, pos + 4);
+	header_ready = true;
+	generateHeader(buffer);
+	return (true);
+}
+
+bool	HttpResponse::processCgiData( void ) {
+	if (!header_ready) {
+		size_t pos = combine.find("\r\n\r\n");
+		if (pos == std::string::npos) {
+			setHeader(200);
+			setContent("application/octet-stream", combine.length());
+		} else {
+			std::string	buffer = combine.substr(0, pos + 4);
+			combine.erase(0, pos + 4);
+			generateHeader(buffer);
+		}
+		if (!content_length) {
+			content_length = combine.length();
+		}
+		if (!content_type.length()) {
+			content_type = "application/octet-stream";
+		}
+	}
+	if (combine.length() > content_length) {
+		combine.erase(combine.length() - content_length);
 	}
 	combine = header + combine;
 	ready = true;

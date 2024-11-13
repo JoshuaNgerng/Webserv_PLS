@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 02:03:20 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 02:12:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ location()
 {}
 
 
-ServerInfo::ServerInfo( const ServerInfo &src ) : InfoBlock(src) {
+ServerInfo::ServerInfo( const ServerInfo &src ) : InfoBlock() {
 	*this = src;
 }
 
@@ -110,7 +110,7 @@ void	ServerInfo::routingClient( Client &client, int level, const std::string &ur
 	// else
 		// std::cout << "no location founded\n";
 	std::string	redirect;
-	InfoBlock::routingClient(client, &redirect);
+	InfoBlock::routingClient(client, std::string(), &redirect);
 	if (redirect.length() > 0) {
 		ServerInfo::routingClient(client, level + 1, redirect);
 	}
@@ -149,6 +149,10 @@ std::vector<ListenSocket>::const_iterator	ServerInfo::listenEnd( void ) const {
 std::vector<Location>::const_iterator	ServerInfo::getLocEnd( void ) const {
 	return (location.end());
 }
+
+size_t	ServerInfo::getHeaderSizeLimit( void ) const { return (client_header_buffer_size); }
+
+size_t	ServerInfo::getHeaderTimeout( void ) const { return (client_header_timeout); }
 
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
 	(void)ref;

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/08 14:35:25 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 21:28:35 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,13 @@ CheckFile& CheckFile::operator=(const CheckFile &other) {
 	}
 	return *this;
 }
+
+ bool	CheckFile::checkAccessbility( const char *path, int mask ) {
+	if (access(path, mask) < 0) {
+		return (false);
+	}
+	return (true);
+ }
 
 void	CheckFile::checking( void ) {
 	checking(F_OK | W_OK | R_OK | X_OK);

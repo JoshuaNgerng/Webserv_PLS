@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/08 19:39:35 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 01:43:47 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,9 @@ static int	getQueyArgs( std::string &dst, const std::string &arg_name, size_t st
 	return (buffer_name.length() - 1);
 }
 
-void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, const Client &client ) {
+void	EmbeddedVariable::resolveString(
+	std::string &str, const std::string &ref, const Client &client, const std::string &alias
+) {
 	str.reserve(ref.length());
 	for (size_t i = 0; i < ref.length(); i ++) {
 		if (ref[i] == '\'' || ref[i] == '"') {
@@ -124,7 +126,11 @@ void	EmbeddedVariable::resolveString( std::string &str, const std::string &ref, 
 			str += client.getHost();
 			break ;
 		case url:
-			str += client.getCurrentUri();
+			if (alias.length() > 0) {
+				str += alias;
+			} else {
+				str += client.getCurrentPath();
+			}
 			break ;
 		case remote_addr:
 			str += client.getAddr();
@@ -161,19 +167,21 @@ static bool	checkhex( const std::string &str, size_t start, size_t lim ) {
 	return (true);
 }
 
-static char	hex2alpha( const std::string &str, size_t start ) {
-	int	c = 0;
-	for (int i = 0; i < 2; i ++) {
-		char	check = static_cast<int>(str[start + i]);
+static char hex2alpha(const std::string& str, size_t start) {
+	int c = 0;
+	for (int i = 1; i < 3; i ++) {
+		char check = str[start + i];
+		// std::cout << "hex2aplha check " << check << '\n';
 		c *= 16;
 		if (check >= 'a' && check <= 'f') {
-			c += 10 + check - 'a' + 1;
+			c += 10 + check - 'a';
 		} else if (check >= 'A' && check <= 'F') {
-			c += 10 + check - 'A' + 1;
-		} else {
-			c += check;
+			c += 10 + check - 'A';
+		} else if (check >= '0' && check <= '9') {
+			c += check - '0';
 		}
 	}
+	// std::cout << "hex2alpha " << c << '\n';
 	return (static_cast<char>(c));
 }
 
@@ -194,7 +202,7 @@ std::string	EmbeddedVariable::decodeUrl( const std::string &url ) {
 	std::string	result;
 	result.reserve(url.length());
 	for (size_t i = 0; i < url.length(); i ++) {
-		if (url[i] != '$') {
+		if (url[i] != '%') {
 			result += url[i];
 			continue ;
 		}

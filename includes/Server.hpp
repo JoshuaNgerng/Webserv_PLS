@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 09:29:43 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 03:58:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 10:26:52 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,14 @@ class Server
 		std::ostream&	displayServerInfo( std::ostream &o ) const;
 		std::ostream&	displayClientInfo( std::ostream &o ) const;
 
+		class SetupError : public std::exception {
+			public:
+				virtual const char *what() const throw();
+		};
+
 	private:
 		typedef std::list<Client>::iterator client_ptr;
+		static const char*		setup_err_msg[];
 		static const socklen_t	socklen = sizeof(sockaddr_in_t);
 		static const int		socket_type = SOCK_STREAM;
 		static const int		socket_protocol = 0;

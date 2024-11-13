@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 22:45:19 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 03:12:02 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 10:08:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ static addrinfo_t*	getAddrInfo( void ) {
 	while (ptr->ai_next) {
 		ptr = ptr->ai_next;
 	}
-	if ((status = getaddrinfo(v4, NULL, &hints, &ptr->ai_next)) < 0) {
+	if ((status = getaddrinfo(v6, NULL, &hints, &ptr->ai_next)) < 0) {
 		freeaddrinfo(res);
 		return (NULL);
 	}
@@ -178,10 +178,10 @@ LimitExcept::NetworkRange::NetworkRange( const addrinfo_t *addr_info, uint8_t pr
 	}
 	if (sa_family == AF_INET) {
 		struct sockaddr_in* ipv4 = (struct sockaddr_in*)addr_info->ai_addr;
-		memcpy(bytes, &ipv4->sin_addr, sizeof(ipv4->sin_addr));
+		ft_memcpy(bytes, &ipv4->sin_addr, sizeof(ipv4->sin_addr));
 	} else {
 		struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)addr_info->ai_addr;
-		memcpy(bytes, &ipv6->sin6_addr, sizeof(ipv6->sin6_addr)); 
+		ft_memcpy(bytes, &ipv6->sin6_addr, sizeof(ipv6->sin6_addr)); 
 	}
 }
 
@@ -200,7 +200,7 @@ LimitExcept::NetworkRange&	LimitExcept::NetworkRange::operator=( const NetworkRa
 	}
 	return (*this);
 }
-bool	LimitExcept::NetworkRange::operator<( const NetworkRange &src ) {
+bool	LimitExcept::NetworkRange::operator<( const NetworkRange &src ) const {
 	return (prefix_length > src.prefix_length);
 }
 

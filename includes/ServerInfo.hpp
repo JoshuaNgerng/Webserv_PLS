@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/02 03:08:13 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 12:46:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,9 @@ class ServerInfo : public InfoBlock {
 		std::vector<Location>::const_iterator		getLocEnd( void ) const;
 		void	routingClient( Client &client, int level = 0, const std::string &uri = std::string() ) const;
 		void	defaultSetting( void );
+
+		size_t	getHeaderSizeLimit( void ) const;
+		size_t	getHeaderTimeout( void ) const;
 
 	private:
 		// keys/options // try_files not implemented yet

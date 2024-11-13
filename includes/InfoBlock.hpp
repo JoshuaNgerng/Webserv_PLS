@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 03:38:30 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 20:26:37 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,8 @@ class InfoBlock {
 		void	addErrorPage( const std::string &add );
 		void	addTryFiles( const std::string &add );
 		void	addRoot( const std::string &add );
-		void	addAccessLog( const std::string &add, int format );
-		void	addErrorLog( const std::string &add, int format );
+		// void	addAccessLog( const std::string &add, int format );
+		// void	addErrorLog( const std::string &add, int format );
 		void	setModifySince( int level );
 
 		void	setClientMaxBodySize( uint64_t size );
@@ -74,11 +74,13 @@ class InfoBlock {
 		void	setCgiEnable( boolean opt );
 		void	addCgiMapping( const std::string &ext );
 		void	addCgiMapping( const std::string &ext, const std::string &interpret );
+		void	setCgiTimeout( size_t time );
 
 		/* getters */
 		bool				isCgi( const std::string &ext ) const;
 		const std::string&	getRoot( void ) const;
 		const std::string&	getCgiBin( const std::string &ext ) const;
+		size_t				getCgiTimeout( void ) const;
 
 		void	writeAccessLog( void ) const;
 		void	writeAccessLog( const std::string &log ) const;
@@ -91,14 +93,14 @@ class InfoBlock {
 		int		getAutoFormat( void ) const;
 		boolean	getAutoSize( void ) const;
 		boolean	getAutoTimeFormat( void ) const;
+		size_t	getBodySizeLimit( void ) const;
+		size_t	getBodyTimeout( void ) const;
 
 	protected:
 		std::string						empty;
 		std::vector<ErrorPage>			error_page;
 		std::vector<std::string>		try_files;
 
-		std::pair<std::string, int>		access_log;
-		std::pair<std::string, int>		error_log;
 		int								if_modify_since;
 
 		std::string						root;
@@ -117,16 +119,22 @@ class InfoBlock {
 
 		boolean							cgi_enabled;
 		CgiMapping						cgi_mapping;
+		size_t							cgi_timeout;
 
 		LimitExcept						limit_except;
 
 		bool							alias;
 		const std::string				*root_ptr;
 		const std::vector<std::string>	*index_ptr;
+		const std::vector<std::string>	*try_files_ptr;
 
-		bool	searchSingleFile( Client &client, const std::string &root, const std::string &fname ) const;
+		bool	searchSingleFile(
+			Client &client, const std::string &root, const std::string &fname
+		) const;
 		bool	searchIndexes( Client &client, const std::string &uri ) const;
-		bool	resolveUri( Client &client, const std::string &root_, const std::string &uri ) const;
+		bool	resolveUri(
+			Client &client, const std::string &root_, const std::string &uri
+		) const;
 };
 
 #endif

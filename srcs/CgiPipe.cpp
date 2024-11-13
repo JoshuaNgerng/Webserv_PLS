@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 12:50:20 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 04:09:36 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 00:19:37 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,7 +243,7 @@ bool	CgiPipe::generateFds( void ) {
 	child_id = fork();
 	if (child_id == 0) {
 		std::cerr << "Child process generated n throw error\n";
-		ptr->detachContent();
+		// ptr->detachContent();
 		throw ChildProcess(*this);
 		std::cerr << "check throw status\n";
 	}

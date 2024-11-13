@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 22:01:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 19:06:25 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ class Http {
 		const std::string&	getHeader( void ) const;
 		const std::string&	getBody( void ) const;
 		const std::string&	getField( const char *str ) const;
+		bool				isHeaderReady( void ) const;
 		bool				isReady( void ) const;
 		bool				checkSendHeader( size_t bytes = 0 );
 		bool				checkSendBody( size_t bytes = 0 );
@@ -81,6 +82,7 @@ class Http {
 		Http( const Http &src );
 		Http&	operator=( const Http &src );
 		static const char	*methods[];
+		bool				header_ready;
 		bool				ready;
 		std::string			header;
 		std::string			body;

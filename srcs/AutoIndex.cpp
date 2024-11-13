@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/09 02:02:07 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 02:09:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ AutoIndex& AutoIndex::operator=( const AutoIndex &src ) {
 
 AutoIndex::AutoIndex( const InfoBlock &src ) {
 	autoindex_format = src.getAutoFormat();
+	std::cout << "constrocutr format " << autoindex_format << '\n';
 	if (src.getAutoTimeFormat() == on)
 		autoindex_time = true;
 	if (src.getAutoSize() == on)
@@ -114,6 +115,7 @@ static std::string	makeHtmlList( int check, const std::string &name, const std::
 }
 
 std::string	AutoIndex::generateHtml( void ) {
+	std::cout << "html called\n";
 	std::string	out(template_html);
 	size_t	pos = out.find("@");
 	out.replace(pos, 1, root_name);
@@ -180,6 +182,7 @@ std::string	AutoIndex::generateJson( void ) {
 	std::string	fname;
 	std::string	time;
 	uint64_t	size;
+	std::cout << "json called\n";
 	int check = iterDir(fname, time, size);
 	while (check) {
 		if (check < 0) {
@@ -215,12 +218,11 @@ std::string	AutoIndex::generateResource( const char *dirname ) {
 		return (out);	
 	}
 	root_name = dirname;
-	root_name += '/';
 	std::cout << "huh root_name: " << root_name << '\n';
 	root_len = root_name.length();
 	switch (autoindex_format) {
 		case html:	out = generateHtml();	break;
-		case xml:	out = generateXml();		break;
+		case xml:	out = generateXml();	break;
 		case json:	out = generateJson();	break;
 		case jsonp:	out = generateJson();	break;
 		default:	break;

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 18:16:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 00:45:42 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 HttpRequest::HttpRequest( void ) :
 Http(),
+header_limit(1000),
 error(malform_header),
 method(),
 url(""),
@@ -25,13 +26,27 @@ protocol(""),
 has_body(false)
 { }
 
-HttpRequest::HttpRequest( const HttpRequest &src ) : Http(src) {
+HttpRequest::HttpRequest( size_t header_size ) :
+Http(),
+header_limit(header_size),
+error(malform_header),
+method(),
+url(""),
+uri(""),
+path(""),
+query(""),
+protocol(""),
+has_body(false)
+{ }
+
+HttpRequest::HttpRequest( const HttpRequest &src ) : Http() {
 	*this = src;
 }
 
 HttpRequest&	HttpRequest::operator=( const HttpRequest &src ) {
 	if (this != &src) {
 		Http::operator=(src);
+		header_limit = src.header_limit;
 		error = src.error;
 		method = src.method;
 		url = src.url;
@@ -47,22 +62,22 @@ HttpRequest&	HttpRequest::operator=( const HttpRequest &src ) {
 HttpRequest::~HttpRequest( void ) { }
 
 size_t	HttpRequest::addBody( const std::string &str, size_t pos ) {
-	std::cerr << "added Body pos " <<  pos << ", buffer len " << str.length() <<"\n";
+	// std::cerr << "added Body pos " <<  pos << ", buffer len " << str.length() <<"\n";
 	size_t excepted_bytes = content_length - body.length();
 	if (str.length() - pos > excepted_bytes)
 	{
-		std::cerr << "add Body excced excepted\n";
+		// std::cerr << "add Body excced excepted\n";
 		body.append(str, pos, excepted_bytes);
 		ready = true;
 		return (str.length() - pos - excepted_bytes);
 	}
 	body.append(str, pos);
 	if (body.length() != content_length) {
-		std::cerr << "body still needed, " << body.length() << " expected: "
-		<< content_length << '\n';
+		// std::cerr << "body still needed, " << body.length() << " expected: "
+		// << content_length << '\n';
 		return (0);
 	}
-	std::cerr << "add all in body ready to go\n";
+	// std::cerr << "add all in body ready to go\n";
 	ready = true;
 	return (0);
 }
@@ -90,12 +105,13 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 		return (str.length() - pos);
 	}
 	validateHeader();
+	header_ready = true;
 	if (method == POST || method == PUT) {
 		// std::cout << "body method called\n";
 		if (!(validateBody()))
 			return (str.length() - pos);
 		has_body = true;
-		std::cerr << "start addBody, " << pos << '\n';
+		// std::cerr << "start addBody, " << pos << '\n';
 		return (addBody(str, pos));
 	}
 	else
@@ -104,12 +120,14 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 }
 
 bool	HttpRequest::validateUrl( void ) {
+	// std::cout << "huh?\n";
 	if (uri[0] != '/') {
 		return (false);
 	}
 	if (!(EmbeddedVariable::checkUrl(uri))) {
 		return (false);
 	}
+	// std::cout << "validate here?\n";
 	std::string	buffer;
 	url = "http://";
 	buffer = getField("host");
@@ -122,6 +140,10 @@ bool	HttpRequest::validateUrl( void ) {
 	if (pos != std::string::npos) {
 		query = uri.substr(pos + 1);
 	}
+	path = EmbeddedVariable::decodeUrl(path);
+	// std::cout << "decode path " << path << '\n';
+	query = EmbeddedVariable::decodeUrl(query);
+	// std::cout << "decode query " << query << '\n';
 	return (true);
 }
 
@@ -297,6 +319,8 @@ int	HttpRequest::getValidHeader( void ) const {
 	}
 	return (0);
 }
+
+Http::http_method	HttpRequest::getMethod( void ) const { return (method); }
 
 const std::string&	HttpRequest::getUrl( void ) const { return (url); }
 

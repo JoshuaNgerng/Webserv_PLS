@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 16:46:13 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 01:36:24 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 10:07:57 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class LimitExcept {
 				~NetworkRange( void );
 
 				NetworkRange&	operator=( const NetworkRange &src );
-				bool			operator<( const NetworkRange &src );
+				bool			operator<( const NetworkRange &src ) const;
 
 				bool			isWithinRange( const sockaddr_storage& addr ) const;
 
@@ -51,10 +51,10 @@ class LimitExcept {
 				bool			isWithinRangev6( const sockaddr_storage& addr ) const;
 		};
 
-		typedef std::map<NetworkRange, bool>    NetworkMapping;
+		typedef std::map<NetworkRange, bool>	NetworkMapping;
 		NetworkMapping							network_ranges_v4;
 		NetworkMapping							network_ranges_v6;
-		std::vector<Http::http_method>				methods;
+		std::vector<Http::http_method>			methods;
 
 		void	addNetwork( const std::string &str, bool cond );
 		void	addNetworkHelper(

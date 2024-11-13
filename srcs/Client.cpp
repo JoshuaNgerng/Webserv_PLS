@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 00:18:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 00:24:37 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,11 @@ is_proxy(false),
 requests(),
 response(),
 start_connection(0),
-no_request(0),
 current_time(0),
-empty_event(0),
-emergency_overwrite(false)
+emergency_overwrite(false),
+body_timeout(0),
+start_recv_body(0),
+start_recv_cgi(0)
 { }
 
 Client::Client( server_ptr &it ) :
@@ -61,10 +62,11 @@ is_proxy(false),
 requests(),
 response(),
 start_connection(0),
-no_request(0),
 current_time(0),
-empty_event(),
-emergency_overwrite(false)
+emergency_overwrite(false),
+body_timeout(0),
+start_recv_body(0),
+start_recv_cgi(0)
 { }
 
 Client::Client( const Client &src ) {
@@ -94,11 +96,12 @@ Client&	Client::operator=( const Client &src ) {
 	requests = src.requests;
 	response = src.response;
 	start_connection = src.start_connection;
-	no_request = src.no_request;
 	current_time = src.current_time;
-	empty_event = src.empty_event;
 	to_be_deleted = src.to_be_deleted;
 	emergency_overwrite = src.emergency_overwrite;
+	body_timeout = src.body_timeout;
+	start_recv_body = src.start_recv_body;
+	start_recv_cgi = src.start_recv_cgi;
 	return (*this);
 }
 
@@ -148,9 +151,15 @@ void	Client::reset( void ) {
 	content_length = 0;
 	status_code = 0;
 	resetResponse();
-	if (requests.size() > 0)
-		routeRequest();
+	if (requests.size() > 0) {
+		if (requests.front().isHeaderReady())
+			routeRequest();
+	}
 	is_cgi = false;
+	start_connection = 0;
+	current_time = 0;
+	start_recv_body = 0;
+	start_recv_cgi = 0;
 }
 
 void	Client::resetResponse( void ) {
@@ -175,21 +184,27 @@ bool	Client::clientRecvHttp( void ) {
 	std::string	str;
 	str.append(buffer, r);
 	if (!requests.size() || requests.back().isReady()) {
-		HttpRequest new_req;
+		HttpRequest new_req(server_ref->getHeaderSizeLimit());
 		requests.push(new_req);
 	}
 	size_t pos = requests.back().addRequest(str);
 	// std::cout << "Queued request from: " << socket_fd << "\n" << requests.back();
 	while (pos) {
 		if (requests.back().isReady()) {
-			HttpRequest new_req;
+			HttpRequest new_req(server_ref->getHeaderSizeLimit());
 			requests.push(new_req);
 		}
 		str.erase(0, str.length() - pos);
 		pos = requests.back().addRequest(str);
 	}
-	if (requests.front().isReady()) {
+	int	check = requests.front().getValidHeader();
+	if (check > 0) {
+		routeError(check);
+	} else  if (requests.front().isReady()) {
 		routeRequest();
+	}
+	if (requests.front().isHeaderReady()) {
+		setStartBodyTime();	
 	}
 	// if (response_ready) {
 		// std::cout << "Show HttpResponse\n" << response << '\n';
@@ -409,25 +424,24 @@ bool	Client::processContent( void ) {
 }
 
 bool	Client::processContent( const std::string &path ) {
-	const char *ext = CheckFile::fetchExtension(content_name);
+	File		*ptr = NULL;
+	const char	*ext = CheckFile::fetchExtension(content_name);
 	if (content) {
 		std::cout << "dup\n";
 		delete content;
 		content = NULL;
 	}
-	content = processContentCgiHelper(ext);
-	content->setContentPath(path);
-	if (!content->processFds()) {
+	ptr = processContentCgiHelper(ext);
+	ptr->setContentPath(path);
+	if (!ptr->processFds()) {
 		std::cout << "PrcoessFds FAiled\n";
-		delete content;
-		content = NULL;
+		delete ptr;
 		status_code = 500;
 		return (false);
 	}
-	// sleep(2);
+	content = ptr;
 	return (true);
 }
-
 
 void	Client::processResponseError( void ) {
 	resetResponse();
@@ -478,6 +492,11 @@ void	Client::errorOverwriteResponse( void ) {
 
 void	Client::errorOverwriteResponse( int status ) {
 	std::cout << "called overwriteError\n";
+	if (status_code == status) {
+		emergency_overwrite = true;
+		errorOverwriteResponse();
+		return ;
+	}
 	status_code = status;
 	if (!emergency_overwrite) {
 		processResponseError();
@@ -489,20 +508,33 @@ void	Client::errorOverwriteResponse( int status ) {
 
 void	Client::markforDeletion( void ) { to_be_deleted = true; }
 
+void	Client::routeError( int status ) {
+	status_code = status;
+	emergency_overwrite = true;
+	processResponseError();
+}
+
+bool	Client::checkBodySize( const HttpRequest &req ) {
+	size_t	limit = server_ref->getBodySizeLimit();
+	if (location_ref != server_ref->getLocEnd()) {
+		limit = location_ref->getBodySizeLimit();
+	}
+	std::cout << "test limit " << limit << ", content-length " << req.getContentLength() << '\n';
+	if (req.getContentLength() < limit) {
+		return (true);
+	}
+	return (false);
+}
+
 void	Client::routeRequest( void ) {
 	HttpRequest &req = requests.front();
-	int	check = req.getValidHeader();
-	if (check > 0) {
-		// std::cout << "bad req for invalid header\n";
-		status_code = check;
-		emergency_overwrite = true;
-		processResponseError();
-		return ;
-	} 
 	if (server_ref->isMergeSlash()) {
 		req.normalizeUri();
 	}
-	server_ref->routingClient(*this);
+	server_ref->routingClient(*this); // start body timeout and check size
+	if (!checkBodySize(req)) {
+		status_code = 413;
+	}
 	if (status_code > 199 && status_code < 300) {
 		processResponseSuccess();
 		return ;
@@ -559,7 +591,57 @@ bool	Client::toBeDeleted( void ) const { return (to_be_deleted); }
 
 void	Client::ignoreClosingFd( void ) { ignore_close_fd = true; }
 
-void	Client::serverReceived( void ) { content->serverReceivedFds(); }
+void	Client::serverReceived( void ) { content->serverReceivedFds(); setTimeForContent(); }
+
+void	Client::setStartConnectionTime( void ) { start_connection = std::time(NULL); }
+
+void	Client::setStartBodyTime( void ) { start_recv_body = std::time(NULL); }
+
+void	Client::setTimeForContent( void ) { start_recv_cgi = std::time(NULL); }
+
+void	Client::setNewCurrentTime( void ) { current_time = std::time(NULL); }
+
+int	Client::checkTimer( int fd ) {
+	size_t	time_diff = 0, lim = 0;
+	int		status = 200;
+	if (fd == socket_fd) {
+		HttpRequest &req = requests.front();
+		if (req.isReady()) {
+			return (200);
+		}
+		status = 408;
+		if (!req.isHeaderReady()) {
+			time_diff = static_cast<size_t>(
+				std::difftime(current_time, start_connection)
+			);
+			lim = server_ref->getHeaderTimeout();
+		} else {
+			time_diff = static_cast<size_t>(
+				std::difftime(current_time, start_recv_body)
+			);
+			lim = server_ref->getBodyTimeout();
+			if (location_ref != server_ref->getLocEnd()) {
+				lim = location_ref->getBodyTimeout();
+			}
+		}
+	} else {
+		status = 504;
+		time_diff = static_cast<size_t>(
+			std::difftime(current_time, start_recv_cgi)
+		);
+		lim = server_ref->getCgiTimeout();
+		if (location_ref != server_ref->getLocEnd()) {
+			lim = location_ref->getCgiTimeout();
+		}
+	}
+	if (time_diff > lim) {
+		std::cout << "over time ";
+		if (fd != socket_fd) {std::cout << "socket "; } else { std::cout << "content "; }
+		std::cout <<'\n';
+		return (status);
+	}
+	return (200);
+}
 
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
 

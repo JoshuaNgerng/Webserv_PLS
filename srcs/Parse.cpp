@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/09 01:44:01 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 01:58:59 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,24 +245,41 @@ static uint64_t	checkTime( std::string::iterator start, std::string::iterator en
 }
 
 static uint64_t	checkSize( std::string::iterator start, std::string::iterator end ) {
-	static const char	*suffix = "km";
-	static const int	size[] = {1000, 1000000};
-	if (!all_of(start, end - 2, ::isdigit)) {
-		throw std::invalid_argument("checkSize");
-	}
-	std::string::iterator last = end - 2;
-	if (::isdigit(*last)) {
-		return (stol(start, end));
-	}
-	int	i = -1;
-	while (suffix[++ i]) {
-		if (*last == suffix[i])
-			break ;
-	}
-	if (i == 3) {
-		throw std::invalid_argument("checkSize");
-	}
-	return (stol(start, end - 1) * size[i]);
+    long result = 0;
+    size_t length = end - start; 
+    size_t i = 0;
+
+    // Check if the string is empty
+    if (length == 0) {
+        throw std::invalid_argument("Empty string is not a valid size.");
+    }
+
+    // Process the numeric part of the string
+    while (i < length && std::isdigit(*(start + i))) {
+        result = result * 10 + (*(start + i) - '0');
+        i++;
+    }
+
+    // If no numeric value is found, throw an error
+    if (i == 0) {
+        throw std::invalid_argument("No numeric value found.");
+    }
+
+    // Process the suffix
+    if (i < length) {
+        char suffix = *(start + i);
+        if (suffix == 'k' || suffix == 'K') {
+            result *= 1024;  // 1k = 1024 bytes
+        } else if (suffix == 'm' || suffix == 'M') {
+            result *= 1024 * 1024;  // 1m = 1024 * 1024 bytes
+        } else if (suffix == 'g' || suffix == 'G') {
+            result *= 1024 * 1024 * 1024;  // 1g = 1024 * 1024 * 1024 bytes
+        } else {
+            throw std::invalid_argument("Invalid suffix. Valid suffixes are 'k', 'm', 'g'.");
+        }
+    }
+
+    return (result);
 }
 
 /**
@@ -364,6 +381,7 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 			break ;
 		case 13:
 			process = &Parse::processAddHandler;
+			exact_para_limit = false;
 			break ;
 		case 14:
 			process = &Parse::processAction;
@@ -513,6 +531,9 @@ void	Parse::processToken( const std::string &token ) {
 			serverinfo.reset();
 		}
 		if (bracket_no == 1 && block_level == 1) {
+			// Location buffer = location;
+			// buffer.reset();
+			std::cout << "try pushback vector\n";
 			serverinfo.addLocation(location);
 			std::cout << "reset location info\n";
 			location.reset();
@@ -633,7 +654,7 @@ boolean	Parse::processBoolParameter( const std::string &token, const char *direc
 }
 
 uint64_t	Parse::processSizeParameter( std::string &token, const char *directive ) {
-	if (no_para > 0) {
+	if (no_para > 1) {
 		throw ParsingConfError(invalid_no_parameter, directive);
 	}
 	uint64_t	out;
@@ -647,7 +668,7 @@ uint64_t	Parse::processSizeParameter( std::string &token, const char *directive 
 }
 
 uint64_t	Parse::processTimeParameter( std::string &token, const char *directive ) {
-	if (no_para > 0) {
+	if (no_para > 1) {
 		throw ParsingConfError(invalid_no_parameter, directive);
 	}
 	uint64_t	out;
@@ -671,6 +692,7 @@ void	Parse::checkParameterEnd( void ) {
 }
 
 void	Parse::processClientLimitMaxBody( std::string &token ){
+	std::cout << "test client limit " << token << ", testing " << processSizeParameter(token, directive_ptr) << '\n';
 	ptr->setClientMaxBodySize(processSizeParameter(token, directive_ptr));
 }
 
@@ -889,6 +911,7 @@ void	Parse::processListen( std::string &token ) {
 	if (!token.length()) {
 		start = true;
 		serverinfo.addListen(listen_socket);
+		std::cout << "huh?\n";
 		listen_socket.reset();
 		return ;
 	}

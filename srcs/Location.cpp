@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 03:53:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 02:03:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ internal(false),
 return_()
 { }
 
-Location::Location( const Location &src ) : InfoBlock(src) {
+Location::Location( const Location &src ) : InfoBlock() {
 	*this = src;
 }
 
@@ -58,7 +58,7 @@ void	Location::routingClient( Client &client ) const {
 		routeClientReturn(client);
 		return ;
 	}
-	InfoBlock::routingClient(client);
+	InfoBlock::routingClient(client, path);
 }
 
 void	Location::defaultSetting( const InfoBlock &ref ) {

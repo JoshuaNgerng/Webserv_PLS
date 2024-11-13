@@ -6,11 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 04:13:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 00:14:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+const char*		Server::setup_err_msg[] = { "socket", "bind", "listen" };
 
 const char*		Server::server_name = "";
 
@@ -167,9 +169,11 @@ int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
 			break ;
 		}
 		error ++;
+		std::cerr << server_name << ": [emerg] " << setup_err_msg[fd + 2] <<
+			"() to " << *ptr << " failed\n";
 	}
 	//maybe throw error
-	return (-1);
+	return (fd);
 }
 
 void	Server::setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer ) {
@@ -179,7 +183,9 @@ void	Server::setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer ) {
 		for (addrinfo_ptr addr = it->begin(); addr != it->end(); addr ++) {
 			buffer.fd = setupSocketsCheckError(it, addr);
 			if (buffer.fd < 0) {
-				return ; // error?
+				std::cerr << server_name << ": [emerg] still could not " 
+					<< setup_err_msg[buffer.fd + 2] << "()\n";
+				throw SetupError();
 			}
 			socket_fds.push_back(buffer);
 			socketfd_mapping.push_back(addr);
@@ -265,7 +271,9 @@ void	Server::cleanUpClient( int fd, client_ptr client ) {
 		client->markforDeletion();
 		return ;
 	}
-	client->checkContentFd();
+	if (!client->checkContentStatus()) {
+		client->errorOverwriteResponse(500);
+	}
 	markAsDelete(fd);
 }
 
@@ -275,10 +283,7 @@ void	Server::error2Client( int fd, client_ptr client ) {
 		client->markforDeletion();
 		return ;
 	}
-	// if (!client->checkContentStatus()) {
-		// std::cout << "overwrite err content\n";
 	client->errorOverwriteResponse(500);
-	// }
 	markAsDelete(fd);
 }
 
@@ -320,9 +325,6 @@ void	Server::handleClient( size_t index ) {
 	if (poll_fd.fd < 0) {
 		return ;
 	}
-	if (!poll_fd.revents) {
-		return ;
-	}
 	// std::cout << "test client " << poll_fd.fd << "\n";
 	if (client_mapping.find(poll_fd.fd) == client_mapping.end()) {
 		std::cout << "WTF " << poll_fd.fd << "\n";
@@ -332,7 +334,9 @@ void	Server::handleClient( size_t index ) {
 	if (ptr->toBeDeleted()) {
 		return ;
 	}
-	if (poll_fd.revents & POLLIN) {
+	if (!poll_fd.revents) {
+		ptr->setNewCurrentTime();
+	} else if (poll_fd.revents & POLLIN) {
 		std::cout << "test POLLIN " << poll_fd.fd << "\n";
 		handleClientRecv(poll_fd, *ptr);
 	} else if (poll_fd.revents & POLLOUT) {
@@ -347,8 +351,13 @@ void	Server::handleClient( size_t index ) {
 	if (!ptr->giveContentFdtoServer()) {
 		addClientContentFd(ptr);
 	}
-	// std::cout << "try client end\n";
-	// check timer , abort(etc invalid header) 
+	int status = ptr->checkTimer(poll_fd.fd);
+	if (status > 200) {
+		if (poll_fd.fd != ptr->clientSocketFd()) {
+			markAsDelete(ptr->getContent());
+		}
+		ptr->errorOverwriteResponse(status);
+	}
 }
 
 void	Server::handleServer( size_t index ) {
@@ -369,8 +378,12 @@ void	Server::handleServer( size_t index ) {
 	// std::cout << "test client info push back\n";
 	client_info.push_back(buffer);
 	// std::cout << "after push back\n";
-	client_mapping[fd] = -- client_info.end();
+	std::list<Client>::iterator iter = -- client_info.end();
+	client_mapping[fd] = iter;
+	iter->setStartConnectionTime();
+	iter->setNewCurrentTime();
 	buffer.ignoreClosingFd();
+
 	std::cout << "client socket successfully added\n";
 }
 
@@ -477,6 +490,10 @@ std::ostream&	operator<<( std::ostream &o, const pollfd_t &ref ) {
 	if (ref.revents & POLLIN) { o << "POLLIN, "; } 
 	if (ref.revents & POLLOUT) { o << "POLLOUT, "; }
 	return (o);
+}
+
+const char* Server::SetupError::what() const throw() {
+	return ("Cannot setup server sockets");
 }
 
 // std::ostream&	operator<<( std::ostream &o, const Server& ref ) {

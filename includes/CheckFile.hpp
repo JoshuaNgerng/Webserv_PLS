@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:45:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 14:38:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 21:28:39 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class CheckFile {
 		bool		getFileContent( std::stringstream &dst ) const;
 		const char	*fetchExtension( void ) const;
 
+		static bool			checkAccessbility( const char *path, int mask );
 		static const char	*fetchExtension( const std::string &fname );
 		static bool	fileToStringStream( std::stringstream &dst, std::ifstream &file );
 

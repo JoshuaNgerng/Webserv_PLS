@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/08 22:05:03 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 19:00:12 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,25 @@ len(),
 status()
 { addr_info_tail = &addr_info_head; }
 
-ListenSocket::ListenSocket( const ListenSocket &src ) {
+ListenSocket::ListenSocket( const ListenSocket &src )  
+{
 	*this = src; 
 }
+// addr_info_head(NULL),
+// addr_info_tail(NULL),
+// default_server(true),
+// backlog(SOMAXCONN),
+// rcvbuf_size(65536),
+// sndbuf_size(65536),
+// ipv6only(false),
+// reuseport(false),
+// keepalive(false),
+// keepidle(),
+// keepintvl(),
+// keepcnt(),
+// len(),
+// status()
+// { addr_info_tail = &addr_info_head; *this = src; }
 
 ListenSocket& ListenSocket::operator=( const ListenSocket &src ) {
 	std::cout << "assigment called\n";
@@ -167,10 +183,10 @@ int	ListenSocket::addListenFd( const Iterator &it ) const {
 		return (-1);
 	}
 	if (bind(fd, it->ai_addr, it->ai_addrlen) < 0) {
-		return (-1);
+		return (-2);
 	}
 	if (listen(fd, backlog) < 0) {
-		return (-1);
+		return (-3);
 	}
 	return (fd);
 }

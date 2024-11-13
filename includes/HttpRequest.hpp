@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 15:25:21 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/12 18:16:47 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 19:06:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ class HttpRequest : public Http {
 	};
 	public:
 		HttpRequest( void );
-		HttpRequest( const std::string &str, size_t pos );
+		HttpRequest( size_t header_size );
 		HttpRequest( const HttpRequest &src );
 		HttpRequest& operator=( const HttpRequest &src );
 		~HttpRequest( void );
@@ -38,14 +38,14 @@ class HttpRequest : public Http {
 		int			getValidHeader( void ) const;
 
 		const std::string&	getContentType( void ) const;
+
 		uint64_t	getContentLength( void ) const;
 		void		normalizeUri( void );
 		size_t		addHeader( const std::string &str, size_t bytes );
 		size_t		addBody( const std::string &str, size_t pos );
 
 	private:
-		static const size_t	header_limit = 10000;
-
+		size_t		header_limit;
 		short		error;
 		http_method	method;
 		std::string	url;

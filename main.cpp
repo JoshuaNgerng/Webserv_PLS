@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/12 13:07:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/13 10:31:32 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,11 @@ int	main(int ac, char **av, char **env) {
 	} catch ( CgiPipe::ChildProcess &child ) {
 		std::cout << "\nchild process execve\n";
 		return (child.execveCgiPipe());
+	} catch ( const Server::SetupError &setup ) {
+		return (1);
+	} catch ( const std::exception &err ) {
+		std::cerr << Server::server_name << ": [crit] " 
+			<< err.what() << '\n';
 	}
 	return (0);
 }
