@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cookie Section</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <main>
+        <!-- start of header -->
+        <header>
+        <h1>yoko's kitchen</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html" id="home-link">home</a></li>
+                <li><a href="#">classes</a></li>
+                <li><a href="#">catering</a></li>
+                <li><a href="#">about</a></li>
+                <li><a href="contact.html" id="contact-link">contact</a></li>
+            </ul>
+
+            <form action="" method="" id="search-form">
+                <input type="text" name="query" id="search-bar" placeholder="Search courses..">
+                <button type="submit">Search</button>
+            </form>
+        </nav>
+        </header>
+        <!-- end of header -->
+
+        <!-- start of cookie section -->
+        <style type="text/css">
+            #cookie-section {
+                text-align: center;
+                color: #666666;
+                padding: 40px;
+            }
+
+            #cookie-section h2 {
+                font-size: 2em;
+                color: #de6581;
+                margin: 20px 0;
+            }
+
+            #cookie-section form {
+                display: inline-block;
+                text-align: left;
+                margin-bottom: 20px;
+            }
+
+            #cookie-section label {
+                display: block;
+                font-size: 1.1em;
+                margin: 10px 0px 5px;
+            }
+
+            #cookie-section input[type="text"] {
+                font-size: 1em;
+                width: 250px;
+                margin-bottom: 20px;
+                padding: 8px;
+                border: 1px solid #eeeeee;
+                border-radius: 5px;
+            }
+
+            #cookie-section button {
+                cursor: pointer;
+                display: block;
+                color: #ffffff;
+                background-color: #aeaca8;
+                margin: 0px auto;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+            }
+
+            #cookie-section button:hover {
+                background-color: #666666;
+            }
+
+            #cookie-section h3 {
+                margin-top: 30px;
+                font-size: 1.5em;
+            }
+
+            #cookies-list {
+                font-size: 1.1em;
+                color: #666666;
+                list-style-type: none;
+                padding: 0;
+            }
+
+            #cookies-list li {
+                margin-bottom: 10px;
+            }
+        </style>
+        <section id="cookie-section">
+            <h2>Store and View Cookies</h2>
+
+            <form action="" id="cookie-form">
+                <label for="cookie-name">Cookie Name:</label>
+                <input type="text" name="cookie-name" id="cookie-name" required>
+
+                <label for="cookie-value">Cookie Value:</label>
+                <input type="text" name="cookie-value" id="cookie-value" required>
+                <button type="submit">Set Cookie</button>
+            </form>
+
+            <h3>Stored Cookies:</h3>
+            <ul id="cookies-list">
+            </ul>
+        </section>
+        <!-- end of cookie section -->
+
+        <!-- start of footer -->
+        <footer>
+            &copy 2011 Yoko's Kitchen
+        </footer>
+        <!-- end of footer -->
+    </main>
+    <!-- <script src="script.js"></script> -->
+    <script>
+        {
+            const cookieForm = document.querySelector('#cookie-form');
+            cookieForm.onsubmit = function(e) {
+                e.preventDefault();
+
+                const cookieName = document.querySelector('#cookie-name').value;
+                const cookieValue = document.querySelector('#cookie-value').value;
+
+                document.cookie = `${cookieName}=${cookieValue}; path=/;`;
+
+                displayCookies();
+            };
+
+            function displayCookies() {
+                const cookiesList = document.querySelector('#cookies-list');
+                cookiesList.innerHTML = '';
+
+                const cookies = document.cookie.split(';');
+                cookies.forEach(cookie => {
+                    const cookieItem = document.createElement('li');
+                    cookieItem.textContent = cookie.trim();
+                    cookiesList.appendChild(cookieItem);
+                })
+            }
+
+            window.onload = displayCookies;
+        }
+    </script>
+</body>
+</html>
