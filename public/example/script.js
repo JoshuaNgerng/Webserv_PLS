@@ -43,49 +43,52 @@
         .then(courses => {
             coursesSection.innerHTML = '';
             courses.forEach(course => {
-                const courseElem = document.createElement('article');
-                courseElem.setAttribute('data-id', course.Title);
-                courseElem.innerHTML = `
-                    <div class="delete-btn">_</div>
-                    <figure>
-                        <img src="${course.Image}" alt="${course.Title}">
-                        <figcaption>${course.Title}</figcaption>
-                    </figure>
-                    <hgroup>
-                        <h2>${course.Title}</h2>
-                        <h3>${course.Subtitle}</h3>
-                    </hgroup>
-                    <p>${course.Description}</p>
-                `;
+                if (course.Title && course.Title.trim() !== '') {
+                    const courseElem = document.createElement('article');
+                    courseElem.setAttribute('data-id', course.Title);
+                    courseElem.innerHTML = `
+                        <div class="delete-btn">_</div>
+                        <figure>
+                            <img src="${course.Image}" alt="${course.Title}">
+                            <figcaption>${course.Title}</figcaption>
+                        </figure>
+                        <hgroup>
+                            <h2>${course.Title}</h2>
+                            <h3>${course.Subtitle}</h3>
+                        </hgroup>
+                        <p>${course.Description}</p>
+                    `;
+
+                    coursesSection.appendChild(courseElem);
 
 
-                coursesSection.appendChild(courseElem);
+                    {
+                        // Delete course if remove button is clicked
+                        const deleteBtn = document.querySelectorAll('.delete-btn');
 
+                        deleteBtn.forEach(btn => {
 
-                {
-                    // Delete course if remove button is clicked
-                    const deleteBtn = document.querySelectorAll('.delete-btn');
+                            btn.onclick = function() {
+                                const courseElem = btn.closest('article');
+                                const courseID = courseElem.getAttribute('data-id');
 
-                    deleteBtn.forEach(btn => {
-
-                        btn.onclick = function() {
-                            const courseElem = btn.closest('article');
-                            const courseID = courseElem.getAttribute('data-id');
-
-                            fetch(`/cgi-bin/delete_course.cgi?course-title=${courseID}`, {
-                                method: 'DELETE'
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success)
-                                    courseElem.remove();
-                                else
-                                    console.log('Failed to delete course:', data.error);
-                            })
-                            .catch(error => console.log('Error:', error));
-                        };
-                    })
+                                fetch(`/cgi-bin/delete_course.cgi?course-title=${courseID}`, {
+                                    method: 'DELETE'
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success)
+                                        courseElem.remove();
+                                    else
+                                        console.log('Failed to delete course:', data.error);
+                                })
+                                .catch(error => console.log('Error:', error));
+                            };
+                        })
+                    }
                 }
+
+
             })
         })
         .catch(error => console.log('Error loading courses:', error));
