@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 04:31:35 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 01:43:47 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:54:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,6 @@ static char hex2alpha(const std::string& str, size_t start) {
 	int c = 0;
 	for (int i = 1; i < 3; i ++) {
 		char check = str[start + i];
-		// std::cout << "hex2aplha check " << check << '\n';
 		c *= 16;
 		if (check >= 'a' && check <= 'f') {
 			c += 10 + check - 'a';
@@ -181,7 +180,6 @@ static char hex2alpha(const std::string& str, size_t start) {
 			c += check - '0';
 		}
 	}
-	// std::cout << "hex2alpha " << c << '\n';
 	return (static_cast<char>(c));
 }
 

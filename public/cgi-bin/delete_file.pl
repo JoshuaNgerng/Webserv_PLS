@@ -40,7 +40,7 @@ if ($cgi->request_method eq 'DELETE') {
     my $basename = basename($file);  # This ensures we get the file name only, no directory path
     my $file_path = "$file_dir/$basename";
 
-    print STDERR "check '$file_path' '$file' \n";
+    print STDERR "from CGI check '$file_path' '$file' \n";
 
     # Check if the file exists
     if (-e $file_path && -f $file_path) {

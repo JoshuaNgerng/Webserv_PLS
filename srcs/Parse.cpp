@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 20:55:12 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:08:34 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,6 @@ void	Parse::removeComments( std::string &content ) const {
 	// }
 	for (size_t pos = 0; pos < content.length(); pos ++) {
 		if (content[pos] == '#') {
-			std::cout << "huh?\n";
 			size_t check = content.find('\n', pos);
 			if (check == std::string::npos) {
 				check = content.length();
@@ -230,9 +229,7 @@ bool	Parse::checkBlockId( const std::string &token ) {
 			if (isServer && isLocation) {
 				isLocation = false;
 				block_id = location_;
-				std::cout << "try pushback vector\n";
 				serverinfo.addLocation(location);
-				std::cout << "reset location info\n";
 				location.reset();
 				return (true);
 			}
@@ -241,7 +238,6 @@ bool	Parse::checkBlockId( const std::string &token ) {
 		if (bracket_no == 0) {
 			if ((isServer && !isLocation && !isLimitExcept)) {
 				server->addServerInfo(serverinfo);
-				std::cout << "reset serverinfo\n";
 				serverinfo.reset();
 				isServer = false;
 				return (true);
@@ -368,7 +364,6 @@ void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 	while (line_stream >> token && semicolon == false)
 	{
 		cleanToken(token);
-		std::cout << "test token: " << token << '\n';
 		if (!token.length()) {
 			if (!getNextLine())
 				throw ParsingConfError(excepted_delimitor, ";");
@@ -386,7 +381,6 @@ void	Parse::processDirective( void (Parse::*process)(std::string &) ) {
 			if (no_para > para_limit)
 				throw ParsingConfError(invalid_no_parameter, directive_ptr);
 		}
-		// std::cout << "test directive " << process << "\n";
 		(this->*process)(token);
 	}
 	if (!semicolon)
@@ -405,7 +399,6 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 	void (Parse::*process)(std::string &); 
 	process = NULL;
 	int	index = checkMatch(parameter, directive);
-	// std::cout << "huh index: " << index << '\n';
 	switch (index)
 	{
 		case 0: 
@@ -463,7 +456,6 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 		default:
 			return (false);
 	}
-	// std::cout << "test infoblock\n";
 	directive_ptr = parameter[index];
 	processDirective(process);
 	return (true);
@@ -483,7 +475,7 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 void	Parse::processServer( const std::string &directive ) {
 	static const char	*parameter[] = {
 		"listen", "client_header_buffer_size", "client_header_timeout",
-		"merge_slash", "server_name", "try_files", NULL
+		"merge_slash", "server_name", NULL
 	};
 	void (Parse::*process)(std::string &);
 	process = NULL;
@@ -508,11 +500,6 @@ void	Parse::processServer( const std::string &directive ) {
 			break;
 		case 4:
 			process = &Parse::processServerName;
-			break;
-		case 5:
-			process = &Parse::processTryFiles;
-			para_limit = 2;
-			exact_para_limit = false;
 			break;
 		default:
 			throw ParsingConfError(unknown_directive, directive.c_str());
@@ -591,7 +578,6 @@ void	Parse::processToken( const std::string &token ) {
 	}
 	para_limit = 1;
 	exact_para_limit = true;
-	std::cout << "block_id " << block_id << '\n';
 	if (block_id == server_) {
 		if (bracket_no == 1) {
 			ptr = &serverinfo;
@@ -608,7 +594,6 @@ void	Parse::processToken( const std::string &token ) {
 		}
 		if (bracket_no == 2) {
 			ptr = &location;
-			std::cout << "location picked up\n";
 			if (!location.getLocationPath().length())
 				throw ParsingConfError(invalid_no_parameter, "location");
 			processLocation(token);
@@ -616,7 +601,6 @@ void	Parse::processToken( const std::string &token ) {
 		}
 	} else if (block_id == limitexcept_) {
 		if (isLocation && bracket_no == 2) {
-			std::cout << "add method here loca \n";
 			try {
 				location.addLimitExceptMethod(token);
 			} catch ( const std::exception &err ) {
@@ -625,7 +609,6 @@ void	Parse::processToken( const std::string &token ) {
 			return ;
 		}
 		if (isServer && bracket_no == 1) {
-			std::cout << "add method in server\n";
 			try {
 				serverinfo.addLimitExceptMethod(token);
 			} catch ( const std::exception &err ) {
@@ -668,7 +651,6 @@ void	Parse:: processContent( void ) {
 	while (getNextLine()) {
 		while (line_stream >> token) {
 			cleanToken(token);
-			std::cout << "test token " << token << '\n';
 			processToken(token);
 		}
 	}
@@ -691,7 +673,6 @@ void Parse::parseConfigFile( void ) {
 	fname = filename.c_str();
 	ParsingFileError::type = "[emerg]";
 	Parse::prog_name = Server::server_name;
-	std::cout << Server::server_name << '\n';
 	if (!server) {
 		throw ParsingFileError(-1);
 	}
@@ -763,7 +744,6 @@ void	Parse::checkParameterEnd( void ) {
 }
 
 void	Parse::processClientLimitMaxBody( std::string &token ){
-	std::cout << "test client limit " << token << ", testing " << processSizeParameter(token, directive_ptr) << '\n';
 	ptr->setClientMaxBodySize(processSizeParameter(token, directive_ptr));
 }
 
@@ -772,7 +752,6 @@ void	Parse::processClientBodyTimeout( std::string &token ) {
 }
 
 void	Parse::processErrorPage( std::string &token ) {
-	// std::cout << "testing add " << no_para << "\n";
 	if (no_para == 1) {
 		ptr->addErrorPage();
 	}
@@ -812,10 +791,6 @@ void	Parse::processIndex( std::string &token ) {
 	ptr->addIndex(token);
 }
 
-void	Parse::processTryFiles( std::string &token ) {
-	ptr->addTryFiles(token);
-}
-
 void	Parse::processAutoIndex( std::string &token ) {
 	ptr->toggleAutoIndex(processBoolParameter(token, directive_ptr));
 }
@@ -839,12 +814,10 @@ void	Parse::processAutoIndexLocalTime( std::string &token ) {
 }
 
 void	Parse::processCgi( std::string &token ) {
-	std::cerr << "testing cgi " << token << "location " << isLocation << " serverinfo " << isServer << '\n';
 	ptr->setCgiEnable(processBoolParameter(token, directive_ptr));
 }
 
 void	Parse::processAddHandler( std::string &token ) {
-		std::cerr << "testing addHandler " << token << " location " << isLocation << " serverinfo " << isServer << '\n';
 	ptr->addCgiMapping(token);
 }
 
@@ -853,7 +826,6 @@ void	Parse::processAction( std::string &token ) {
 		parsing_buffer = token;
 		return ;
 	}
-	std::cerr << "testing action " << token << "location " << isLocation << " serverinfo " << isServer << '\n';
 	ptr->addCgiMapping(parsing_buffer, token);
 }
 
@@ -985,7 +957,6 @@ void	Parse::processListen( std::string &token ) {
 	if (!token.length()) {
 		start = true;
 		serverinfo.addListen(listen_socket);
-		std::cout << "huh?\n";
 		listen_socket.reset();
 		return ;
 	}
@@ -1040,25 +1011,20 @@ void	Parse::processInternal( std::string &token ) {
 void	Parse::processReturn( std::string &token ) {
 	if (no_para == 1) {
 		if (!token.compare(0, 7, "http://") || !token.compare(0, 8, "https://")) {
-			// std::cout << "bruh " << token << '\n';
 			location.addReturn(302, token);
 			return ;
 		}
 		if (!all_of(token.begin(), token.end(), ::isdigit)) {
-			// std::cout << "err test1\n";
 			throw ParsingConfError(directive_ptr, token); // invalide return code err
 		}
 		int	check = std::atoi(token.c_str());
 		if (check < 100 || check > 599) {
-			// std::cout << "err test2\n";
 			throw ParsingConfError(directive_ptr, token); // invalide return code err
 		}
 		location.addReturn(check);
 		return ;
 	}
-	// std::cout << "huh " << token << '\n';
 	if (location.checkReturnUri().length() > 0) {
-		// std::cout << "err test3 " << location.checkReturnCode() << ' ' << location.checkReturnUri() <<'\n';
 		throw ParsingConfError(directive_ptr, location.checkReturnUri());
 	}
 	location.addReturn(token);
@@ -1239,59 +1205,3 @@ void	Parse::ParsingConfError::msgInit( const char *directive, const std::string 
 const char*	Parse::ParsingConfError::what() const throw() {
 	return (msg.c_str());
 }
-
-// void Parse::printLocations(const std::vector<Location*>& locations) {
-// 	for (size_t i = 0; i < locations.size(); ++i) {
-//         Location* loc = locations[i];
-//         std::cout << "\nLocation " << i + 1 << ":\n";
-//         std::cout << "Path: " << loc->path << "\n";
-
-//         std::cout << "Root: ";
-//         for (std::vector<std::string>::const_iterator it = loc->root.begin(); it != loc->root.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n";
-
-//         std::cout << "Autoindex: ";
-//         for (std::vector<std::string>::const_iterator it = loc->autoindex.begin(); it != loc->autoindex.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n";
-
-//         std::cout << "Index: ";
-//         for (std::vector<std::string>::const_iterator it = loc->index.begin(); it != loc->index.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n";
-
-//         std::cout << "Return Address: ";
-//         for (std::vector<std::string>::const_iterator it = loc->return_add.begin(); it != loc->return_add.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n";
-
-//         std::cout << "Alias: ";
-//         for (std::vector<std::string>::const_iterator it = loc->alias.begin(); it != loc->alias.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n";
-
-//         std::cout << "Allow Methods: ";
-//         for (std::vector<std::string>::const_iterator it = loc->allow_methods.begin(); it != loc->allow_methods.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n";
-
-//         std::cout << "CGI Paths: ";
-//         for (std::vector<std::string>::const_iterator it = loc->cgi_path.begin(); it != loc->cgi_path.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n";
-
-//         std::cout << "CGI Extensions: ";
-//         for (std::vector<std::string>::const_iterator it = loc->cgi_ext.begin(); it != loc->cgi_ext.end(); ++it) {
-//             std::cout << *it << " ";
-//         }
-//         std::cout << "\n\n";
-//     }
-// }

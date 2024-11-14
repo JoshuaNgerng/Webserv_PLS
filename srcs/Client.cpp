@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 20:39:32 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:51:14 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,6 @@ start_recv_cgi(0)
 { }
 
 Client::Client( const Client &src ) {
-	// std::cout << "client copy constructor called\n";
 	*this = src;
 }
 
@@ -106,14 +105,11 @@ Client&	Client::operator=( const Client &src ) {
 }
 
 Client::~Client( void ) {
-	std::cout << "client descrutor called\n";
 	if (!ignore_close_fd) {
 		if (socket_fd > 0) {
-			std::cout << "close socket fd " << socket_fd << "\n";
 			close(socket_fd);
 		}
 		if (content) {
-			std::cout << "close content: " << *content << "\n";
 			delete content;
 		}
 	}
@@ -171,9 +167,7 @@ void	Client::resetResponse( void ) {
 
 bool	Client::clientRecvHttp( void ) {
 	char	buffer[buffer_size + 1];
-	std::cout << "test socket_fd: " << socket_fd << '\n';
 	ssize_t	r = recv(socket_fd, buffer, buffer_size, recv_flag);
-	std::cerr << "test client recv: " << r << '\n';
 	if (r == 0) {
 		return (false);//delete if socket fd is zero or less ?
 	}
@@ -188,7 +182,6 @@ bool	Client::clientRecvHttp( void ) {
 		requests.push(new_req);
 	}
 	size_t pos = requests.back().addRequest(str);
-	// std::cout << "Queued request from: " << socket_fd << "\n" << requests.back();
 	while (pos) {
 		if (requests.back().isReady()) {
 			HttpRequest new_req(server_ref->getHeaderSizeLimit());
@@ -201,32 +194,22 @@ bool	Client::clientRecvHttp( void ) {
 	if (check > 0) {
 		routeError(check);
 	} else if (requests.front().isReady()) {
-		std::cout << "test start " << getCurrentPath() << '\n';
 		routeRequest();
 	}
 	if (requests.front().isHeaderReady()) {
 		setStartBodyTime();	
 	}
-	// if (response_ready) {
-		// std::cout << "Show HttpResponse\n" << response << '\n';
-	// }
-	return (true); // need to pause if header not valid
+	return (true);
 }
 
-// true fd still active false fd not active remove from Server
 bool	Client::clientRecvContent( void ) {
-	std::cerr << "recv content called\n";
 	if (!content || !content->checkStatus()) {
-		std::cerr << "content error\n";
 		return (false);
 	}
-	std::cerr << "test input fd " << content->getInputFd() << '\n';
 	if (is_proxy) {  } // r = recv(content->getInputFd(), buffer, buffer_size, recv_flag);
 	if (is_cgi) {
-		std::cerr << "huh cgi recv??\n";
 		return (clientRecvCgi());;
 	}
-	std::cerr << "is static file?\n";
 	return (clientRecvStaticFile());
 }
 
@@ -234,12 +217,9 @@ bool	Client::clientRecvStaticFile( void ) {
 	char	buffer[buffer_size + 1];
 	ssize_t	r = read(content->getInputFd(), buffer, buffer_size);
 	if (r < 0) {
-		std::cout << "client recv file close or failed: " << strerror(errno) <<"\n";
 		return (false);
 	} else if (r == 0) {
 		if (response.getBodyLength() != content_length) {
-			// std::cout << "what huh? length recieved " << response.getBodyLength() << " expected " << content_length << "\n";
-			// std::cout << response << '\n';
 			status_code = 500;
 			processResponseError();
 		}
@@ -249,11 +229,7 @@ bool	Client::clientRecvStaticFile( void ) {
 	response.addBody(buffer, static_cast<size_t>(r));
 	if (response.getBodyLength() == content_length) {
 		response.finishHttp();
-		// std::cout << "response for " << requests.front().getUri() << " is ready\n";
-		// std::cout << "Show HttpResponse\n" << response << '\n';
 		return (false);
-	} else {
-		// std::cout << "response for " << requests.front().getUri() << " is not ready\n";
 	}
 	return (true);
 }
@@ -261,24 +237,18 @@ bool	Client::clientRecvStaticFile( void ) {
 bool	Client::clientRecvCgi( void ) {
 	char	buffer[buffer_size + 1];
 	ssize_t r = read(content->getInputFd(), buffer, buffer_size);
-	std::cerr << "test reading r " << r << '\n';
 	if (r < 0) {
-		std::cout << "client recv content close or failed: " << strerror(errno) <<"\n";
 		return (false);
 	} else if (r == 0) {
-		std::cout << "content fd: " << content->getInputFd() << " ";
 		response.processCgiData();
 		return (false);
 	}
 	buffer[r] = '\0';
 	response.addFin(buffer, static_cast<size_t>(r));
-	// std::cerr << "test cgi recv\n" << response.getPtr2Http() << '\n';
 	response.processCgiDataHeader();
-	std::cerr << "test cgi data header\n";
 	if (response.isHeaderReady() && response.getContentLength()) {
 		if (response.getTotalLength() >= response.getContentLength()) {
 			response.processCgiData();
-			std::cerr << "cgi completed\n";
 			return (false);
 		}
 	}
@@ -289,60 +259,38 @@ bool	Client::clientSendContent( void ) {
 	if (!content || !content->checkStatus()) {
 		return (false);
 	}
-	std::cout << "test output fd " << content->getOutputFd() << '\n';
 	return (clientSendCgi());
 }
 
 bool	Client::clientSendCgi( void ) {
-	// std::cout << "client Send Response\n" << response;
 	HttpRequest	&req = requests.front();
-	// std::cout << "testing req " << requests.front() << std::endl;
 	ssize_t	no_bytes = write(content->getOutputFd(),
 		req.getPtr2Body(), req.getRemainderBody());
 	if (no_bytes <= 0) {
-		const char *errmsg = strerror(errno);
-		// if (!no_bytes) {
-			// std::cout << "test len " << len << "\n";
-		// } else if (no_bytes < 0) {
-			// std::cout << "some error\n";
-		// }
-		std::cout << "error sending to cgi: " << errmsg << "\n";
-		// reset();
 		return (false);
 	}
 	if (!req.checkSendBody(no_bytes)) {
-		// std::cout << response  "\nSent Response to: " << socket_fd << "\n";
-		// reset()
 		return (true);
-	} // else done
-	std::cout << "finish writing\n";
+	}
 	return (false);	
 }
 
 bool	Client::clientSendResponse( void ) {
-	// std::cout << "client Send Response\n" << response;
 	ssize_t	no_bytes = send(socket_fd,
 		response.getPtr2Http(), response.getRemainderHttp(), 0);
 	if (no_bytes <= 0) {
-		// std::cout << "error sending to client " << response.getPtr2Http() << "\n";
 		reset();
 		return (false);
 	}
 	if (!response.checkSendHttp(no_bytes)) {
-		// std::cout << response << "\nSent Response to: " << socket_fd << "\n";
-		// reset();
 		return (true);
 	}
-	// std::cout << "error sending to client " << response.getPtr2Http() << "\n";
 	return (false);
 }
 
 bool	Client::checkContentStatus( void ) {
-	std::cout << "checkContent called\n";
 	if (is_cgi) {
-		std::cout << "checking cgi\n";
 		if (!content->checkStatus()) {
-			std::cout << "checking cgi status failed\n";
 			return (false);
 		}
 		if (!response.getTotalLength()) {
@@ -354,7 +302,6 @@ bool	Client::checkContentStatus( void ) {
 		}
 		return (true);
 	}
-	std::cout << "checking static file\n";
 	if (response.getBodyLength() != content_length) {
 		return (false);
 	} else {
@@ -367,16 +314,15 @@ bool	Client::checkContentStatus( void ) {
 
 void	Client::processResponseSuccess( void ) {
 	if (is_directory) {
-		std::cout << "doing autoindex?\n";
 		const InfoBlock	*ptr = &(*server_ref);
 		if (location_ref != server_ref->getLocEnd() && location_ref->getAutoIndex() == on) {
 			ptr = &(*location_ref);
 		}
 		AutoIndex	gen(*ptr);
+		gen.getUriFromClient(*this);
 		response.addBody(gen.generateResource(content_name));
 		content_length = response.getBodyLength();
 		response.setHeader(status_code);
-		// std::cout << "test autoindex content: " << gen.generateResource(path) << '\n';
 		response.setContent(content_length, Http::getMimeType(gen.getExtension()));
 		response.finishHttp();
 		return ;
@@ -387,7 +333,6 @@ void	Client::processResponseSuccess( void ) {
 }
 
 void	Client::processResponseRedirect( void ) {
-	std::cout << "Redirect " << status_code << '\n';
 	has_content_fd = false;
 	response.setHeader(status_code, content_name);
 	response.setContent();
@@ -395,11 +340,9 @@ void	Client::processResponseRedirect( void ) {
 }
 
 void	Client::getDefaultError( void ) {
-	std::cout << "getting default error " << status_code << '\n';
 	response.reset();
 	response.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
 	content_length = response.getBodyLength();
-	std::cout << "default error len " << content_length << '\n';
 	response.setHeader(status_code);
 	response.setContent(content_length, Http::getMimeType("html"));
 	response.finishHttp();
@@ -452,16 +395,12 @@ bool	Client::processContent( const std::string &path ) {
 	File		*ptr = NULL;
 	const char	*ext = CheckFile::fetchExtension(content_name);
 	if (content) {
-		std::cout << "dup\n";
 		delete content;
 		content = NULL;
 	}
 	ptr = processContentCgiHelper(ext);
-	std::cerr << "is_cgi " << is_cgi << '\n';
-	std::cerr << "path " << path << '\n';
 	ptr->setContentPath(path);
 	if (!ptr->processFds()) {
-		std::cout << "PrcoessFds FAiled\n";
 		delete ptr;
 		status_code = 500;
 		return (false);
@@ -472,22 +411,18 @@ bool	Client::processContent( const std::string &path ) {
 
 void	Client::processResponseError( void ) {
 	resetResponse();
-	std::cout << "error status_code " << status_code << '\n';
 	content_name.clear();
 	if (location_ref != server_ref->getLocEnd()) {
 		location_ref->findErrorPath(content_name, status_code);
 	} else {
 		server_ref->findErrorPath(content_name, status_code);
 	}
-	std::cout << "client process error page name " << content_name << "\n";
 	if (!content_name.length()) {
 		getDefaultError();
 		return ;
 	}
 	std::string	path = root_dir + '/';
 	path += content_name; 
-	// std::cout << "client process error page name " << path << "\n";
-	// std::cout << "testing header " << response <<'\n';
 	CheckFile	check(path);
 	check.checking(F_OK | R_OK);
 	if (check.getAccessbility() < 0) {
@@ -501,12 +436,6 @@ void	Client::processResponseError( void ) {
 	}
 	has_content_fd = true;
 	is_content_fd_in_server = false;
-	std::cerr << "got error page " << path << " as " << content->getInputFd() << '\n';
-	// response.setHeader(status_code);
-	// response.setContent(
-		// Http::getMimeType(CheckFile::fetchExtension(content_name)),
-		// check.getFilesize()
-	// );
 }
 
 void	Client::errorOverwriteResponse( void ) {
@@ -516,7 +445,6 @@ void	Client::errorOverwriteResponse( void ) {
 }
 
 void	Client::errorOverwriteResponse( int status ) {
-	std::cout << "called overwriteError\n";
 	if (status_code == status) {
 		emergency_overwrite = true;
 		errorOverwriteResponse();
@@ -544,7 +472,6 @@ bool	Client::checkBodySize( const HttpRequest &req ) {
 	if (location_ref != server_ref->getLocEnd()) {
 		limit = location_ref->getBodySizeLimit();
 	}
-	std::cout << "test limit " << limit << ", content-length " << req.getContentLength() << '\n';
 	if (req.getContentLength() < limit) {
 		return (true);
 	}
@@ -663,9 +590,6 @@ int	Client::checkTimer( int fd ) {
 		}
 	}
 	if (time_diff > lim) {
-		// std::cout << "over time ";
-		// if (fd != socket_fd) {std::cout << "socket "; } else { std::cout << "content "; }
-		// std::cout <<'\n';
 		return (status);
 	}
 	return (200);

@@ -6,7 +6,7 @@ import cgitb
 import sys
 from pathlib import Path
 
-print("testing cgi script start", file=sys.stderr)
+print("From CGI, testing cgi python script start", file=sys.stderr)
 
 # Enable debugging
 cgitb.enable()

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 15:09:31 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 19:30:53 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:06:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ StaticFile&	StaticFile::operator=( const StaticFile &src ) {
 }
 
 bool	StaticFile::generateFds( void ) {
-	std::cout << "static file trying " << content_id << '\n';
 	content_input_fd = open(content_id.c_str(), O_RDONLY);
 	if (content_input_fd < 0) {
 		return (false);

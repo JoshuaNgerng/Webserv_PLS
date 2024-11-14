@@ -6,21 +6,17 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/21 00:20:54 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:07:14 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parse.hpp"
 
-Parse::Parse( void ) : filename("default.conf") { }
+Parse::Parse( void ) : line_counter(), block_level(),
+bracket_no(),filename("default.conf") { }
 
-Parse::Parse( const char *config ) : line_counter(), block_level(), bracket_no(), filename(config) { 
-	std::cout << "test constructor\n";
-	std::cout << line_counter << '\n';
-	std::cout << block_level << '\n';
-	std::cout << bracket_no << '\n';
-	std::cout << filename << '\n';
-}
+Parse::Parse( const char *config ) :
+line_counter(), block_level(), bracket_no(), filename(config) {  }
 
 Parse::~Parse( void ) { }
 
@@ -59,7 +55,6 @@ void	Parse::removeWhitespace( std::string &content ) const {
 			content.erase(pos, end);
 		if (check == pos)
 			check ++;
-		// std::cout << "check loop {" << pos << ", " << end << ", " << check << "}\n";
 		pos = check;
 	}
 }
@@ -69,10 +64,8 @@ bool	Parse::getNextLine( void ) {
 	if (content_stream.eof())
 		return (false);
 	std::getline(content_stream, line);
-	// std::cout << "test gnl: " << line << '\n';
 	while (!line.length()) {
 		std::getline(content_stream, line);
-		// std::cout << "test gnl: " << line << '\n';
 		if (line.length())
 			break ;
 		if (content_stream.eof())
@@ -81,7 +74,6 @@ bool	Parse::getNextLine( void ) {
 	line_stream.clear();
 	line_stream.str(line);
 	line_counter ++;
-	// std::cout << "test gnl: " << line << '\n';
 	return (true);
 }
 
@@ -143,7 +135,6 @@ void	Parse::processServer( const std::string &keyw ) {
 	}
 	void (Parse::*process)(std::string &);
 	process = NULL;
-	// std::cout << "server: " << first << ", option: " << option << '\n';
 	switch (option)
 	{
 	case 0:
@@ -165,12 +156,10 @@ void	Parse::processServer( const std::string &keyw ) {
 
 void	Parse::processListen( std::string &token ) {
 	listen.push_back(token);
-	std::cout << BOLDBLUE << "process listen " << token << RESET "\n";
 }
 
 void	Parse::processIndex( std::string &token ) {
 	index.push_back(token);
-	std::cout << BOLDGREEN << "process index " << token << RESET "\n";
 }
 
 void	Parse::processServerName( std::string &token ) {

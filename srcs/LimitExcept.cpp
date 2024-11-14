@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 22:45:19 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 21:06:03 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:58:58 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ LimitExcept&	LimitExcept::operator=( const LimitExcept &src ) {
 	if (this == &src) {
 		return (*this);
 	}
-	std::cout << "limit except operator called\n";
 	network_ranges_v4 = src.network_ranges_v4;
 	network_ranges_v6 = src.network_ranges_v6;
 	methods = src.methods;
@@ -35,7 +34,6 @@ LimitExcept&	LimitExcept::operator=( const LimitExcept &src ) {
 }
 
 void	LimitExcept::addMethods( const std::string& method ) {
-	std::cout << "addMethod called " << method << "\n";
 	int check = Http::checkMethods(method);
 	if (check < 0) {
 		throw std::invalid_argument("LimitExcept method");
@@ -58,7 +56,6 @@ static addrinfo_t*	getAddrInfo( void ) {
 	addrinfo_t	hints = {0, AF_UNSPEC, SOCK_STREAM, 0, sizeof(*(hints.ai_addr)), 0, 0, 0};
 	int status = 0;
 	if ((status = getaddrinfo("0.0.0.0", NULL, &hints, &res)) < 0) {
-		std::cerr << "any v4 error " << gai_strerror(status) << '\n';
 		return (NULL);
 	}
 	ptr = res;
@@ -66,7 +63,6 @@ static addrinfo_t*	getAddrInfo( void ) {
 		ptr = ptr->ai_next;
 	}
 	if ((status = getaddrinfo("::", NULL, &hints, &ptr->ai_next)) < 0) {
-		std::cerr << "any v6 error " << gai_strerror(status) <<	"\n";
 		freeaddrinfo(res);
 		return (NULL);
 	}
@@ -103,7 +99,6 @@ void	LimitExcept::addNetwork( const std::string &str, bool cond ) {
 		addr = getAddrInfo(str);
 	}
 	if (!addr) {
-		std::cerr << "getAddrInfo blank\n";
 		throw std::invalid_argument("LimitExcept allow");
 	}
 	for (const addrinfo_t *ptr = addr; ptr != NULL; ptr = ptr->ai_next) {
@@ -136,17 +131,14 @@ int	LimitExcept::checkAccess( const Client &client ) const {
 	typedef std::map<NetworkRange, bool>::const_iterator	iter;
 	typedef std::vector<Http::http_method>::const_iterator	method_iter;
 	if (!methods.size()) {
-		std::cout << "\nno method size\n";
 		return (200);
 	}
 	const sockaddr_storage_t& addr = client.getAddr(*this);
 	bool	method_allowed = false;
 	bool	within_range = false;
 	bool	allow_or_deny = true;
-	std::cout << "testing limit except " << client.getReqMethod() << '\n';
 	for (method_iter it = methods.begin(); it != methods.end(); it ++) {
 		if (*it == client.getReqMethod(*this)) {
-			std::cout << "method allowed true\n";
 			method_allowed = true;
 			break ;
 		}

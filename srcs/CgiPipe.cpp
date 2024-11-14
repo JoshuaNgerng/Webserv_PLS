@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 12:50:20 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 15:45:00 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:49:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ CgiPipe::CgiPipe( void ) :
 CgiPipe::CgiPipe( const std::string &bin, Client &client ) :
 	File(), status(0), kill_child(false), child_id(-1),
 	directory(""), bin_path(bin), req_info(),
-	env(), ptr(&client), child_done(false) { std::cout << "CgiCreated\n"; }
+	env(), ptr(&client), child_done(false) { }
 
 CgiPipe::CgiPipe( const CgiPipe &src ) :
 	File(src), status(src.status), kill_child(src.kill_child),
@@ -29,17 +29,13 @@ CgiPipe::CgiPipe( const CgiPipe &src ) :
 	req_info(src.req_info), env(src.env), ptr(src.ptr), child_done(src.child_done) { }
 
 CgiPipe::~CgiPipe( void ) {
-	std::cout << "Cgipipe deconstructor\n";
 	if (child_id > 0 && kill_child) {
-		std::cout << "kill child " << child_id << '\n';
 		kill(child_id, SIGKILL);
 	}
 	if (content_input_fd > 0) {
-		std::cout << "close " <<content_input_fd <<'\n';
 		close(content_input_fd);
 	}
 	if (content_output_fd > 0) {
-		std::cout << "close " << content_output_fd << '\n';
 		close(content_output_fd);
 	}
 }
@@ -83,13 +79,11 @@ bool	CgiPipe::changeDir( void ) {
 	if (chdir(directory.c_str()) < 0) {
 		return (false);
 	}
-	// std::cout << "chdir " << directory << '\n';
 	content_id.erase(0, pos + 1);
 	return (true);
 }
 
 bool	CgiPipe::getBinary( void ) {
-	std::cerr << "getBInary called\n";
 	std::ifstream	script(content_id.c_str());
 	if (!script.is_open()) {
 		return (false);
@@ -180,22 +174,17 @@ void	CgiPipe::addBin( const std::string &content_name, const std::string &bin ) 
 }
 
 int	CgiPipe::execvChild( void ) {
-	std::cerr << "execv Child start\n";
 	bool	check = false;
 	if (!changeDir()) {
-		std::cerr << "dup2 or chdir failed\n";
 		return (500);
 	}
 	if (dup2(pipefd[2], STDIN_FILENO) < 0) {
-		std::cerr << "err dup2 stdin\n"; 
 		check = true;
 	}
 	if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
-		std::cerr << "err dup2 stdout\n";
 		check = true;
 	}
 	for (int i = 0; i < 4; i ++) {
-		std::cerr << "child close: " << pipefd[i] << '\n';
 		close(pipefd[i]);
 	}
 	if (check) {
@@ -203,39 +192,20 @@ int	CgiPipe::execvChild( void ) {
 	}
 	if (!bin_path.length()) {
 		if (!getBinary()) {
-			std::cerr << "non bin\n";
 			return (404);
 		}
 	}
-	// return (500);
 	std::vector<const char *>buffer_exec;
-	// std::cout << "cgi bin " << bin_path << '\n';
-	// std::cout << "name " << content_id << '\n';
 	buffer_exec.push_back(bin_path.c_str());
 	if (bin_path != content_id) {
 		buffer_exec.push_back(content_id.c_str());
 	}
 	buffer_exec.push_back(NULL);
-	std::cerr << "execve setup: ";
-	for (size_t i = 0; buffer_exec[i]; i ++) {
-		std::cerr << buffer_exec[i] << ' ';
-	}
-	std::cerr << std::endl;
-	std::cerr << "execve env: ";
-	for (size_t i = 0; env[i]; i ++) {
-		std::cerr << env[i] << '\n';
-	}
-	std::cerr << std::endl;
-	// std::cerr << "\n";
-	// const char *str = "/usr/bin/echo";
-	// const char *s[] =  {"echo", "hello", "bye", NULL};
 	execve(
-		// str,  const_cast<char**>(s), Server::env 
 		bin_path.c_str(),
 		const_cast<char**>(&buffer_exec[0]),
 		const_cast<char**>(&env[0])
 	);
-	std::cerr << "execv failed " << strerror(errno) << std::endl;
 	return (500);
 }
 
@@ -245,13 +215,9 @@ bool	CgiPipe::generateFds( void ) {
 	}
 	counter = 2;
 	addEnv(*ptr, Server::env);
-	std::cout << "generate child process\n";
 	child_id = fork();
 	if (child_id == 0) {
-		std::cerr << "Child process generated n throw error\n";
-		// ptr->detachContent();
 		throw ChildProcess(*this);
-		std::cerr << "check throw status\n";
 	}
 	close(pipefd[1]);
 	close(pipefd[2]);
@@ -264,7 +230,6 @@ bool	CgiPipe::generateFds( void ) {
 
 bool	CgiPipe::checkStatus( void ) {
 	if (child_id < 0) {
-		std::cout << "cant fork\n";
 		return (false);
 	}
 	if (child_done) {
@@ -272,18 +237,13 @@ bool	CgiPipe::checkStatus( void ) {
 	}
 	int	check = waitpid(child_id, &status, WNOHANG);
 	if (check == 0) {
-		// timer ??
-		std::cout << "child process still runnning\n";
 		kill_child = true;
 		return (true);
 	} else {
 		child_done = true;
 	}
 	kill_child = false;
-	std::cout << "Child process finished\n";
-	std::cout << "test status: " << status << " " << WIFEXITED(status) << '\n';
 	if (status) {
-		std::cout << "false\n";
 		status = WIFEXITED(status);
 		if (status != 404) {
 			status = 500;
@@ -291,9 +251,6 @@ bool	CgiPipe::checkStatus( void ) {
 		ptr->addContent(status);
 		return (false);
 	}
-	std::cout << "true\n";
-	// other checks may need an int to get status
-	// or other checks on status
 	return (true);
 }
 

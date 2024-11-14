@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 20:36:22 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:57:54 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,6 @@ void	HttpResponse::reset( void ) {
 bool	HttpResponse::isReady( void ) const { return (ready); }
 
 bool	HttpResponse::validateHttpStart( const std::string &line ) const {
-	std::cerr << "validateHttpStart\n";
 	std::string buffer;
 	size_t i = 0, j = 0;
 	for (; i < line.length(); i ++) {
@@ -150,7 +149,6 @@ bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 		return (false);
 	}
 	buffer = line.substr(0, i);
-	std::cerr << "test http " << buffer << '\n';
 	if (buffer != "HTTP/1.1") {
 		return (false);
 	}
@@ -165,42 +163,30 @@ bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 	}
 	buffer = line.substr(j, i - j);
 	int	check = std::atoi(buffer.c_str());
-	std::cerr << "test header response " << buffer << ", no "<< check <<"\n";
 	if (check < 100 || check > 599) {
 		return (false);
 	}
 	if (line[line.length() - 1] != '\r') {
-		std::cerr << "no \\r end \n";
 		return (false);
 	}
-	std::cerr << "validate true\n";
 	return (true);
 }
 
 bool	HttpResponse::generateHeaderHelper( const std::string &line ) {
 	std::string	field, val;
 	size_t 		pos = line.find(':');
-	std::cerr << "testing generateHeader: " << line << '\n';
 	if (pos == std::string::npos) {
-		std::cout << "no : found\n";
 		return (false) ;
 	}
 	field = line.substr(0, pos);
 	val = line.substr(pos + 1);
 	if (!validateField(field) || !validateValue(val) ||
 		line[line.length() - 1] != '\r') {
-		std::cout << "invalid line " << field << ": |" << val << "|\n";
-		std::cout << "test \\r end: " << (line[line.length() - 1] != '\r') << ", " << (validateField(field))
-		<< ", " << (validateValue(val)) << '\n';
-		std::cout << "test char end (" << static_cast<int>(line[line.length() - 1]) << ") " << line[line.length() -1] << "\n";
 		return (false) ;
 	}
 	if (field == "content-length") {
-		std::cout << "cgi detect content-length |" << val << "|\n";
 		content_length = std::atoll(val.c_str());
-		std::cout << "atoll result " << content_length << '\n';
 	} else if (field == "content-type") {
-		std::cout << "cgi detect content-type " << val << "\n";
 		content_type = val;
 	}
 	header += line + '\n';
@@ -231,13 +217,10 @@ bool	HttpResponse::processCgiDataHeader( void ) {
 		return (false);
 	}
 	pos += 4;
-	std::cerr << "huh?\n";
 	std::string	buffer = combine.substr(0, pos);
 	combine.erase(0, pos);
 	header_ready = true;
-	std::cerr << "before generateHeader\n";
 	generateHeader(buffer);
-	std::cerr << "bruh\n";
 	return (true);
 }
 

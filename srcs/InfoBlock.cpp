@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 21:05:05 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:58:39 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 InfoBlock::InfoBlock( void ) :
 empty(""),
 error_page(),
-try_files(),
 if_modify_since(0),
 root(""),
 client_body_timeout(0),
@@ -36,17 +35,13 @@ limit_except(),
 alias(false),
 root_ptr(&root),
 index_ptr(&index),
-try_files_ptr(&try_files),
 error_page_ptr(&error_page),
 limit_except_ptr(&limit_except)
-{ 
-	// std::cout << "test default constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
-}
+{ }
 
 InfoBlock::InfoBlock( const InfoBlock &src ) :
 empty(""),
 error_page(),
-try_files(),
 if_modify_since(0),
 root(""),
 client_body_timeout(0),
@@ -65,11 +60,9 @@ limit_except(),
 alias(false),
 root_ptr(&root),
 index_ptr(&index),
-try_files_ptr(&try_files),
 error_page_ptr(&error_page),
 limit_except_ptr(&limit_except)
 {
-	// std::cout << "test copy constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
 	*this = src;
 }
 
@@ -77,9 +70,7 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	if (this == &src) {
 		return (*this);
 	}
-	std::cout << "infoblock operator called\n";
 	error_page = src.error_page;
-	try_files = src.try_files;
 	if_modify_since = src.if_modify_since;
 	root = src.root;
 	client_body_timeout = src.client_body_timeout;
@@ -96,8 +87,6 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	cgi_timeout = src.cgi_timeout;
 	limit_except = src.limit_except;
 	alias = src.alias;
-	// std::cout << "test copy operator " << try_files.size() << " & " << try_files_ptr->size() << '\n';
-	// std::cout << "check?\n";
 	return (*this);
 }
 
@@ -105,7 +94,6 @@ InfoBlock::~InfoBlock( void ) { }
 
 void	InfoBlock::reset( void ) {
 	error_page.clear();
-	try_files.clear();
 	if_modify_since = undefined_;
 	root.clear();
 	client_body_timeout = 0;
@@ -129,25 +117,20 @@ bool	InfoBlock::searchSingleFile(
 	std::string	path(root_);
 	client.addRootDir(path);
 	path += fname;
-	std::cout << "checking file: " << path << '\n';
 	CheckFile	file_info(path);
 	file_info.checking(F_OK | R_OK);
 	if (file_info.getAccessbility() < 0) {
-		std::cout << "file cant access\n";
 		client.addContent(404);
 		return (false);
 	}
 	if (file_info.getType() == directory) {
-		std::cout << "directory " << path << '\n';
 		client.addContent(308, fname + '/');
 		return (true);
 	}
 	if (file_info.getType() != file && file_info.getType() != systemlink) {
-		std::cout << "file type error: " << static_cast<int>(file_info.getType()) << '\n';
 		client.addContent(404);
 		return (false);
 	}
-	std::cout << "client add Content: " << fname << '\n';
 	client.addContent(200, fname, file_info.getFilesize());
 	return (true);
 } 
@@ -172,34 +155,24 @@ bool	InfoBlock::resolveUri(
 		is_directory = true;
 		path += uri;
 	}
-	std::cout << "test here 2\n";
 	if (is_directory) {
-		std::cout << "resolveUri is_directory check\n";
 		if (searchIndexes(client, path)) {
 			return (true);
 		} else if (autoindex == on) {
-			std::cout << "test autoindex on\n";
 			client.addDir(path);
 			return (true);
 		}
 		client.addContent(403);
 		return (false);
 	}
-	std::cout << "test resolve Uri path: " << path << " uri: " << uri << '\n';
 	if (searchSingleFile(client, path, uri)) {
 		return (true);
 	}
 	return (false);
 }
 
-void	InfoBlock::routingClient(
-	Client &client, const std::string &location_, std::string *redirect
-) const {
-	typedef std::vector<std::string>::const_iterator	iter;
-	std::cout << "limit_except checking ";
+void	InfoBlock::routingClient( Client &client, const std::string &location_ ) const {
 	int	checking = limit_except_ptr->checkAccess(client);
-	std::cout << checking << '\n';
-	std::cout << "check own limit size " << limit_except.getNumMethod() << '\n';
 	if (checking > 200) {
 		client.addContent(checking);
 		return ;
@@ -209,36 +182,13 @@ void	InfoBlock::routingClient(
 		current_uri.erase(0, location_.length());
 	}
 	if (!CheckFile::checkAccessbility(root_ptr->c_str(), X_OK)) {
-		// std::cout << "root_dir dont exist\n";
 		client.addContent(404);
 		return ;
 	}
-	if (!try_files_ptr->size()) {
-		resolveUri(client, *root_ptr, current_uri);
-		return ;
-	}
-	iter end = -- try_files_ptr->end();
-	for (iter it = try_files_ptr->begin(); it != end; it ++) {
-		std::string buffer;
-		EmbeddedVariable::resolveString(buffer, *it, client, current_uri);
-		std::string new_uri = *root_ptr + buffer;
-		if (resolveUri(client, *root_ptr, new_uri))
-			return ;
-	}
-	const std::string &str = *end;
-	if (str[0] == '=') {
-		client.addContent(::atoi(str.c_str() + 1));
-		return ;
-	}
-	if (redirect) {
-		*redirect = str;
-	}
+	resolveUri(client, *root_ptr, current_uri);
 }
 
 void	InfoBlock::defaultSetting( void ) {
-	// std::cout << "test deafult main \n";
-	// std::cout << "test try_files size " << try_files.size() << " " << try_files_ptr->size() << '\n';
-	// std::cout << "test limit size " << client_max_body_size << '\n';
 	if (if_modify_since == undefined_) {
 		if_modify_since = off_;
 	}
@@ -301,10 +251,6 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 			error_page_ptr = &ref.error_page;
 		}
 	}
-	// std::cout << "test default ref try_files" << ref.try_files.size() << '\n';
-	if (!try_files.size() && ref.try_files.size() > 0) {
-		try_files_ptr = &ref.try_files;
-	}
 	if (autoindex == undefined) {
 		autoindex = ref.autoindex;
 	}
@@ -317,7 +263,6 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	if (autoindex_format == none) {
 		autoindex_format = ref.autoindex_format;
 	}
-	std::cout << "parsing autoindex format " << autoindex_format << '\n';
 	if (symlinks == undefined) {
 		symlinks = ref.symlinks;
 	}
@@ -349,11 +294,6 @@ void	InfoBlock::addErrorPage( const std::string &add ) {
 	if (!error_page.back().inputStr(add)) {
 		throw std::invalid_argument("add Error Page");
 	}
-}
-
-void	InfoBlock::addTryFiles( const std::string &add ) {
-	try_files.push_back(add);
-	EmbeddedVariable::shortFormString(try_files[try_files.size() - 1]);
 }
 
 void	InfoBlock::addRoot( const std::string &add ) {

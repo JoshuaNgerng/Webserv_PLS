@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 15:59:34 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:57:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,22 +62,17 @@ HttpRequest&	HttpRequest::operator=( const HttpRequest &src ) {
 HttpRequest::~HttpRequest( void ) { }
 
 size_t	HttpRequest::addBody( const std::string &str, size_t pos ) {
-	// std::cerr << "added Body pos " <<  pos << ", buffer len " << str.length() <<"\n";
 	size_t excepted_bytes = content_length - body.length();
 	if (str.length() - pos > excepted_bytes)
 	{
-		// std::cerr << "add Body excced excepted\n";
 		body.append(str, pos, excepted_bytes);
 		ready = true;
 		return (str.length() - pos - excepted_bytes);
 	}
 	body.append(str, pos);
 	if (body.length() != content_length) {
-		// std::cerr << "body still needed, " << body.length() << " expected: "
-		// << content_length << '\n';
 		return (0);
 	}
-	// std::cerr << "add all in body ready to go\n";
 	ready = true;
 	return (0);
 }
@@ -87,8 +82,6 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 		return (addBody(str, 0));
 	}
 	size_t pos = str.find("\r\n\r\n");
-	// std::cout << "str: " << str << '\n';
-	// std::cout << "test \\r\\n\\r\\n: " << pos << '\n';
 	if (pos == std::string::npos) {
 		header += str;
 		if (header.length() > header_limit) {
@@ -98,20 +91,16 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 	}
 	pos += 4;
 	header.append(str, 0, pos);
-	// std::cout << "wait what\n" << header;
 	if (header.length() > header_limit) {
 		error = limit_exceed;
-		// std::cout << "limit excced error\n";
 		return (str.length() - pos);
 	}
 	validateHeader();
 	header_ready = true;
 	if (method == POST || method == PUT) {
-		// std::cout << "body method called\n";
 		if (!(validateBody()))
 			return (str.length() - pos);
 		has_body = true;
-		// std::cerr << "start addBody, " << pos << '\n';
 		return (addBody(str, pos));
 	}
 	else
@@ -120,14 +109,12 @@ size_t	HttpRequest::addRequest( const std::string &str ) {
 }
 
 bool	HttpRequest::validateUrl( void ) {
-	std::cout << "huh? " << uri << "\n";
 	if (uri[0] != '/') {
 		return (false);
 	}
 	if (!(EmbeddedVariable::checkUrl(uri))) {
 		return (false);
 	}
-	// std::cout << "validate here?\n";
 	std::string	buffer;
 	url = "http://";
 	buffer = getField("host");
@@ -136,21 +123,16 @@ bool	HttpRequest::validateUrl( void ) {
 	}
 	url += buffer;
 	size_t pos = uri.find('?');
-	std::cerr << "test uri " << uri << '\n';
 	path = uri.substr(0, pos);
 	if (pos != std::string::npos) {
 		query = uri.substr(pos + 1);
 	}
 	path = EmbeddedVariable::decodeUrl(path);
-	std::cerr << "decode path " << path << '\n';
-	std::cerr << "query befpre " << query << '\n';
 	query = EmbeddedVariable::decodeUrl(query);
-	std::cerr << "decode query " << query << '\n';
 	return (true);
 }
 
 bool	HttpRequest::validateStartLine( const std::string &start ) {
-	// std::cout << "Header Start line " << start << '\n';
 	std::string buffer;
 	size_t i = 0, j = 0;
 	for (; i < start.length(); i ++) {
@@ -162,15 +144,11 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	if (!i)
 		return (false);
 	buffer = start.substr(0, i);
-	// std::cout << "test error\n";
 	int check_method = checkMethods(buffer);
 	if (check_method < 0) {
-		// std::cout << "error http method " << buffer << "\n";
 		return (false);
 	}
-	// std::cout << "test error 2\n";
 	method = static_cast<http_method>(check_method);
-	// std::cout << "valid method " << buffer << " " << method << '\n';
 	i ++;
 	j = i;
 	for (; i < start.length(); i ++) {
@@ -180,10 +158,8 @@ bool	HttpRequest::validateStartLine( const std::string &start ) {
 	if (j == i)
 		return (false);
 	uri = start.substr(j, i - j);
-	std::cout << "uri called " << uri << "\n";
 	i ++;
 	j = i;
-	// std::cout << "test error 3\n";
 	for (; i < start.length(); i ++) {
 		if (start[i] == ' ' || start[i] == '\r')
 			break ;
@@ -220,48 +196,39 @@ bool	HttpRequest::validateHeader( void ) {
 	std::istringstream	ss(header);
 	std::string			token;
 	bool				check = false;
-	// std::cout << "validate here?\n" ;
 	std::getline(ss, token);
 	if (!(validateStartLine(token))) {
-		// std::cout << "Http start Error\n";
 		return (false);
 	}
 	while (std::getline(ss, token)) {
 		std::string buffer_field;
 		std::string buffer_value;
-		// std::cout << token << '\n';
 		if (token == "\r") {
 			check = true;
 			break ;
 		}
 		size_t	pos = token.find(":");
 		if (pos == std::string::npos) {
-			std::cout << "test Http Request Valid cant find :\n";
 			return (false);
 		}
 		buffer_field = token.substr(0, pos);
 		if (!(validateField(buffer_field))) {
-			std::cout << "test Http Request Valid have invalid char\n";
 			return (false);
 		}
 		int space = (token[pos + 1] == ' ') ? 1 : 0;
 		buffer_value = token.substr(pos + 1 + space);
 		if (!(validateValue(buffer_value))) {
-			std::cout << "test Http Request Valid Value have invalid char\n";
 			return (false);
 		}
 		if (token[token.length() - 1] != '\r') {
-			std::cout << "test Http Request Valid doesnt end with \\r \n";
 			return (false);
 		}
 		token.erase(-- token.end());
 		if (!addHeaderFields(buffer_field, buffer_value)) {
-			std::cout << "test Http Request Valid have dup or invalid header value\n";
 			return (false);
 		}
 	}
 	if (!check) {
-		std::cout << "test Http Request Valid doesnt end with \\r\\n\n";
 		return (false);
 	}
 	if (!validateUrl()) {
@@ -275,13 +242,11 @@ bool	HttpRequest::validateBody( void ) {
 	typedef std::map<std::string, std::string>::iterator iter;
 	iter it = header_fields.find(fields[C_TYPE]);
 	if (it == header_fields.end()) {
-		std::cout << "no content-type\n";
 		return (false);
 	}
 	content_type = it->second;
 	it = header_fields.find(fields[C_LEN]);
 	if (it == header_fields.end()) {
-		std::cout << "no content-len\n";
 		return (false);
 	}
 	size_t counter = 0;
@@ -294,9 +259,7 @@ bool	HttpRequest::validateBody( void ) {
 	while (ptr2 != ptr && std::isspace(*(ptr2 - 1))) {
 		ptr2 --;
 	}
-	// std::cout << "testing |" << it->second << "|\n";
 	if (!(all_of(ptr, ptr2, ::isdigit))) {
-		std::cout << "invalid content-len\n";
 		return (false);
 	}
 	content_length = static_cast<uint64_t>(
@@ -345,14 +308,5 @@ std::ostream&	operator<<( std::ostream &o, const HttpRequest &req ) {
 	o << "Validate Header: " << ((!req.getValidHeader()) ? "true" : "false") << "\n";
 	o << "Header\n" << req.getHeader();
 	o << "Body\n" << req.getBody();
-		// 	http_method	getMethod( void ) const;
-		// const std::string&	getUri( void ) const;
-		// const std::string&	getProtocol( void ) const; // empty
-		// bool		getHasBody( void ) const;
-		// bool		getValidHeader( void ) const;
-		// bool		isReady( void ) const; //empty
-
-		// type		getContentType( void ) const;
-		// uint64_t	getContentLength( void ) const;
 	return (o);
 }

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 16:37:55 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 02:03:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:59:45 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,12 @@ Location::~Location( void ) { }
 
 void Location::routeClientReturn( Client &client ) const {
 	int check = return_.first;
-	std::cout << "test return code " << check << '\n';
 	if (check > 299 && check < 400) {
-		std::cout << "add redirect\n";
 		client.addContent(check, return_.second);
 		return ;
 	}
 	client.addContent(check);
-	// client. add Body?
+	// client. add Body? COUT
 }
 
 void	Location::routingClient( Client &client ) const {

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 12:24:47 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:54:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,6 @@ Http&	Http::operator=( const Http &src ) {
 bool	Http::validateField( std::string &str ) const {
 	static int diff = 'a' - 'A';
 	static const char *invalid_char = "()<>@,;:\'\"/[]?={} ~";
-	// std::cout << "test Http Request Valid test str in checkField: " << str << "\n";
 	for (size_t i = 0; i < str.length(); i ++) {
 		if ((::isupper(str[i]))) {
 			str[i] += diff;
@@ -111,7 +110,6 @@ bool	Http::validateField( std::string &str ) const {
 		}
 		for (size_t j = 0; invalid_char[j]; j ++) {
 			if (str[i] < 32 || str[i] == 127 || str[i] == invalid_char[j]) {
-				// std::cout << "invalid_char found (" << str[i] << ")[" << static_cast<int>(str[i]) << "]\n";
 				return (false);
 			}
 		}
@@ -120,10 +118,8 @@ bool	Http::validateField( std::string &str ) const {
 }
 
 bool	Http::validateValue( const std::string &str ) const {
-	// std::cout << "checkValue " << str << '\n';
 	for (size_t i = 0; i < str.length() - 1; i ++) {
 		if (str[i] < 32 || str[i] == 127) {
-			// std::cout << "invalid_char found (" << str[i] << ")[" << static_cast<int>(str[i]) << "]\n";
 			return (false);
 		}
 	}

@@ -6,12 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 02:33:00 by jngerng           #+#    #+#             */
-/*   Updated: 2024/10/29 00:30:15 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:51:06 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "AutoIndex.hpp"
 #include "CheckFile.hpp"
+#include "Client.hpp"
 
 const char *AutoIndex::template_html =
 "<html><head><title>Index of @</title></head>\n""<body>\n"
@@ -62,15 +63,12 @@ AutoIndex::~AutoIndex( void ) { if (dir) { closedir(dir); } }
 
 int	AutoIndex::iterDir( std::string &name, std::string &time, uint64_t &size ) {
 	char	buffer[64];
-	// std::cout << "iterDir??\n";
 	struct dirent *entry = readdir(dir);
 	name.clear();
-	// std::cout << "test iterDir\n";
 	if (!entry) {
 		return (0);
 	}
 	name = entry->d_name;
-	// std::cout << "name?: " << name << '\n';
 	if (name[0] == '.' && name[1] == '\0') {
 		return (-1);
 	}
@@ -78,27 +76,22 @@ int	AutoIndex::iterDir( std::string &name, std::string &time, uint64_t &size ) {
 	CheckFile	file_info(root_name);
 	file_info.checking();
 	if (file_info.getType() == unknown) {
-		// std::cout << "failed file type\n";
 		return (root_name.resize(root_len), -1);
 	}
 	size = file_info.getFilesize();
 	if (file_info.getType() == directory) {
-		// std::cout << "directory\n";
 		name += "/";
 		return (root_name.resize(root_len), 2);
 	}
 	size_t r = std::strftime(buffer, sizeof(buffer), "%d-%b-%y %H:%M", file_info.getTime());
 	buffer[r] = '\0';
 	time = buffer;
-	// std::cout << "test end\n";
-	// std::cout << "filename: " << name << '\n';
 	return (root_name.resize(root_len), 1);
 }
 
 static std::string	makeHtmlList( int check, const std::string &name, const std::string &time, uint64_t len ) {
 	std::string	buffer("<a href=\"");
 	std::string	numstring = to_String(len);
-	// std::cout << "check: " << check << '\n';
 	if (check == 2)
 		numstring = "-";
 	buffer += name;
@@ -114,154 +107,87 @@ static std::string	makeHtmlList( int check, const std::string &name, const std::
 		buffer.insert(buffer.length(), 50 - name.length(), ' ');
 	}
 	buffer += time;
-	// std::cout << "time: " << time << '\n';
 	if (name != "../") {
 		buffer.insert(buffer.length(), 20 - numstring.length(), ' ');
 		buffer += numstring + '\n';
 	} 
 	else {
-		// buffer.insert(buffer.length(), 19, ' ').append("\n");
 		buffer += "\n";
 	}
 	return (buffer);
 }
 
-// std::string	AutoIndex::generateHtml( DIR *dir ) {
-// 	std::string	out(template_html);
-// 	size_t	pos = out.find("@");
-// 	out.replace(pos, 1, root_name);
-// 	pos = out.find("@", pos + 1);
-// 	out.replace(pos, 1, root_name);
-// 	std::string	fname;
-// 	std::string	time;
-// 	uint64_t	size;
-// 	// std::cout << "testinng\n";
-// 	int check = iterDir(fname, time, size);
-// 	// std::cout << "testing\n";
-// 	pos = out.find('*', pos);
-// 	out.erase(pos, 1);
-// 	while (check) {
-// 		if (check < 0) {
-// 			check = iterDir(fname, time, size);
-// 			continue ;
-// 		}
-// 		std::string buffer = makeHtmlList(check, fname, time, size);
-// 		out.insert(pos, buffer);
-// 		pos += buffer.length();
-// 		check = iterDir(fname, time, size);
-// 	}
-// 	return (out);
-// }
 
-std::string AutoIndex::generateHtml(DIR *dir) {
-	// replace both @ with root_name
-	(void)dir;
-    std::string temp_html(template_html);
-    size_t pos = temp_html.find("@");
-    temp_html.replace(pos, 1, root_name);
-    pos = temp_html.find("@", pos + 1);
-    temp_html.replace(pos, 1, root_name);
+std::string AutoIndex::generateHtml( void ) {
+	std::string temp_html(template_html);
+	size_t pos = temp_html.find("@");
+	temp_html.replace(pos, 1, uri_name);
+	pos = temp_html.find("@", pos + 1);
+	temp_html.replace(pos, 1, uri_name);
 
-    std::string fname, time;
-    // uint64_t size;
+	std::string fname, time;
+	pos = temp_html.find('*');
+	temp_html.erase(pos, 1);
 
-    // int check = iterDir(fname, time, size);
-
-    // while (check) {
-    //     if (check > 0) {
-    //         entries.push_back(Entry{check, fname, time, size});
-    //     }
-    //     check = iterDir(fname, time, size);
-	// 	// std::cout << "check: " << check << '\n';
-    // }
-
-    // std::sort(entries.begin(), entries.end(), [](const Entry &a, const Entry &b) {
-    //     if (a.check == b.check) {
-    //         return a.fname < b.fname;
-    //     }
-    //     return a.check > b.check;
-    // });
-
-    pos = temp_html.find('*');
-    temp_html.erase(pos, 1);
-
-    for (std::vector<Entry>::iterator it = entries.begin(); it != entries.end(); ++it) {
-        std::string buffer = makeHtmlList(it->check, it->fname, it->time, it->size);
-        temp_html.insert(pos, buffer);
-        pos += buffer.length();
-    }
-	// std::cout << "temp_html: " << temp_html << '\n';
-    return temp_html;
+	for (iter it = entries.begin(); it != entries.end(); ++it) {
+		std::string buffer = makeHtmlList(it->check, it->fname, it->time, it->size);
+		temp_html.insert(pos, buffer);
+		pos += buffer.length();
+	}
+	return temp_html;
 }
 
 
-std::string	AutoIndex::generateXml( DIR *dir ) {
-	(void)dir;
+std::string	AutoIndex::generateXml( void ) {
 	std::string	out(template_xml);
-	std::string	fname;
-	std::string	time;
-	uint64_t	size;
-	int check = iterDir(fname, time, size);
-	size_t	pos = out.find('*');
-	out.erase(pos, 1);
-	while (check) {
-		if (check < 0) {
-			check = iterDir(fname, time, size);
-			continue ;
-		}
-		std::string buffer("<");
-		if (check == 1) {
+	std::string	buffer;
+	size_t		pos = out.find('*');
+
+    for (iter it = entries.begin(); it != entries.end(); ++it) {
+		if (it->check) {
 			buffer += "file mtime\"";
-			buffer += time;
+			buffer += it->time;
 			buffer += "\" size\"";
-			buffer += to_String(size);
+			buffer += to_String(it->size);
 			buffer += "\">";
-			buffer += fname;
+			buffer += it->fname;
 			buffer += "</file>\n";
 		} else {
 			buffer += "directory mtime\"";
-			buffer += time;
+			buffer += it->time;
 			buffer += "\">";
-			buffer += fname;
+			buffer += it->fname;
 			buffer += "</directory>\n";
 		}
-		std::string temp = makeHtmlList(check, fname, time, size);
-		out.insert(pos, temp);
-		pos += temp.length();
-		check = iterDir(fname, time, size);
-	}
+        out.insert(pos, buffer);
+        pos += buffer.length();
+    }
 	return (out);
 }
 
-std::string	AutoIndex::generateJson( DIR *dir ) {
-	(void)dir;
+std::string	AutoIndex::generateJson( void ) {
 	std::string	out("[\n");
-	std::string	fname;
-	std::string	time;
-	uint64_t	size;
-	int check = iterDir(fname, time, size);
-	while (check) {
-		if (check < 0) {
-			check = iterDir(fname, time, size);
-			continue ;
-		}
+    for (iter it = entries.begin(); it != entries.end(); ++it) {
 		out += "{ \"name\":\"";
-		out += fname;
+		out += it->fname;
 		out += "\", \"type\":\"";
-		if (check == 1) {
+		if (it->check == 1) {
 			out += "file\", \"mtime\":\"";
 		} else {
 			out += "directory\", \"mtime\":\"";
 		}
-		out += time;
+		out += it->time;
 		out += '\"';
-		if (check == 1) {
+		if (it->check == 1) {
 			out += ", \"size\":";
-			out += to_String(size);
+			out += to_String(it->size);
 		}
-		out += " },\n";
-		check = iterDir(fname, time, size);
-	}
+		if (it + 1 != entries.end()) {
+			out += " },\n";
+		} else {
+			out += " }\n";
+		}
+    }
 	out += ']';
 	return (out);
 }
@@ -280,16 +206,14 @@ std::string	AutoIndex::generateResource( const char *dirname ) {
 	std::string	fname;
 	std::string	time;
 	uint64_t	size;
-    int check = iterDir(fname, time, size);
+	int check = iterDir(fname, time, size);
 
-    while (check) {
-        if (check > 0 && !(fname != "../" && fname[0] == '.')) {
-            entries.push_back(Entry(check, fname, time, size));
-			// std::cout << "fname: " << fname << '\n';
-        }
-        check = iterDir(fname, time, size);
-		// std::cout << "check: " << check << '\n';
-    }
+	while (check) {
+		if (check > 0 && !(fname != "../" && fname[0] == '.')) {
+			entries.push_back(Entry(check, fname, time, size));
+		}
+		check = iterDir(fname, time, size);
+	}
 
 	/*
 		Logic
@@ -308,10 +232,10 @@ std::string	AutoIndex::generateResource( const char *dirname ) {
 	// part A end
 
 	switch (autoindex_format) {
-		case html:	out = generateHtml(dir);	break;
-		case xml:	out = generateXml(dir);		break;
-		case json:	out = generateJson(dir);	break;
-		case jsonp:	out = generateJson(dir);	break;
+		case html:	out = generateHtml();	break;
+		case xml:	out = generateXml();		break;
+		case json:	out = generateJson();	break;
+		case jsonp:	out = generateJson();	break;
 		default:	break;
 	}
 	closedir(dir);
@@ -323,6 +247,10 @@ std::string	AutoIndex::generateResource( const std::string &dirname ) {
 	return (generateResource(dirname.c_str()));
 }
 
+void	AutoIndex::getUriFromClient( const Client &client ) {
+	uri_name = client.getCurrentPath();
+}
+
 const char	*AutoIndex::getExtension( void ) const {
 	if (autoindex_format == html) {
 		return ("html");
@@ -331,4 +259,15 @@ const char	*AutoIndex::getExtension( void ) const {
 		return ("xml");
 	}
 	return ("json");
+}
+
+AutoIndex::Entry::Entry(
+	int c, const std::string &f, const std::string &t, uint64_t s
+) : check(c), fname(f), time(t), size(s) { }
+
+bool	AutoIndex::EntryComparator::operator()(const Entry &a, const Entry &b) const {
+	if (a.check == b.check) {
+		return a.fname < b.fname;
+	}
+	return a.check > b.check;
 }

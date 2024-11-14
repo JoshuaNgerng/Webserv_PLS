@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 17:44:47 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:44:18 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,7 @@ class InfoBlock {
 		bool	findErrorPath( std::string &str, short status ) const;
 		// void	matchUri( Client &client, bool autoindex ) const;
 		void	routingClient(
-					Client &client, const std::string &location = std::string(),
-					std::string *redirect = NULL
+					Client &client, const std::string &location = std::string()
 				) const;
 		void	defaultSetting( void );
 		void	defaultSetting( const InfoBlock &ref );
@@ -54,7 +53,6 @@ class InfoBlock {
 		void	addIndex( const std::string &add );
 		void	addErrorPage( void );
 		void	addErrorPage( const std::string &add );
-		void	addTryFiles( const std::string &add );
 		void	addRoot( const std::string &add );
 		// void	addAccessLog( const std::string &add, int format );
 		// void	addErrorLog( const std::string &add, int format );
@@ -104,7 +102,6 @@ class InfoBlock {
 	protected:
 		std::string						empty;
 		std::vector<ErrorPage>			error_page;
-		std::vector<std::string>		try_files;
 
 		int								if_modify_since;
 
@@ -131,7 +128,6 @@ class InfoBlock {
 		bool							alias;
 		const std::string				*root_ptr;
 		const std::vector<std::string>	*index_ptr;
-		const std::vector<std::string>	*try_files_ptr;
 		const std::vector<ErrorPage>	*error_page_ptr;
 		const LimitExcept				*limit_except_ptr;
 

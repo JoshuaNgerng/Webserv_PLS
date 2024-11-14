@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 12:12:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 12:46:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:45:03 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class ServerInfo : public InfoBlock {
 		std::vector<ListenSocket>::const_iterator	listenBegin( void ) const;
 		std::vector<ListenSocket>::const_iterator	listenEnd( void ) const;
 		std::vector<Location>::const_iterator		getLocEnd( void ) const;
-		void	routingClient( Client &client, int level = 0, const std::string &uri = std::string() ) const;
+		void	routingClient( Client &client ) const;
 		void	defaultSetting( void );
 
 		size_t	getHeaderSizeLimit( void ) const;

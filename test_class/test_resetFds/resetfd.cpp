@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 13:49:51 by jngerng           #+#    #+#             */
-/*   Updated: 2024/08/27 17:11:21 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:08:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,8 +92,6 @@ void	test_case1( void ) {
 	test.setSocketFds(make_pollfd(socket_fds, len1));
 	test.setBuffer(make_pollfd(buffer, len2));
 	test.resetFds();
-	std::cout << ((test.checkResetFds()) ? "success" : "failure") << '\n';
-	std::cout << test << '\n';
 	test.displaySimple(std::cout);
 }
 

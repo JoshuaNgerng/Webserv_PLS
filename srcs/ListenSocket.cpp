@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 19:00:12 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:59:31 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,28 +31,11 @@ len(),
 status()
 { addr_info_tail = &addr_info_head; }
 
-ListenSocket::ListenSocket( const ListenSocket &src )  
-{
+ListenSocket::ListenSocket( const ListenSocket &src ) {
 	*this = src; 
 }
-// addr_info_head(NULL),
-// addr_info_tail(NULL),
-// default_server(true),
-// backlog(SOMAXCONN),
-// rcvbuf_size(65536),
-// sndbuf_size(65536),
-// ipv6only(false),
-// reuseport(false),
-// keepalive(false),
-// keepidle(),
-// keepintvl(),
-// keepcnt(),
-// len(),
-// status()
-// { addr_info_tail = &addr_info_head; *this = src; }
 
 ListenSocket& ListenSocket::operator=( const ListenSocket &src ) {
-	std::cout << "assigment called\n";
 	if (this == &src) {
 		return (*this);
 	}
@@ -74,9 +57,7 @@ ListenSocket& ListenSocket::operator=( const ListenSocket &src ) {
 }
 
 ListenSocket::~ListenSocket( void ) {
-	std::cout << "destructor called\n";
 	if (addr_info_head != NULL) {
-		std::cout << "free called\n";
 		freeaddrinfo(addr_info_head);
 	}
 }
@@ -125,7 +106,6 @@ bool	ListenSocket::socketSetup( int fd ) const {
 		return (false);
 	}
 	if (reuseport) {
-		std::cout << "reuseport huh?\n";
 		if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEADDR,
 			&opt, sizeof(opt)) < 0) {
 			return (false);
@@ -221,7 +201,6 @@ void	ListenSocket::setKeepalive( long idle, long intvl, long cnt ) {
 }
 
 void	ListenSocket::clearAddr( void ) {
-	std::cout << "clear called\n";
 	if (!addr_info_head) {
 		return ;
 	}
@@ -231,13 +210,11 @@ void	ListenSocket::clearAddr( void ) {
 }
 
 void	ListenSocket::emptyAddrPtr( void ) {
-	std::cout << "empty called\n";
 	addr_info_tail = &addr_info_head;
 	addr_info_head = NULL;
 }
 
 void	ListenSocket::reset( void ) {
-	std::cout << "reset called\n";
 	emptyAddrPtr();
 	default_server = false;
 	backlog = SOMAXCONN;
