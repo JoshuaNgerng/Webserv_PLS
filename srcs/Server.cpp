@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 22:12:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:59:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ Server::~Server( void ) {
 
 void	Server::signalHandler( int signal ) {
 	std::cout << "Signal received " << signal 
-	<< "ending server gracefully\n";
+	<< ", ending server gracefully\n";
 	if (signal != SIGINT) {
 		return ;
 	}

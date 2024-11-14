@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 22:06:25 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 22:59:21 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,25 +140,17 @@ size_t	ServerInfo::getHeaderSizeLimit( void ) const { return (client_header_buff
 
 size_t	ServerInfo::getHeaderTimeout( void ) const { return (client_header_timeout); }
 
+void	ServerInfo::displayAddrPort( std::ostream &o ) const {
+	typedef std::vector<ListenSocket>::const_iterator	sock_iter;
+	for (sock_iter it = listen_sockets.begin(); it != listen_sockets.end(); it ++) {
+		o << *it << " ";
+	}
+}
+
 std::ostream&	operator<<( std::ostream &o, const ServerInfo &ref ) {
 	(void)ref;
-	// typedef std::vector<ListenSocket>::const_iterator		sock_iter;
-	// typedef std::map<uint16_t, std::string>::const_iterator	error_iter;
 	o << "Listening on: ";
-	// for (sock_iter it = ref.listen.begin(); it != ref.listen.end(); it ++) {
-	// 	o << *it << ' ';
-	// }
-	// o << '\n';
-	// o << "Server name: " << ref.server_name << '\n';
-	// o << "Root directory: " << ref.root << '\n';
-	// o << "Client max body size: " << ref.client_max_body_size << '\n';
-	// o << "Index: " << ref.index << '\n';
-	// o << "Error pages: ";
-	// if (ref.error_page.begin() == ref.error_page.end())
-	// 	return (o);
-	// for (error_iter it = ref.error_page.begin(); it != ref.error_page.end(); it ++) {
-	// 	o << it->first << " = " << it->second << ' ';
-	// }
+	ref.displayAddrPort(o);
 	o << '\n';
 	return (o);
 }
