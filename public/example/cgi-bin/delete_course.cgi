@@ -56,13 +56,15 @@ def delete_course(course_title):
     new_courses = []
     skip = False
     course_found = False
+    already_removed = False
 
     for line in courses:
-        if line.startswith(f"Title: {course_title}\n"):
+        if not already_removed and line.startswith(f"Title: {course_title}\n"):
             skip = True  # Skip this course's lines
             course_found = True
         elif skip and line.startswith("Image:"):
             skip = False  # End of course entry
+            already_removed = True
         elif not skip:
             new_courses.append(line)
 
