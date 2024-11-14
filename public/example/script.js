@@ -135,30 +135,30 @@
     }
 }
 
-{
-    // Hide/Unhide aside sections for home and contact link
-    const homeLink = document.querySelector('#home-link');
-    const contactLink = document.querySelector('#contact-link');
-    const addCourseSection = document.querySelector('#add-course-section');
-    const addContactSection = document.querySelector('#add-contact-section');
+// {
+//     // Hide/Unhide aside sections for home and contact link
+//     const homeLink = document.querySelector('#home-link');
+//     const contactLink = document.querySelector('#contact-link');
+//     const addCourseSection = document.querySelector('#add-course-section');
+//     const addContactSection = document.querySelector('#add-contact-section');
 
-    homeLink.onclick = function(e) {
-        e.preventDefault();
+//     homeLink.onclick = function(e) {
+//         e.preventDefault();
 
-        addCourseSection.style.display = 'block';
-        addContactSection.style.display = 'none';
+//         addCourseSection.style.display = 'block';
+//         addContactSection.style.display = 'none';
 
-        homeLink.classList.add('current');
-        contactLink.classList.remove('current');
-    };
+//         homeLink.classList.add('current');
+//         contactLink.classList.remove('current');
+//     };
 
-    contactLink.onclick = function(e) {
-        e.preventDefault();
+//     contactLink.onclick = function(e) {
+//         e.preventDefault();
 
-        addCourseSection.style.display = 'none';
-        addContactSection.style.display = 'block';
+//         addCourseSection.style.display = 'none';
+//         addContactSection.style.display = 'block';
 
-        homeLink.classList.remove('current');
-        contactLink.classList.add('current');
-    }
-}
+//         homeLink.classList.remove('current');
+//         contactLink.classList.add('current');
+//     }
+// }

@@ -132,10 +132,6 @@ aside section {
     padding-left: 20px;;
 }
 
-aside #add-contact-section {
-    display: none;
-}
-
 aside #add-course-section textarea {
     box-sizing: border-box;
     width: 177px;
