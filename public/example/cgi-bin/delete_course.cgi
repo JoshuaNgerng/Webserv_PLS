@@ -1,10 +1,40 @@
 #!/usr/bin/env python3
 import os
 import cgi
+import time
 import json
 import urllib.parse
+import re
 
 COURSES_FILE = '../storage/courses.db'
+
+
+def fix_newlines(file_path):
+    with open(file_path, 'r') as file:
+        # Read the entire file content
+        content = file.read()
+
+    # Case 1: If the file only contains newlines (and nothing else)
+    if content.strip() == '':
+        content = ''  # Remove all content, leaving the file empty
+
+    # Case 2: Replace multiple consecutive newlines with two newlines
+    else:
+        content = re.sub(r'\n{3,}', '\n\n', content)
+
+        # Ensure that there are exactly two newlines at the end of the content, if there are any newlines
+        if content.endswith('\n'):
+            content += '\n'
+
+    # Write the modified content back to the file
+    with open(file_path, 'w') as file:
+        file.write(content)
+
+# Usage example:
+# fix_newlines('your_file.txt')
+
+
+
 
 def sanitize_input(input_string):
     """Sanitize input to prevent security issues like directory traversal."""
@@ -65,3 +95,7 @@ else:
 
 # Output the JSON response
 print(json.dumps(response))
+
+
+fix_newlines("../storage/courses.db")
+time.sleep(0.01)
