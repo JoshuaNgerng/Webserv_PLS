@@ -45,7 +45,6 @@ query = form.getvalue('query', '').strip()
 
 matching_courses = search_courses(query)
 
-print("Content-Type: application/json")
-print()
+print("Content-Type: application/json", end="\r\n\r\n")
 
 print(json.dumps(matching_courses))

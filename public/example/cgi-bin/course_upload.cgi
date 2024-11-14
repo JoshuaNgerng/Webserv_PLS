@@ -18,8 +18,7 @@ def save_uploaded_image(fileitem):
         return f"storage/uploads/{filename}"
     return None
 
-print("Content-Type: application/json")
-print()
+print("Content-Type: application/json", end="\r\n\r\n")
 
 form = cgi.FieldStorage()
 

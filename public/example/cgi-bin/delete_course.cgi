@@ -23,8 +23,7 @@ def delete_course(course_title):
 
     return True
 
-print("Content-Type: application/json")
-print()
+print("Content-Type: application/json", end="\r\n\r\n")
 
 form = cgi.FieldStorage()
 course_title = form.getvalue('course-title', None)
