@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 02:12:42 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 12:37:12 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -372,14 +372,21 @@ void	InfoBlock::setCgiEnable( boolean opt ) { cgi_enabled = opt; }
 void	InfoBlock::addCgiMapping( const std::string &ext ) {
 	typedef std::pair<std::string, std::string> pairing;
 	CgiIter iter = cgi_mapping.find(ext);
-	if (iter == cgi_mapping.end()) {
+	if (iter != cgi_mapping.end()) {
 		return ;
 	}
 	cgi_mapping.insert(pairing(std::string(ext), std::string()));
 }
 
 void	InfoBlock::addCgiMapping( const std::string &ext, const std::string &interpret ) {
-	cgi_mapping[ext] = interpret;
+	typedef std::pair<std::string, std::string> pairing;
+	typedef	CgiMapping::iterator				Iter;
+	Iter iter = cgi_mapping.find(ext);
+	if (iter != cgi_mapping.end()) {
+		iter->second = interpret;
+		return ;
+	}
+	cgi_mapping.insert(pairing(std::string(ext), std::string(interpret)));
 }
 
 void	InfoBlock::setCgiTimeout( size_t time ) { cgi_timeout = time; }

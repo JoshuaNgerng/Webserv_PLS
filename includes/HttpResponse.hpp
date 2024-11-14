@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 19:20:49 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 14:53:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class HttpResponse : public Http {
 
 		bool	validateHttpStart( const std::string &line ) const;
 		bool	generateHeader( const std::string &buffer );
+		bool	generateHeaderHelper( const std::string &line );
 		void	addHeaderStart( int status );
 		void	addHeader( void );
 		void	addHeader( int status );

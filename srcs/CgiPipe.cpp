@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 12:50:20 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 00:19:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 13:11:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ bool	CgiPipe::changeDir( void ) {
 }
 
 bool	CgiPipe::getBinary( void ) {
+	std::cerr << "getBInary called\n";
 	std::ifstream	script(content_id.c_str());
 	if (!script.is_open()) {
 		return (false);
@@ -98,12 +99,16 @@ bool	CgiPipe::getBinary( void ) {
 		size_t pos = buffer.find("#!");
 		if (pos != std::string::npos) {
 			pos += 2;
-			size_t end = pos;
+			size_t end = buffer.length();
 			for (size_t i = pos; i < buffer.length(); i ++) {
-				if (std::isspace(static_cast<int>(buffer[i]))) {
+				if (std::isspace(static_cast<unsigned char>(buffer[i]))) {
 					end = i;
 					break;
 				}
+			}
+			if (pos == end) {
+				bin_path = content_id;
+				return (true);
 			}
 			bin_path = buffer.substr(pos, end - pos);
 			return (true);
@@ -215,10 +220,6 @@ int	CgiPipe::execvChild( void ) {
 	for (size_t i = 0; buffer_exec[i]; i ++) {
 		std::cerr << buffer_exec[i] << ' ';
 	}
-	// std::cerr << "\nenv: ";
-	// for (size_t i = 0; env[i]; i ++) {
-		// std::cerr << env[i] << ' ';
-	// }
 	std::cerr << std::endl;
 	// std::cerr << "\n";
 	// const char *str = "/usr/bin/echo";

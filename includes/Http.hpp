@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:51 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 19:06:25 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 12:24:43 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Http {
 		size_t				getRemainderHeader( void ) const;
 		size_t				getRemainderBody( void ) const;
 		size_t				getRemainderHttp( void ) const;
+		size_t				getContentLength( void ) const;
 		const char*			getPtr2Header( void ) const;
 		const char*			getPtr2Body( void ) const;
 		const char*			getPtr2Http( void ) const;

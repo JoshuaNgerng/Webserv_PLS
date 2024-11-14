@@ -3,14 +3,14 @@
 use strict;
 use warnings;
 use CGI;
-use File::Path 'remove_tree';
 use File::Basename;
 
 # Initialize CGI object
 my $cgi = CGI->new;
+my $body = "";
+my $status_code = 200;  # Add dollar sign here for scalar variable
 
 # Output the content-type header
-print $cgi->header('text/plain');
 
 # Check if the request method is DELETE
 if ($cgi->request_method eq 'DELETE') {
@@ -20,7 +20,8 @@ if ($cgi->request_method eq 'DELETE') {
 
     # If the 'file' parameter is not provided, return an error
     if (!$file) {
-        print "Error: No file specified.\n";
+        $status_code = 404;  # Use $ for scalar variable
+        $body .= "Error: No file specified.\n";  # Use .= to append to string
         exit(1);
     }
 
@@ -31,19 +32,43 @@ if ($cgi->request_method eq 'DELETE') {
     my $basename = basename($file);  # This ensures we get the file name only, no directory path
     my $file_path = "$file_dir/$basename";
 
+    print STDERR "check '$file_path' '$file' \n";
+
     # Check if the file exists
     if (-e $file_path && -f $file_path) {
 
         # Try to delete the file
-        if (unlink $file_path) {
-            print "File '$file' deleted successfully.\n";
+        if (!(unlink $file_path)) {
+            $status_code = 500;  # Use $ for scalar variable
+            $body .= "Error: Unable to delete file '$file'.\n";  # Use .= to append to string
         } else {
-            print "Error: Unable to delete file '$file'.\n";
+            $body .= "File '$file' deleted successfully.\n";  # Use .= to append to string
         }
 
     } else {
-        print "Error: File '$file' does not exist or is not a valid file.\n";
+        $status_code = 404;  # Use $ for scalar variable
+        $body .= "Error: File '$file' does not exist or is not a valid file.\n";  # Use .= to append to string
     }
 } else {
-    print "Error: Invalid HTTP method. Only DELETE requests are allowed.\n";
+    $status_code = 405;  # Use $ for scalar variable
+    $body .= "Error: Invalid HTTP method. Only DELETE requests are allowed.\n";  # Use .= to append to string
 }
+
+# Print the appropriate HTTP header based on status code
+print 'HTTP/1.1 ';
+if ($status_code == 200) {
+    print "200 OK\r\n";
+    print $cgi->header(-type => 'text/html', -charset => 'ISO-8859-1');
+} elsif ($status_code == 404) {
+    print "404 Not Found\r\n";
+    print $cgi->header(-type => 'text/html', -charset => 'ISO-8859-1');
+} elsif ($status_code == 405) {
+    print "405 Method Not Allowed\r\n";
+    print $cgi->header(-type => 'text/html', -charset => 'ISO-8859-1');
+} else {
+    print "500 Internal Server Error\r\n";
+    print $cgi->header(-status => 'HTTP/1.1 500 Internal Server Error', -type => 'text/html', -charset => 'ISO-8859-1');
+}
+
+# Print the body of the response
+print "$body";

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 01:46:54 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 00:28:23 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 12:24:47 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,6 +162,8 @@ size_t	Http::getRemainderHeader( void ) const { return (header.length() - bytes_
 size_t	Http::getRemainderBody( void ) const { return (body.length() - bytes_sent); }
 
 size_t	Http::getRemainderHttp( void ) const { return (combine.length() - bytes_sent); }
+
+size_t	Http::getContentLength( void ) const { return (content_length); }
 
 const char*	Http::getPtr2Header( void ) const { return (header.c_str() + bytes_sent); }
 

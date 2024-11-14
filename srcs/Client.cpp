@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 02:26:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 15:14:09 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,15 +215,18 @@ bool	Client::clientRecvHttp( void ) {
 
 // true fd still active false fd not active remove from Server
 bool	Client::clientRecvContent( void ) {
+	std::cerr << "recv content called\n";
 	if (!content || !content->checkStatus()) {
-		std::cout << "content error\n";
+		std::cerr << "content error\n";
 		return (false);
 	}
-	std::cout << "test input fd " << content->getInputFd() << '\n';
+	std::cerr << "test input fd " << content->getInputFd() << '\n';
 	if (is_proxy) {  } // r = recv(content->getInputFd(), buffer, buffer_size, recv_flag);
 	if (is_cgi) {
+		std::cerr << "huh cgi recv??\n";
 		return (clientRecvCgi());;
 	}
+	std::cerr << "is static file?\n";
 	return (clientRecvStaticFile());
 }
 
@@ -258,7 +261,7 @@ bool	Client::clientRecvStaticFile( void ) {
 bool	Client::clientRecvCgi( void ) {
 	char	buffer[buffer_size + 1];
 	ssize_t r = read(content->getInputFd(), buffer, buffer_size);
-	std::cout << "test reading r " << r << '\n';
+	std::cerr << "test reading r " << r << '\n';
 	if (r < 0) {
 		std::cout << "client recv content close or failed: " << strerror(errno) <<"\n";
 		return (false);
@@ -269,7 +272,15 @@ bool	Client::clientRecvCgi( void ) {
 	}
 	buffer[r] = '\0';
 	response.addFin(buffer, static_cast<size_t>(r));
-	std::cout << "test cgi recv " << response.getPtr2Http() << '\n';
+	std::cerr << "test cgi recv\n" << response.getPtr2Http() << '\n';
+	response.processCgiDataHeader();
+	std::cerr << "test cgi data header\n";
+	if (response.isHeaderReady() && response.getContentLength()) {
+		if (response.getTotalLength() >= response.getContentLength()) {
+			std::cerr << "cgi completed\n";
+			return (false);
+		}
+	}
 	return (true);
 }
 
@@ -433,6 +444,7 @@ bool	Client::processContent( const std::string &path ) {
 		content = NULL;
 	}
 	ptr = processContentCgiHelper(ext);
+	std::cerr << "is_cgi " << is_cgi << '\n';
 	ptr->setContentPath(path);
 	if (!ptr->processFds()) {
 		std::cout << "PrcoessFds FAiled\n";
