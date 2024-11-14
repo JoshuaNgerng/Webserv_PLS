@@ -21,8 +21,7 @@ def load_courses():
     return courses
 
 
-print("Content-Type: application/json")
-print()
+print("Content-Type: application/json", end="\r\n\r\n")
 
 courses = load_courses()
 
