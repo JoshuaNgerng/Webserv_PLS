@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import cgi
 import json
-import os
+import sys
 
 COURSES_FILE = '../storage/courses.db'
 
@@ -11,9 +11,13 @@ def load_courses():
 
     courses = []
     for course_data in courses_data:
+        # print(course_data, file=sys.stderr)
         course_info = course_data.split("\n")
         course = {}
+        # print(course_info, file=sys.stderr)
         for line in course_info:
+            if line == "":
+                continue 
             key, value = line.split(":", 1)
             course[key.strip()] = value.strip()
         courses.append(course)

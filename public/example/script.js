@@ -91,31 +91,6 @@
     }
 }
 
-// {
-//     // Delete course if remove button is clicked
-//     const deleteBtn = document.querySelectorAll('.delete-btn');
-
-//     deleteBtn.forEach(btn => {
-
-//         btn.onclick = function() {
-//             const courseElem = btn.closest('article');
-//             const courseID = courseElem.getAttribute('data-id');
-
-//             fetch(`/cgi-bin/delete_course.cgi?course-title=${courseID}`, {
-//                 method: 'DELETE'
-//             })
-//             .then(response => response.json())
-//             .then(data => {
-//                 if (data.success)
-//                     courseElem.remove();
-//                 else
-//                     console.log('Failed to delete course:', data.error);
-//             })
-//             .catch(error => console.log('Error:', error));
-//         };
-//     })
-// }
-
 
 {
     // Search query functionality (title and subtitle)
