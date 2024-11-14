@@ -4,7 +4,8 @@
     const coursesSection = document.querySelector('#courses-section');
     const courseForm = document.querySelector('#course-form');
 
-    loadCourses();
+    if (coursesSection && courseForm)
+        loadCourses();
 
     if (courseForm) {
         courseForm.onsubmit = function(e) {
@@ -110,7 +111,6 @@
     };
 
     function filterArticles(query) {
-        console.log(query)
         const articles = document.querySelectorAll('article');
 
         if (query.length == 0) {
