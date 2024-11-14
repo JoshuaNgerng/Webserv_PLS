@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 22:59:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 00:48:43 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,8 +147,9 @@ int	Server::setupSocketsCheckError( listen_ptr ptr, addrinfo_ptr addr ) {
 			break ;
 		}
 		error ++;
+		std::cerr << server_name << ": [emerg] " << setup_err_msg[fd + 2] <<
+			"() to " << *ptr << " failed\n";
 	}
-	//maybe throw error
 	return (fd);
 }
 
@@ -158,6 +159,8 @@ void	Server::setupSocketsListen( serverinfo_ptr ptr, pollfd_t &buffer ) {
 		for (addrinfo_ptr addr = it->begin(); addr != it->end(); addr ++) {
 			buffer.fd = setupSocketsCheckError(it, addr);
 			if (buffer.fd < 0) {
+				std::cerr << server_name << ": [emerg] still could not " 
+					<< setup_err_msg[buffer.fd + 2] << "()\n";
 				throw SetupError();
 			}
 			socket_fds.push_back(buffer);
