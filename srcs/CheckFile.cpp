@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:56:15 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 21:28:35 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 06:54:47 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,9 +92,10 @@ const char*	CheckFile::fetchExtension( void ) const {
 }
 
 const char*	CheckFile::fetchExtension( const std::string &fname ) {
+	static const char *empty = "";
 	size_t pos = fname.find_last_of('.');
 	if (pos == std::string::npos || pos == fname.length()) {
-		return (NULL);
+		return (empty);
 	}
 	return (fname.c_str() + pos + 1);
 }
