@@ -7,7 +7,7 @@ function loadFileList() {
             // Populate the file select dropdown with the file names
             const fileSelect = document.getElementById('file-select');
             fileSelect.innerHTML = ''; // Clear any existing options
-            data.forEach(file => {
+            data.filter(file => file.type === "file").forEach(file => {
                 const option = document.createElement('option');
                 option.value = file.name;
                 option.textContent = file.name;
@@ -26,14 +26,10 @@ function deleteFile() {
         alert('Please select a file');
         return;
     }
-
+    const url = `/cgi-bin/delete_file.pl?file=${encodeURIComponent(file)}`;
     // Send DELETE request to delete the selected file
-    fetch('/cgi-bin/delete_file.pl', {
+    fetch(url, {
         method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `file=${encodeURIComponent(file)}`
     })
     .then(response => {
         if (response.ok) {

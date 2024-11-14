@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 12:50:20 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 13:11:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 15:45:00 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,6 +219,11 @@ int	CgiPipe::execvChild( void ) {
 	std::cerr << "execve setup: ";
 	for (size_t i = 0; buffer_exec[i]; i ++) {
 		std::cerr << buffer_exec[i] << ' ';
+	}
+	std::cerr << std::endl;
+	std::cerr << "execve env: ";
+	for (size_t i = 0; env[i]; i ++) {
+		std::cerr << env[i] << '\n';
 	}
 	std::cerr << std::endl;
 	// std::cerr << "\n";

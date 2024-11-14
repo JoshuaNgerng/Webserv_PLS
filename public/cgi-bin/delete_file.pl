@@ -6,11 +6,19 @@ use CGI;
 use File::Basename;
 
 # Initialize CGI object
+# Add dollar sign here for scalar variable
 my $cgi = CGI->new;
 my $body = "";
-my $status_code = 200;  # Add dollar sign here for scalar variable
+my $status_code = 200;  
 
-# Output the content-type header
+# logging purpose
+my $log = "text.txt";
+open my $fh, '>', $log or die "Cannot open file $log: $!";
+print $fh "testinf req method: ";
+print $fh $cgi->request_method;
+print $fh "test param file: ";
+my $buffer = $cgi->param('file');
+print $fh "$buffer";
 
 # Check if the request method is DELETE
 if ($cgi->request_method eq 'DELETE') {

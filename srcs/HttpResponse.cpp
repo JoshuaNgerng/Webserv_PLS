@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 15:13:07 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 15:36:17 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,7 @@ bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 	}
 	buffer = line.substr(j, i - j);
 	int	check = std::atoi(buffer.c_str());
-	std::cerr << "test header response " << buffer << "no "<< check <<"\n";
+	std::cerr << "test header response " << buffer << ", no "<< check <<"\n";
 	if (check < 100 || check > 599) {
 		return (false);
 	}
@@ -165,6 +165,7 @@ bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 		std::cerr << "no \\r end \n";
 		return (false);
 	}
+	std::cerr << "validate true\n";
 	return (true);
 }
 
@@ -194,9 +195,12 @@ bool	HttpResponse::generateHeader( const std::string &buffer ) {
 	std::istringstream	ss(buffer);
 	std::string			line; 
 	std::getline(ss, line);
-	if (!validateHttpStart(line)) {
-		header += line;
+	if (validateHttpStart(line)) {
+		header += line + '\n';
+	} else {
+		addHeaderStart(200);
 	}
+	addHeader();
 	while (std::getline(ss, line)) {
 		generateHeaderHelper(line);
 	}
@@ -238,7 +242,7 @@ bool	HttpResponse::processCgiData( void ) {
 		}
 	}
 	if (combine.length() > content_length) {
-		combine.erase(combine.length() - content_length);
+		combine.erase(content_length);
 	}
 	combine = header + combine;
 	ready = true;

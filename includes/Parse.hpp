@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/08 21:40:06 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 16:24:50 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,13 +53,20 @@ class Parse
 		ServerInfo			getServerInfo( void ) const;
 
 		Location			getlocation(); // have make yet
-		void 				printLocations(const std::vector<Location*>& locations);
-		
+	
 	private:
+		typedef enum e_context_identifier {
+			nothing_here,
+			server_,
+			location_,
+			limitexcept_
+		} context_id;
+
 		Parse( void );
 
 		void	removeComments( std::string &content ) const;
 		void	insertDelimWhiteSpace( std::string &content, const char *delim ) const;
+		// int		check
 		void	processContent( void );
 		void	processToken( const std::string &token );
 		void	processDirective( void (Parse::*process)(std::string &) );
@@ -104,8 +111,6 @@ class Parse
 		void	processMergeSlash( std::string &token );
 		void	processServerName( std::string &token );
 		void	processTryFiles( std::string &token );
-		// void	processAccessLog( std::string &token );
-		// void	processErrorLog( std::string &token );
 
 		/* process Location specfic directive */
 		void	processAlias( std::string &token );
@@ -134,6 +139,9 @@ class Parse
 		ListenSocket	listen_socket;
 		bool			isServer;
 		bool			isLocation;
+		bool			isLimitExcept;
+		context_id		block_id;
+
 		// use errorvalue in exception class construction
 
 		class ParsingFileError : public std::exception {

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 15:14:09 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 15:48:36 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -707,7 +707,8 @@ size_t	Client::getContentLength( void ) const { return(requests.front().getConte
 const std::string&	Client::getHost( void ) const { return(requests.front().getField("host")); }
 
 std::string	Client::getReqMethod( void ) const {
-	return (requests.front().getContentType());
+	const char *s[] = { "GET", "POST", "PUT", "DELETE" };
+	return (std::string(s[static_cast<int>(requests.front().getMethod())]));
 }
 
 std::string	Client::getHttpScheme( void ) const { return("http"); }

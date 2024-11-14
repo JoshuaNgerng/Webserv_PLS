@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/09 15:09:04 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 02:23:52 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 15:30:31 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,6 @@ void	ServerInfo::routingClient( Client &client, int level, const std::string &ur
 		}
 	}
 	client << ptr;
-	std::cout << "test server uri matching " << dynamic_cast<const Location *>(&(*ptr))->getLocationPath() << '\n';
-	std::cout << "test autoindex format " << dynamic_cast<const Location *>(&(*ptr))->getAutoFormat() << '\n'; 
 	if (ptr != location.end()) {
 		// std::cout << "location found : " << ptr->getLocationPath() << '\n';
 		ptr->routingClient(client);
