@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 12:37:12 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 17:47:01 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,11 @@ limit_except(),
 alias(false),
 root_ptr(&root),
 index_ptr(&index),
-try_files_ptr(&try_files)
+try_files_ptr(&try_files),
+error_page_ptr(&error_page),
+limit_except_ptr(&limit_except)
 { 
-	std::cout << "test default constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
+	// std::cout << "test default constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
 }
 
 InfoBlock::InfoBlock( const InfoBlock &src ) :
@@ -63,9 +65,11 @@ limit_except(),
 alias(false),
 root_ptr(&root),
 index_ptr(&index),
-try_files_ptr(&try_files)
+try_files_ptr(&try_files),
+error_page_ptr(&error_page),
+limit_except_ptr(&limit_except)
 {
-	std::cout << "test copy constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
+	// std::cout << "test copy constructor " << try_files.size() << " & " << try_files_ptr->size() << '\n';
 	*this = src;
 }
 
@@ -91,11 +95,8 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	cgi_timeout = src.cgi_timeout;
 	limit_except = src.limit_except;
 	alias = src.alias;
-	// root_ptr = &root;
-	// index_ptr = &index;
-	// try_files_ptr = &try_files;
-	std::cout << "test copy operator " << try_files.size() << " & " << try_files_ptr->size() << '\n';
-	std::cout << "check?\n";
+	// std::cout << "test copy operator " << try_files.size() << " & " << try_files_ptr->size() << '\n';
+	// std::cout << "check?\n";
 	return (*this);
 }
 
@@ -194,6 +195,11 @@ void	InfoBlock::routingClient(
 	Client &client, const std::string &location_, std::string *redirect
 ) const {
 	typedef std::vector<std::string>::const_iterator	iter;
+	int	checking = limit_except_ptr->checkAccess(client);
+	if (checking > 200) {
+		client.addContent(checking);
+		return ;
+	}
 	std::string	current_uri(client.getCurrentPath());
 	if (alias) {
 		current_uri.erase(0, location_.length());
@@ -226,9 +232,9 @@ void	InfoBlock::routingClient(
 }
 
 void	InfoBlock::defaultSetting( void ) {
-	std::cout << "test deafult main \n";
-	std::cout << "test try_files size " << try_files.size() << " " << try_files_ptr->size() << '\n';
-	std::cout << "test limit size " << client_max_body_size << '\n';
+	// std::cout << "test deafult main \n";
+	// std::cout << "test try_files size " << try_files.size() << " " << try_files_ptr->size() << '\n';
+	// std::cout << "test limit size " << client_max_body_size << '\n';
 	if (if_modify_since == undefined_) {
 		if_modify_since = off_;
 	}
@@ -286,6 +292,11 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	if (!index.size()) {
 		index_ptr = &ref.index;
 	}
+	if (!error_page.size()) {
+		if (ref.error_page.size()) {
+			error_page_ptr = &ref.error_page;
+		}
+	}
 	// std::cout << "test default ref try_files" << ref.try_files.size() << '\n';
 	if (!try_files.size() && ref.try_files.size() > 0) {
 		try_files_ptr = &ref.try_files;
@@ -314,6 +325,11 @@ void	InfoBlock::defaultSetting( const InfoBlock &ref ) {
 	}
 	if (!cgi_timeout) {
 		cgi_timeout = ref.cgi_timeout;
+	}
+	if (!limit_except.getNumMethod()) {
+		if (ref.limit_except.getNumMethod() > 0) {
+			limit_except_ptr = &ref.limit_except;
+		}
 	}
 }
 
@@ -367,6 +383,18 @@ void	InfoBlock::setCheckSymlinks( boolean opt ) { symlinks = opt; }
 
 void	InfoBlock::setEtag( boolean opt ) { etag = opt; }
 
+void	InfoBlock::addLimitExceptMethod( const std::string &method ) {
+	limit_except.addMethods(method);
+}
+
+void	InfoBlock::addLimitExceptAllow( const std::string &token ) {
+	limit_except.addAllow(token);
+}
+
+void	InfoBlock::addLimitExceptDeny( const std::string &token ) {
+	limit_except.addDeny(token);
+}
+
 void	InfoBlock::setCgiEnable( boolean opt ) { cgi_enabled = opt; }
 
 void	InfoBlock::addCgiMapping( const std::string &ext ) {
@@ -393,7 +421,7 @@ void	InfoBlock::setCgiTimeout( size_t time ) { cgi_timeout = time; }
 
 bool	InfoBlock::findErrorPath( std::string &str, short status ) const {
 	typedef std::vector<ErrorPage>::const_iterator iter;
-	for (iter it = error_page.begin(); it != error_page.end(); it ++) {
+	for (iter it = error_page_ptr->begin(); it != error_page_ptr->end(); it ++) {
 		if (it->findError(str, status)) {
 			return (true);
 		}
@@ -420,6 +448,8 @@ const std::string&	InfoBlock::getCgiBin( const std::string& ext ) const {
 }
 
 size_t	InfoBlock::getCgiTimeout( void ) const { return (cgi_timeout); }
+
+size_t	InfoBlock::getLimitExceptSize( void ) const { return (limit_except.getNumMethod()); }
 
 boolean	InfoBlock::getAutoIndex( void ) const { return (autoindex); }
 

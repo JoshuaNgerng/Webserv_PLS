@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 16:24:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 17:47:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,19 +60,20 @@ class Parse
 			server_,
 			location_,
 			limitexcept_
-		} context_id;
+		}	context_id;
 
 		Parse( void );
 
 		void	removeComments( std::string &content ) const;
 		void	insertDelimWhiteSpace( std::string &content, const char *delim ) const;
-		// int		check
+		bool	checkBlockId( const std::string &token );
 		void	processContent( void );
 		void	processToken( const std::string &token );
 		void	processDirective( void (Parse::*process)(std::string &) );
 		bool	processInfoBlock( const std::string &directive );
 		void	processServer( const std::string &directive );
 		void	processLocation( const std::string &directive );
+		void	processLimitExcept( const std::string &directive );
 		bool	getNextLine( void );
 
 		/* generic process function */
@@ -116,6 +117,9 @@ class Parse
 		void	processAlias( std::string &token );
 		void	processInternal( std::string &token );
 		void	processReturn( std::string &token );
+
+		void	processLimitExceptAllow( std::string &token );
+		void	processLimitExceptDeny( std::string &token );
 
 		static uint64_t		buffer;
 		std::istringstream	content_stream; // no

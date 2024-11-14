@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 01:58:59 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 18:41:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,9 @@ serverinfo(),
 location(),
 listen_socket(),
 isServer(false),
-isLocation(false)
+isLocation(false),
+isLimitExcept(false),
+block_id(nothing_here)
 { }
 
 Parse::Parse( const char *config, Server &server_ ) :
@@ -57,7 +59,9 @@ serverinfo(),
 location(),
 listen_socket(),
 isServer(false),
-isLocation(false)
+isLocation(false),
+isLimitExcept(false),
+block_id(nothing_here)
 { }
 
 Parse::Parse( const Parse &src ) {
@@ -179,9 +183,89 @@ bool	Parse::getNextLine( void ) {
 	return (true);
 }
 
-/**
- * check the level of block the config
-*/
+bool	Parse::checkBlockId( const std::string &token ) {
+	if (token == "{") {
+		bracket_no ++;
+		if (bracket_no > 3) {
+			throw ParsingConfError(extra_delimitor, "{");
+		}
+		if (bracket_no == 1) {
+			if (isServer && !isLocation && !isLimitExcept) {
+				return (true);
+			}
+			throw ParsingConfError(extra_delimitor, "{");
+		}
+		if (bracket_no == 2) {
+			if ((isServer && isLocation) || (isServer && isLimitExcept)) {
+				return (true);
+			}
+			throw ParsingConfError(extra_delimitor, "{");
+		}
+		if (bracket_no == 3) {
+			if ((isServer && isLocation && isLimitExcept)) {
+				return (true);
+			}
+			throw ParsingConfError(extra_delimitor, "{");
+		}
+	}
+	if (token == "}") {
+		bracket_no --;
+		if (bracket_no < 0) {
+			throw ParsingConfError(extra_delimitor, "}");
+		}
+		if (bracket_no == 2) {
+			if (isServer && isLimitExcept && isLocation) {
+				isLimitExcept = false;
+				block_id = location_;
+				return (true);
+			}
+			throw ParsingConfError(extra_delimitor, "{");
+		}
+		if (bracket_no == 1) {
+			if (isServer && isLimitExcept) {
+				isLimitExcept = false;
+				block_id = server_;
+				return (true);
+			}
+			if (isServer && isLocation) {
+				isLocation = false;
+				block_id = location_;
+				std::cout << "try pushback vector\n";
+				serverinfo.addLocation(location);
+				std::cout << "reset location info\n";
+				location.reset();
+				return (true);
+			}
+			throw ParsingConfError(extra_delimitor, "{");
+		}
+		if (bracket_no == 0) {
+			if ((isServer && !isLocation && !isLimitExcept)) {
+				server->addServerInfo(serverinfo);
+				std::cout << "reset serverinfo\n";
+				serverinfo.reset();
+				isServer = false;
+				return (true);
+			}
+			throw ParsingConfError(extra_delimitor, "{");
+		}
+	}
+	if (token == "server") {
+		isServer = true;
+		block_id = server_;
+		return (true);
+	} 
+	if (token == "location") {
+		isLocation = true;
+		block_id = location_;
+		return (true);
+	}
+	if (token == "limit_except") {
+		isLimitExcept = true;
+		block_id = limitexcept_;
+		return (true);
+	}
+	return (false);
+}
 
 static void	cleanToken( std::string &token ) {
 	for (size_t i = 0; i < token.length(); i ++) {
@@ -189,19 +273,6 @@ static void	cleanToken( std::string &token ) {
 			token[i] *= -1;
 		}
 	}
-}
-
-static int	checkLevel( int level, const std::string &ref ) {
-	std::cout << "check level: " << level << ", ref: " << ref << '\n';
-	if (!level) {
-		if (ref == "server")
-			return (1);
-	}
-	else if (level == 1) {
-		if (ref == "location")
-			return (2);
-	}
-	return (level);
 }
 
 static int	checkMatch( const char * const * parameter, const std::string &str ) {
@@ -484,6 +555,27 @@ void	Parse::processLocation( const std::string &directive ) {
 	processDirective(process);
 }
 
+void	Parse::processLimitExcept( const std::string &directive ) {
+	static const char	*parameter[] = {
+		"allow", "deny", NULL
+	};
+	void (Parse::*process)(std::string &);
+	process = NULL;
+	int index = checkMatch(parameter, directive);
+	switch (index) {
+		case 0:
+			process = &Parse::processLimitExceptAllow;
+			break ;
+		case 1:
+			process = &Parse::processLimitExceptDeny;
+			break ;
+		default :
+			throw ParsingConfError(unknown_directive, directive.c_str());
+	}
+	directive_ptr = parameter[index];
+	processDirective(process);
+}
+
 /**
  * @brief	check the token for important block indentifier such as `server'
  * 			and `location' then search for brackets to determine which keyword to process
@@ -494,92 +586,68 @@ void	Parse::processLocation( const std::string &directive ) {
  * 
  */
 void	Parse::processToken( const std::string &token ) {
-	if (token == "{")
-	{
-		bracket_no ++;
-		if (bracket_no > 2) {
-			throw ParsingConfError(unknown_directive, "{");
-		}
-		if (bracket_no == 1 && isServer == false) {
-			std::cout << "3" << '\n';
-			throw ParsingConfError(unknown_directive, token.c_str());
-		}
-		if (bracket_no == 2 && isLocation == false) {
-			std::cout << "5" << '\n';
-			throw ParsingConfError(unknown_directive, token.c_str());
-		}
+	if (checkBlockId(token)) {
 		return ;
 	}
-	else if (token == "}")
-	{
-		bracket_no --;
-		block_level --;
-		if (block_level == 0 && isServer == true) {
-			std::cout << "7" << '\n';
-			isServer = false;
-		}
-		if (block_level == 1 && isLocation == true) {
-			std::cout << "6" << '\n';
-			isLocation = false;
-		}
-		if (bracket_no < 0) {
-			throw ParsingConfError(extra_delimitor, "}");
-		}
-		if (!bracket_no && !block_level) {
-			server->addServerInfo(serverinfo);
-			std::cout << "reset serverinfo\n";
-			serverinfo.reset();
-		}
-		if (bracket_no == 1 && block_level == 1) {
-			// Location buffer = location;
-			// buffer.reset();
-			std::cout << "try pushback vector\n";
-			serverinfo.addLocation(location);
-			std::cout << "reset location info\n";
-			location.reset();
-		}
-		return ;
-	}
-	block_level = checkLevel(block_level, token);
-
-	// working on this part
-	if (block_level == 0 && token != "server") {
-		std::cout << "1" << '\n';
-		throw ParsingConfError(unknown_directive, token.c_str());
-	}
-
-
-	if (block_level == 1 && token == "server") {
-		std::cout << "2" << '\n';
-		isServer = true;
-	}
-
-	if (block_level == 2 && token == "location") {
-		std::cout << "4" << '\n';
-		isLocation = true;
-	}
-	
-
-
-	std::cout << "block level: " << block_level << ", token: " << token << '\n';
 	para_limit = 1;
 	exact_para_limit = true;
-	if (block_level == 2 && bracket_no == 1) {
-		location.addPath(token);
+	if (block_id == server_) {
+		if (bracket_no == 1) {
+			ptr = &serverinfo;
+			processServer(token);
+			return ;
+		}
+	} else if (block_id == location_) {
+		if (bracket_no == 1) {
+			if (location.getLocationPath().length() > 0) {
+				throw ParsingConfError(invalid_no_parameter, "location");
+			}
+			location.addPath(token);
+			return ;
+		}
+		if (bracket_no == 2) {
+			ptr = &location;
+			std::cout << "location picked up\n";
+			if (!location.getLocationPath().length())
+				throw ParsingConfError(invalid_no_parameter, "location");
+			processLocation(token);
+			return ;
+		}
+	} else if (block_id == limitexcept_) {
+		if (isLocation && bracket_no == 2) {
+			try {
+				location.addLimitExceptMethod(token);
+			} catch ( const std::exception &err ) {
+				throw ParsingConfError(invalid_parameter, "limit_except");
+			}
+			return ;
+		}
+		if (isServer && bracket_no == 1) {
+			try {
+				serverinfo.addLimitExceptMethod(token);
+			} catch ( const std::exception &err ) {
+				throw ParsingConfError(invalid_parameter, "limit_except");
+			}
+			return ;
+		}
+		if (isLocation && bracket_no == 3) {
+			ptr = &location;
+			if (!ptr->getLimitExceptSize()) {
+				throw ParsingConfError(invalid_no_parameter, "location");	
+			}
+			processLimitExcept(token);
+			return ;
+		}
+		if (isServer && bracket_no == 2) {
+			ptr = &serverinfo;
+			if (!ptr->getLimitExceptSize()) {
+				throw ParsingConfError(invalid_no_parameter, "location");	
+			}
+			processLimitExcept(token);
+			return ;
+		}
 	}
-	else if (bracket_no == 1 && block_level == 1) {
-		ptr = &serverinfo;
-		std::cout << "server picked up\n";
-		processServer(token);
-	}
-	else if (bracket_no == 2 && block_level == 2) {
-		ptr = &location;
-		std::cout << "location picked up\n";
-		if (!location.getLocationPath().length())
-			throw ParsingConfError(invalid_no_parameter, "location");
-		processLocation(token);
-	}
-	semicolon = false;
+	throw ParsingConfError(unknown_directive, token.c_str());
 }
 
 /**
@@ -768,10 +836,12 @@ void	Parse::processAutoIndexLocalTime( std::string &token ) {
 }
 
 void	Parse::processCgi( std::string &token ) {
+	std::cerr << "testing cgi " << token << "location " << isLocation << " serverinfo " << isServer << '\n';
 	ptr->setCgiEnable(processBoolParameter(token, directive_ptr));
 }
 
 void	Parse::processAddHandler( std::string &token ) {
+		std::cerr << "testing addHandler " << token << " location " << isLocation << " serverinfo " << isServer << '\n';
 	ptr->addCgiMapping(token);
 }
 
@@ -780,6 +850,7 @@ void	Parse::processAction( std::string &token ) {
 		parsing_buffer = token;
 		return ;
 	}
+	std::cerr << "testing action " << token << "location " << isLocation << " serverinfo " << isServer << '\n';
 	ptr->addCgiMapping(parsing_buffer, token);
 }
 
@@ -988,6 +1059,22 @@ void	Parse::processReturn( std::string &token ) {
 		throw ParsingConfError(directive_ptr, location.checkReturnUri());
 	}
 	location.addReturn(token);
+}
+
+void	Parse::processLimitExceptAllow( std::string &token ) {
+	try {
+		ptr->addLimitExceptAllow(token);
+	} catch ( const std::exception &err ) {
+		throw ParsingConfError(invalid_parameter, directive_ptr);
+	}
+}
+
+void	Parse::processLimitExceptDeny( std::string &token ) {
+	try {
+		ptr->addLimitExceptDeny(token);
+	} catch ( const std::exception &err ) {
+		throw ParsingConfError(invalid_parameter, directive_ptr);
+	}
 }
 
 //getters

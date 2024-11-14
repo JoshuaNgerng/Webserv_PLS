@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 15:48:36 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 18:31:46 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -397,6 +397,8 @@ void	Client::getDefaultError( void ) {
 	std::cout << "getting default error " << status_code << '\n';
 	response.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
 	content_length = response.getBodyLength();
+	std::cout << "default error len " << content_length << '\n';
+	response.setHeader(status_code);
 	response.setContent(Http::getMimeType("html"), content_length);
 	response.finishHttp();
 	has_content_fd = false;
@@ -460,19 +462,20 @@ void	Client::processResponseError( void ) {
 	resetResponse();
 	std::cout << "error status_code " << status_code << '\n';
 	content_name.clear();
-	response.setHeader(status_code);
 	if (location_ref != server_ref->getLocEnd()) {
 		location_ref->findErrorPath(content_name, status_code);
-	}
-	if (!content_name.length()) {
+	} else {
 		server_ref->findErrorPath(content_name, status_code);
 	}
-	// std::cout << "client process error\n";
+	std::cout << "client process error page name " << content_name << "\n";
 	if (!content_name.length()) {
 		getDefaultError();
 		return ;
 	}
-	std::string	path = root_dir + content_name; 
+	std::string	path = root_dir + '/';
+	path += content_name; 
+	std::cout << "client process error page name " << path << "\n";
+	std::cout << "testing header " << response <<'\n';
 	CheckFile	check(path);
 	check.checking(F_OK | R_OK);
 	if (check.getAccessbility() < 0) {
@@ -490,6 +493,8 @@ void	Client::processResponseError( void ) {
 	}
 	has_content_fd = true;
 	is_content_fd_in_server = false;
+	std::cerr << "got error page " << path << " as " << content->getInputFd() << '\n';
+	response.setHeader(status_code);
 	response.setContent(
 		Http::getMimeType(CheckFile::fetchExtension(content_name)),
 		check.getFilesize()
@@ -499,7 +504,6 @@ void	Client::processResponseError( void ) {
 void	Client::errorOverwriteResponse( void ) {
 	emergency_overwrite = true;
 	resetResponse();
-	response.setHeader(status_code);
 	getDefaultError();
 }
 

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 22:39:42 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/06 18:51:27 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 18:03:38 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ ErrorPage::ErrorPage( void ) { }
 
 ErrorPage::ErrorPage( const ErrorPage &src ) { *this = src; }
 
-ErrorPage::~ErrorPage( void ) { }
+ErrorPage::~ErrorPage( void ) { std::cerr << "test descrutor errorpage\n"; }
 
 ErrorPage&	ErrorPage::operator=( const ErrorPage &src ) {
 	if (this == &src) {

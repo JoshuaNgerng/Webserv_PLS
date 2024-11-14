@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 16:46:13 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 10:07:57 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 17:50:51 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,10 @@ class LimitExcept {
 		void	addDeny( const std::string& str );
 		void	reset( void );
 
+		size_t	getNumMethod( void ) const;
+
 		int 	checkAccess( const Client &client ) const;
+
 
 	private:
 		class NetworkRange {
@@ -58,9 +61,9 @@ class LimitExcept {
 
 		void	addNetwork( const std::string &str, bool cond );
 		void	addNetworkHelper(
-					NetworkMapping &dst, bool cond, bool status,
-					int len, int limit, const addrinfo_t *ptr
-				);
+			NetworkMapping &dst, bool cond, bool status,
+			int len, int limit, const addrinfo_t *ptr
+		);
 };
 
 #endif

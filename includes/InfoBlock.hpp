@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 00:40:28 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/13 20:26:37 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 17:44:47 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,10 @@ class InfoBlock {
 		void	setCheckSymlinks( boolean opt );
 		void	setEtag( boolean opt );
 
+		void	addLimitExceptMethod( const std::string &method );
+		void	addLimitExceptAllow( const std::string &token );
+		void	addLimitExceptDeny( const std::string &token );
+
 		void	setCgiEnable( boolean opt );
 		void	addCgiMapping( const std::string &ext );
 		void	addCgiMapping( const std::string &ext, const std::string &interpret );
@@ -81,6 +85,7 @@ class InfoBlock {
 		const std::string&	getRoot( void ) const;
 		const std::string&	getCgiBin( const std::string &ext ) const;
 		size_t				getCgiTimeout( void ) const;
+		size_t				getLimitExceptSize( void ) const;
 
 		void	writeAccessLog( void ) const;
 		void	writeAccessLog( const std::string &log ) const;
@@ -127,6 +132,8 @@ class InfoBlock {
 		const std::string				*root_ptr;
 		const std::vector<std::string>	*index_ptr;
 		const std::vector<std::string>	*try_files_ptr;
+		const std::vector<ErrorPage>	*error_page_ptr;
+		const LimitExcept				*limit_except_ptr;
 
 		bool	searchSingleFile(
 			Client &client, const std::string &root, const std::string &fname
