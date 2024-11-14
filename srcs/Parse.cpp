@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/15 04:08:46 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 04:38:28 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -916,9 +916,9 @@ bool	Parse::processListenPara2( std::string &token, size_t pos ) {
 	};
 	int i = -1;
 	while (parameter[++ i]) {
-		if (token.compare(parameter[i]) == '=') {
+		if (!token.compare(0, pos, parameter[i])) {
 			try {
-				(listen_socket.*func[i])(checkSize(token.begin() + pos, token.end()));
+				(listen_socket.*func[i])(checkSize(token.begin() + pos + 1, token.end()));
 			}
 			catch (std::invalid_argument &e) {
 				throw ParsingConfError(directive_ptr, parameter[i], token); 
@@ -954,7 +954,6 @@ void	Parse::processListenKeepAlive( std::string &token, size_t pos ) {
 
 void	Parse::processListen( std::string &token ) {
 	static bool start = true;
-	std::cout << "testing token listen para " << token << '\n'; 
 	if (!token.length()) {
 		start = true;
 		serverinfo.addListen(listen_socket);

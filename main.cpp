@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/08 23:32:08 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 21:52:14 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 04:37:29 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int	main(int ac, char **av, char **env) {
 		return (1); // too many arug error
 	}
 	const char *ref;
-	ref = "conf/basic_setup_own.conf";
+	ref = "conf/default.conf";
 	if (ac == 2)
 		ref = av[1];
 	Server::server_name = &(av[0][2]);
