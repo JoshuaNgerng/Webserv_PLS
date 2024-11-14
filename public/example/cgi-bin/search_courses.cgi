@@ -3,7 +3,7 @@ import cgi
 import json
 import urllib.parse
 
-COURSES_FILE = './storage/courses.txt'
+COURSES_FILE = './storage/courses'
 
 def load_courses():
     with open(COURSES_FILE, 'r') as f:

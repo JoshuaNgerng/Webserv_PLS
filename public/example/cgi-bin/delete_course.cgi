@@ -2,7 +2,7 @@
 import cgi
 import json
 
-COURSES_FILE = './storage/courses.txt'
+COURSES_FILE = './storage/courses'
 
 def delete_course(course_title):
     with open(COURSES_FILE, 'r') as f:
