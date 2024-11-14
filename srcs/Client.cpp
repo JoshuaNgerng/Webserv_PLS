@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 18:31:46 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 20:39:32 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,8 +238,8 @@ bool	Client::clientRecvStaticFile( void ) {
 		return (false);
 	} else if (r == 0) {
 		if (response.getBodyLength() != content_length) {
-			std::cout << "what huh? length recieved " << response.getBodyLength() << " expected " << content_length << "\n";
-			std::cout << response << '\n';
+			// std::cout << "what huh? length recieved " << response.getBodyLength() << " expected " << content_length << "\n";
+			// std::cout << response << '\n';
 			status_code = 500;
 			processResponseError();
 		}
@@ -249,11 +249,11 @@ bool	Client::clientRecvStaticFile( void ) {
 	response.addBody(buffer, static_cast<size_t>(r));
 	if (response.getBodyLength() == content_length) {
 		response.finishHttp();
-		std::cout << "response for " << requests.front().getUri() << " is ready\n";
+		// std::cout << "response for " << requests.front().getUri() << " is ready\n";
 		// std::cout << "Show HttpResponse\n" << response << '\n';
 		return (false);
 	} else {
-		std::cout << "response for " << requests.front().getUri() << " is not ready\n";
+		// std::cout << "response for " << requests.front().getUri() << " is not ready\n";
 	}
 	return (true);
 }
@@ -272,11 +272,12 @@ bool	Client::clientRecvCgi( void ) {
 	}
 	buffer[r] = '\0';
 	response.addFin(buffer, static_cast<size_t>(r));
-	std::cerr << "test cgi recv\n" << response.getPtr2Http() << '\n';
+	// std::cerr << "test cgi recv\n" << response.getPtr2Http() << '\n';
 	response.processCgiDataHeader();
 	std::cerr << "test cgi data header\n";
 	if (response.isHeaderReady() && response.getContentLength()) {
 		if (response.getTotalLength() >= response.getContentLength()) {
+			response.processCgiData();
 			std::cerr << "cgi completed\n";
 			return (false);
 		}
@@ -323,7 +324,7 @@ bool	Client::clientSendResponse( void ) {
 	ssize_t	no_bytes = send(socket_fd,
 		response.getPtr2Http(), response.getRemainderHttp(), 0);
 	if (no_bytes <= 0) {
-		std::cout << "error sending to client " << response.getPtr2Http() << "\n";
+		// std::cout << "error sending to client " << response.getPtr2Http() << "\n";
 		reset();
 		return (false);
 	}
@@ -332,7 +333,7 @@ bool	Client::clientSendResponse( void ) {
 		// reset();
 		return (true);
 	}
-	std::cout << "error sending to client " << response.getPtr2Http() << "\n";
+	// std::cout << "error sending to client " << response.getPtr2Http() << "\n";
 	return (false);
 }
 
@@ -376,7 +377,7 @@ void	Client::processResponseSuccess( void ) {
 		content_length = response.getBodyLength();
 		response.setHeader(status_code);
 		// std::cout << "test autoindex content: " << gen.generateResource(path) << '\n';
-		response.setContent(Http::getMimeType(gen.getExtension()), content_length);
+		response.setContent(content_length, Http::getMimeType(gen.getExtension()));
 		response.finishHttp();
 		return ;
 	}
@@ -395,11 +396,12 @@ void	Client::processResponseRedirect( void ) {
 
 void	Client::getDefaultError( void ) {
 	std::cout << "getting default error " << status_code << '\n';
+	response.reset();
 	response.addBody(DefaultErrorPage::generateHtml(status_code, Server::server_name));
 	content_length = response.getBodyLength();
 	std::cout << "default error len " << content_length << '\n';
 	response.setHeader(status_code);
-	response.setContent(Http::getMimeType("html"), content_length);
+	response.setContent(content_length, Http::getMimeType("html"));
 	response.finishHttp();
 	has_content_fd = false;
 	if (content) {
@@ -411,6 +413,11 @@ void	Client::getDefaultError( void ) {
 File*	Client::processContentCgiHelper( const char* ext ) {
 	bool	cgi_check = false;
 	std::string	bin, check;
+	if (status_code > 299) {
+		response.setHeader(status_code);
+		response.setContent(content_length, Http::getMimeType(ext));
+		return (new StaticFile());
+	}
 	if (location_ref != server_ref->getLocEnd()) {
 		cgi_check = location_ref->isCgi(ext);
 	}
@@ -419,7 +426,7 @@ File*	Client::processContentCgiHelper( const char* ext ) {
 	}
 	if (!cgi_check) {
 		response.setHeader(status_code);
-		response.setContent(Http::getMimeType(ext), content_length);
+		response.setContent(content_length, Http::getMimeType(ext));
 		return (new StaticFile());
 	}
 	is_cgi = true;
@@ -433,7 +440,11 @@ File*	Client::processContentCgiHelper( const char* ext ) {
 }
 
 bool	Client::processContent( void ) {
-	std::string path = root_dir + content_name;
+	std::string path = root_dir;
+	if (content_name[0] != '/') {
+		path += "/";
+	}
+	path += content_name;
 	return (processContent(path));
 }
 
@@ -447,6 +458,7 @@ bool	Client::processContent( const std::string &path ) {
 	}
 	ptr = processContentCgiHelper(ext);
 	std::cerr << "is_cgi " << is_cgi << '\n';
+	std::cerr << "path " << path << '\n';
 	ptr->setContentPath(path);
 	if (!ptr->processFds()) {
 		std::cout << "PrcoessFds FAiled\n";
@@ -474,19 +486,15 @@ void	Client::processResponseError( void ) {
 	}
 	std::string	path = root_dir + '/';
 	path += content_name; 
-	std::cout << "client process error page name " << path << "\n";
-	std::cout << "testing header " << response <<'\n';
+	// std::cout << "client process error page name " << path << "\n";
+	// std::cout << "testing header " << response <<'\n';
 	CheckFile	check(path);
 	check.checking(F_OK | R_OK);
 	if (check.getAccessbility() < 0) {
 		getDefaultError();
 		return ;
 	}
-	if (content) {
-		std::cout << "client clear at processResError\n";
-		delete content;
-		content = NULL;
-	}
+	content_length = check.getFilesize();
 	if (!processContent()) {
 		getDefaultError();
 		return ;
@@ -494,11 +502,11 @@ void	Client::processResponseError( void ) {
 	has_content_fd = true;
 	is_content_fd_in_server = false;
 	std::cerr << "got error page " << path << " as " << content->getInputFd() << '\n';
-	response.setHeader(status_code);
-	response.setContent(
-		Http::getMimeType(CheckFile::fetchExtension(content_name)),
-		check.getFilesize()
-	);
+	// response.setHeader(status_code);
+	// response.setContent(
+		// Http::getMimeType(CheckFile::fetchExtension(content_name)),
+		// check.getFilesize()
+	// );
 }
 
 void	Client::errorOverwriteResponse( void ) {
@@ -622,6 +630,9 @@ int	Client::checkTimer( int fd ) {
 	size_t	time_diff = 0, lim = 0;
 	int		status = 200;
 	if (fd == socket_fd) {
+		if (!requests.size()) {
+			return (200);
+		}
 		HttpRequest &req = requests.front();
 		if (req.isReady()) {
 			return (200);
@@ -652,9 +663,9 @@ int	Client::checkTimer( int fd ) {
 		}
 	}
 	if (time_diff > lim) {
-		std::cout << "over time ";
-		if (fd != socket_fd) {std::cout << "socket "; } else { std::cout << "content "; }
-		std::cout <<'\n';
+		// std::cout << "over time ";
+		// if (fd != socket_fd) {std::cout << "socket "; } else { std::cout << "content "; }
+		// std::cout <<'\n';
 		return (status);
 	}
 	return (200);

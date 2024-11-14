@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:20:04 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 14:53:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 20:31:21 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class HttpResponse : public Http {
 		void	addBody( const std::string &str );
 		void	addBody( const char *str, size_t bytes );
 		void	setHeader( int status, const std::string & = std::string() );
-		void	setContent( const std::string &type, uint64_t len );
+		void	setContent( uint64_t len, const std::string &type = std::string() );
 		void	setContent( void );
 		void	reset( void );
 

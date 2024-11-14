@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 00:14:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 20:40:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -298,7 +298,11 @@ void	Server::handleClientRecv( pollfd_t &poll_fd, Client &client ) {
 	}
 	if (!client.clientRecvContent()) {
 		std::cout << "client recv content in server failed\n";
-		markAsDelete(client.getContent());
+		if (!client.checkResponseReady()) {
+			markAsDelete(client.getContent());
+		} else {
+			markAsDelete(poll_fd.fd);
+		}
 	}
 }
 

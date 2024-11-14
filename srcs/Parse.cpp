@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 18:41:51 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 20:55:12 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -591,6 +591,7 @@ void	Parse::processToken( const std::string &token ) {
 	}
 	para_limit = 1;
 	exact_para_limit = true;
+	std::cout << "block_id " << block_id << '\n';
 	if (block_id == server_) {
 		if (bracket_no == 1) {
 			ptr = &serverinfo;
@@ -615,6 +616,7 @@ void	Parse::processToken( const std::string &token ) {
 		}
 	} else if (block_id == limitexcept_) {
 		if (isLocation && bracket_no == 2) {
+			std::cout << "add method here loca \n";
 			try {
 				location.addLimitExceptMethod(token);
 			} catch ( const std::exception &err ) {
@@ -623,6 +625,7 @@ void	Parse::processToken( const std::string &token ) {
 			return ;
 		}
 		if (isServer && bracket_no == 1) {
+			std::cout << "add method in server\n";
 			try {
 				serverinfo.addLimitExceptMethod(token);
 			} catch ( const std::exception &err ) {

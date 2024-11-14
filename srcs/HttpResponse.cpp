@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/28 06:32:43 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 15:36:17 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 20:36:22 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,19 +97,27 @@ void	HttpResponse::setHeader( int status, const std::string &str ) {
 	header += "\r\n";
 }
 
-void	HttpResponse::setContent( const std::string &type, uint64_t len ) {
+void	HttpResponse::setContent( uint64_t len, const std::string &type ) {
 	size_t	insert_pos = header.length();
 	if (insert_pos > 2) {
 		insert_pos -= 2;
 	}
-	// std::cout << "test response insert pos " << insert_pos << '\n';
+	if (type.length() > 0) {
+
+	}
 	std::string	buffer;
-	addField(buffer, "Content-Type", type);
-	header.insert(insert_pos, buffer);
-	insert_pos += buffer.length();
-	buffer.clear();
-	addField(buffer, "Content-Length", to_String(len));
-	header.insert(insert_pos, buffer);
+	if (type.length() > 0) {
+		addField(buffer, "Content-Type", type);
+		content_type = type;
+		header.insert(insert_pos, buffer);
+		insert_pos += buffer.length();
+		buffer.clear();
+	}
+	if (len) {
+		addField(buffer, "Content-Length", to_String(len));
+		content_length = len;
+		header.insert(insert_pos, buffer);
+	}
 }
 
 void	HttpResponse::setContent( void ) {
@@ -172,19 +180,27 @@ bool	HttpResponse::validateHttpStart( const std::string &line ) const {
 bool	HttpResponse::generateHeaderHelper( const std::string &line ) {
 	std::string	field, val;
 	size_t 		pos = line.find(':');
-	// std::cerr << "testing generateHeader: " << line << '\n';
+	std::cerr << "testing generateHeader: " << line << '\n';
 	if (pos == std::string::npos) {
+		std::cout << "no : found\n";
 		return (false) ;
 	}
 	field = line.substr(0, pos);
 	val = line.substr(pos + 1);
 	if (!validateField(field) || !validateValue(val) ||
 		line[line.length() - 1] != '\r') {
+		std::cout << "invalid line " << field << ": |" << val << "|\n";
+		std::cout << "test \\r end: " << (line[line.length() - 1] != '\r') << ", " << (validateField(field))
+		<< ", " << (validateValue(val)) << '\n';
+		std::cout << "test char end (" << static_cast<int>(line[line.length() - 1]) << ") " << line[line.length() -1] << "\n";
 		return (false) ;
 	}
 	if (field == "content-length") {
+		std::cout << "cgi detect content-length |" << val << "|\n";
 		content_length = std::atoll(val.c_str());
+		std::cout << "atoll result " << content_length << '\n';
 	} else if (field == "content-type") {
+		std::cout << "cgi detect content-type " << val << "\n";
 		content_type = val;
 	}
 	header += line + '\n';
@@ -199,6 +215,7 @@ bool	HttpResponse::generateHeader( const std::string &buffer ) {
 		header += line + '\n';
 	} else {
 		addHeaderStart(200);
+		generateHeaderHelper(line);
 	}
 	addHeader();
 	while (std::getline(ss, line)) {
@@ -213,9 +230,10 @@ bool	HttpResponse::processCgiDataHeader( void ) {
 	if (pos == std::string::npos) {
 		return (false);
 	}
+	pos += 4;
 	std::cerr << "huh?\n";
 	std::string	buffer = combine.substr(0, pos);
-	combine.erase(0, pos + 4);
+	combine.erase(0, pos);
 	header_ready = true;
 	std::cerr << "before generateHeader\n";
 	generateHeader(buffer);
@@ -228,18 +246,18 @@ bool	HttpResponse::processCgiData( void ) {
 		size_t pos = combine.find("\r\n\r\n");
 		if (pos == std::string::npos) {
 			setHeader(200);
-			setContent("application/octet-stream", combine.length());
+			setContent(combine.length(), "application/octet-stream");
 		} else {
 			std::string	buffer = combine.substr(0, pos + 4);
 			combine.erase(0, pos + 4);
 			generateHeader(buffer);
 		}
-		if (!content_length) {
-			content_length = combine.length();
-		}
-		if (!content_type.length()) {
-			content_type = "application/octet-stream";
-		}
+	}
+	if (!content_length) {
+		setContent(combine.length());
+	}
+	if (!content_type.length()) {
+		setContent(0, "application/octet-stream");
 	}
 	if (combine.length() > content_length) {
 		combine.erase(content_length);

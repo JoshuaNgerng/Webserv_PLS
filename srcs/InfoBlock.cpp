@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 17:47:01 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/14 21:05:05 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ InfoBlock&	InfoBlock::operator=( const InfoBlock &src ) {
 	if (this == &src) {
 		return (*this);
 	}
+	std::cout << "infoblock operator called\n";
 	error_page = src.error_page;
 	try_files = src.try_files;
 	if_modify_since = src.if_modify_since;
@@ -195,7 +196,10 @@ void	InfoBlock::routingClient(
 	Client &client, const std::string &location_, std::string *redirect
 ) const {
 	typedef std::vector<std::string>::const_iterator	iter;
+	std::cout << "limit_except checking ";
 	int	checking = limit_except_ptr->checkAccess(client);
+	std::cout << checking << '\n';
+	std::cout << "check own limit size " << limit_except.getNumMethod() << '\n';
 	if (checking > 200) {
 		client.addContent(checking);
 		return ;
