@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:21:01 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 22:55:19 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 03:12:49 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -596,6 +596,20 @@ int	Client::checkTimer( int fd ) {
 }
 
 int	Client::clientSocketFd( void ) const { return (socket_fd); }
+
+int	Client::getInputFd( void ) const {
+	if (!content) {
+		return (-1);
+	}
+	return (content->getInputFd());
+}
+
+int	Client::getOutputFd( void ) const {
+	if (!content) {
+		return (-1);
+	}
+	return (content->getOutputFd());
+}
 
 const sockaddr_storage_t&	Client::getAddr( const LimitExcept& ) const {
 	return (client_addr);

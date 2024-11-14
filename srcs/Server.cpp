@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:02:07 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/15 00:48:43 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 03:11:12 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,6 @@ void	Server::resetFds( void ) {
 		if (checkFdDeletion(it->fd)) {
 			client_mapping.erase(it->fd);
 			it = socket_fds.erase(it);
-			usleep(9000);
 		} else {
 			it ++;
 		}
@@ -226,6 +225,13 @@ void	Server::resetFds( void ) {
 	}
 	for (client_ptr ptr = client_info.begin(); ptr != client_info.end();) {
 		if (ptr->toBeDeleted()) {
+			client_mapping.erase(ptr->clientSocketFd());
+			if (ptr->getInputFd() > 0) {
+				client_mapping.erase(ptr->getInputFd());
+			}
+			if (ptr->getOutputFd() > 0) {
+				client_mapping.erase(ptr->getOutputFd());
+			}
 			ptr = client_info.erase(ptr);
 		} else {
 			ptr ++;

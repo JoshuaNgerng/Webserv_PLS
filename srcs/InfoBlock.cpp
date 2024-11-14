@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/15 02:31:50 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 03:25:48 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,7 +191,6 @@ void	InfoBlock::routingClient( Client &client, const std::string &location_ ) co
 		return ;
 	}
 	std::string	current_uri(client.getCurrentPath());
-	std::cerr << "what path " << current_uri << '\n';
 	if (alias) {
 		current_uri.erase(0, location_.length());
 	}

@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/15 09:20:59 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/13 13:44:55 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 03:12:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,8 @@ class Client {
 
 		/* getters */
 		int		clientSocketFd( void ) const;
+		int		getInputFd( void ) const;
+		int		getOutputFd( void ) const;
 		bool	checkResponseStatus( void ) const;
 		bool	checkContentFd( void ) const;
 		bool	checkResponseReady( void ) const;

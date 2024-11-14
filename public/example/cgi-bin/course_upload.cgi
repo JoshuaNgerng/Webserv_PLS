@@ -4,8 +4,8 @@ import json
 import os
 import shutil
 
-COURSES_FILE = './storage/courses.txt'
-UPLOAD_DIR = './storage/uploads'
+COURSES_FILE = '../storage/courses.db'
+UPLOAD_DIR = '../storage/uploads'
 
 def save_uploaded_image(fileitem):
     if fileitem.filename:

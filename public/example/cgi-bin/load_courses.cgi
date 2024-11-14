@@ -3,7 +3,7 @@ import cgi
 import json
 import os
 
-COURSES_FILE = './storage/courses.txt'
+COURSES_FILE = '../storage/courses.db'
 
 def load_courses():
     with open(COURSES_FILE, 'r') as f:
