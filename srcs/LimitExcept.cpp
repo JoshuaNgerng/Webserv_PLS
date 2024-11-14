@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 22:45:19 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 21:58:58 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 00:40:26 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void	LimitExcept::addNetwork( const std::string &str, bool cond ) {
 	bool		status = false;
 	if (str == "all") {
 		addr = getAddrInfo();
-		status = true;
+		status = false;
 	} else {
 		size_t pos = str.find('/');
 		if (pos != std::string::npos) {
@@ -218,6 +218,11 @@ bool	LimitExcept::NetworkRange::isWithinRangev4( const sockaddr_storage_t& addr 
 	// Convert network address to uint32_t for comparison
 	uint32_t network_addr = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
 
+	// special case for 0.0.0.0 since it will always be 0
+	if (network_addr == 0 && prefix_length == 32) {
+		return (true); // 0.0.0.0/32 matches all IP addresses
+	}
+
 	// Create subnet mask
 	uint32_t mask = (0xFFFFFFFF << (32 - prefix_length)) & 0xFFFFFFFF;
 
@@ -228,6 +233,9 @@ bool	LimitExcept::NetworkRange::isWithinRangev6( const sockaddr_storage_t& addr 
 	// For IPv6, cast the sockaddr_storage to sockaddr_in6
 	const sockaddr_in6* ipv6 = reinterpret_cast<const sockaddr_in6*>(&addr);
 
+	if (prefix_length == 128) {
+		return (true);
+	}
 	// Compare byte by byte for IPv6 address (128 bits)
 	int full_bytes = prefix_length / 8;
 	int partial_byte = prefix_length % 8;

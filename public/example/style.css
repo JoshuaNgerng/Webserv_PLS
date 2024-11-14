@@ -1,0 +1,179 @@
+header, section, footer, aside, nav, article, figure, figcaption {
+    display: block;
+}
+
+body {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    line-height: 1.4em;
+    color: #666666;
+    background-color: #f9f8f6;;
+    background-image: url("images/dark-wood.jpg");
+    background-position: center;
+    margin: 0px;
+}
+
+main {
+    background-color: #ffffff;
+    width: 940px;
+    margin: 20px auto;
+    border: 2px solid #000000;
+}
+
+header {
+    background-image: url("images/header.jpg");
+    height: 160px;
+}
+
+h1 {
+    text-indent: -9999px;
+    width: 940px;
+    height: 130px;
+    margin: 0px;
+}
+
+nav, footer {
+    clear: both;
+    color: #ffffff;
+    background-color: #aeaca8;
+    height: 30px;
+}
+
+nav ul {
+    float: left;
+    margin: 0px;
+    padding: 5px 30px;
+}
+
+nav li {
+    display: inline;
+    margin-right: 40px;
+}
+
+nav li a {
+    color: #ffffff;
+}
+
+nav li a:hover, nav li a.current {
+    color: #666666;
+}
+
+nav form {
+    float: right;
+    padding: 4px 15px 0px 0px;
+}
+
+nav input[type="text"] {
+    color: #666666;
+    padding: 1px 12px;
+    border: 1px solid #eeeeee;
+    border-radius: 3px;
+    outline: none;
+}
+
+nav button[type="submit"] {
+    font-size: 85%;
+    cursor: pointer;
+}
+
+#courses-section {
+    float: left;
+    width: 659px;
+    border-right: 1px solid #eeeeee;
+}
+
+#courses-section article {
+    clear: both;
+    overflow: hidden;
+    position: relative;
+    width: 98%;
+}
+
+#courses-section div.delete-btn {
+    position: absolute;
+    top: 19px;
+    right: -10px;
+    font-size: 180%;
+    line-height: 0px;
+    color: #000000;
+    cursor: pointer;
+}
+
+#courses-section div.delete-btn:hover {
+    color: #de6581;
+}
+
+#courses-section figure {
+    float: left;
+    width: 290px;
+    height: 220px;
+    margin: 20px;
+    padding: 5px;
+    border: 1px solid #eeeeee;
+}
+
+#courses-section figure img {
+    overflow: hidden;
+    width: 290px;
+    height: 190px;
+}
+
+#courses-section figcaption {
+   font-size: 90%;
+   text-align: left;
+}
+
+#courses-section hgroup {
+    margin-top: 40px;
+}
+
+aside section {
+    float: left;
+    width: 177px;
+    padding-left: 20px;;
+}
+
+aside #add-course-section textarea {
+    box-sizing: border-box;
+    width: 177px;
+    height: 167px;
+}
+
+aside section button[type="submit"] {
+    font-size: 85%;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+
+aside section button[type="submit"]:hover {
+    cursor: pointer;
+}
+
+a {
+    color: #de6581;
+    text-decoration: none;
+}
+
+h1, h2, h3 {
+    font-weight: normal;
+}
+
+h2 {
+    margin: 10px 0px 5px 0px;
+    padding: 0px;
+}
+
+h3 {
+    color: #de6581;
+    margin: 0px 0px 10px 0px;
+}
+
+aside section h2 {
+    padding: 20px 0px 10px 0px;
+    color: #de6581;
+}
+
+footer {
+    font-size: 80%;
+    padding: 7px 0px 0px 20px;
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>404 - Page Not Found</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <main>
+        <!-- start of header -->
+        <header>
+        <h1>yoko's kitchen</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html" id="home-link">home</a></li>
+                <li><a href="error.html" class="error-link">classes</a></li>
+                <li><a href="error.html" class="error-link">catering</a></li>
+                <li><a href="error.html" class="error-link">about</a></li>
+                <li><a href="error.html" class="error-link">contact</a></li>
+            </ul>
+
+            <form action="" method="" id="search-form">
+                <input type="text" name="query" id="search-bar" placeholder="Search courses..">
+                <button type="submit">Search</button>
+            </form>
+        </nav>
+        </header>
+        <!-- end of header -->
+
+        <!-- start of error section -->
+        <style type="text/css">
+            #error-section {
+                text-align: center;
+                color: #666666;
+                padding: 40px;
+            }
+
+            #error-ectioin h2 {
+                font-size: 2em;
+                color: #de6581;
+                margin: 20px 0px;
+            }
+
+            #error-section p {
+                font-size: 1.2em;
+                color: #666666;
+                margin-bottom: 30px;
+            }
+
+            .back-home {
+                display: inline-block;
+                text-decoration: none;
+                color: #ffffff;
+                background-color: #aeaca8;
+                padding: 10px 20px;
+                border-radius: 5px;
+            }
+
+            .back-home:hover {
+                background-color: #666666;
+                color: #ffffff;
+            }
+        </style>
+        <section id="error-section">
+            <h2>404 - Oops! Page Not Found</h2>
+            <p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+            <a href="index.html" class="back-home">Back to Home</a>
+        </section>
+        <!-- end of error section -->
+
+        <!-- start of footer -->
+        <footer>
+            &copy 2011 Yoko's Kitchen
+        </footer>
+        <!-- end of footer -->
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

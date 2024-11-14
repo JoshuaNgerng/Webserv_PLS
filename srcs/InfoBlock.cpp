@@ -6,13 +6,14 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 10:11:18 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 21:58:39 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 00:41:03 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "InfoBlock.hpp"
 #include "AutoIndex.hpp"
 #include "Client.hpp"
+#include "EmbeddedVariable.hpp"
 
 InfoBlock::InfoBlock( void ) :
 empty(""),
@@ -124,6 +125,18 @@ bool	InfoBlock::searchSingleFile(
 		return (false);
 	}
 	if (file_info.getType() == directory) {
+		std::string	buffer;
+		if (alias) {
+			size_t	pos = 9;
+			buffer = client.getCurrentUri();
+			pos = buffer.find('?');
+			if (pos != std::string::npos) {
+				buffer.erase(pos);
+			}
+			buffer += fname + '/';
+		} else {
+			buffer = fname + '/';
+		}
 		client.addContent(308, fname + '/');
 		return (true);
 	}
