@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/15 04:38:28 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 06:03:11 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,6 +237,7 @@ bool	Parse::checkBlockId( const std::string &token ) {
 		}
 		if (bracket_no == 0) {
 			if ((isServer && !isLocation && !isLimitExcept)) {
+				block_id = nothing_here;
 				server->addServerInfo(serverinfo);
 				serverinfo.reset();
 				isServer = false;
@@ -688,8 +689,13 @@ void Parse::parseConfigFile( void ) {
 	removeComments(content);
 	insertDelimWhiteSpace(content, "{};");
 	content_stream.str(content);
+	ListenSocket::erase = false;
 	processContent();
 	server->normalizeDefaultSetting();
+	serverinfo.reset();
+	location.reset();
+	listen_socket.reset();
+	ListenSocket::erase = true;
 }
 
 boolean	Parse::processBoolParameter( const std::string &token, const char *directive ) {

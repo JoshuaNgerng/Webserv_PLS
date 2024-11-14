@@ -6,11 +6,13 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 11:44:50 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 21:59:31 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 06:01:02 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListenSocket.hpp"
+
+bool	ListenSocket::erase = true;
 
 int	ListenSocket::fcntl_flag = O_NONBLOCK;
 
@@ -57,7 +59,7 @@ ListenSocket& ListenSocket::operator=( const ListenSocket &src ) {
 }
 
 ListenSocket::~ListenSocket( void ) {
-	if (addr_info_head != NULL) {
+	if (erase && addr_info_head != NULL) {
 		freeaddrinfo(addr_info_head);
 	}
 }

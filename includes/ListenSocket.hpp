@@ -16,6 +16,7 @@
 
 class ListenSocket {
 	public:
+		static bool	erase;
 		static int	fcntl_flag;
 		ListenSocket( void );
 		ListenSocket( const ListenSocket &src );
