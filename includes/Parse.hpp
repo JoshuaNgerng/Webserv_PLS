@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:34:52 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/14 17:47:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 06:25:30 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,7 @@ class Parse
 		void	processCgi( std::string &token );
 		void	processAddHandler( std::string &token );
 		void	processAction( std::string &token );
+		void	processCgiTimeout( std::string &token );
 
 		/* process Server specfic directive */
 		void	processListen( std::string &token );

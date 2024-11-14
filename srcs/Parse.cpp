@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/07 16:07:16 by jngerng           #+#    #+#             */
-/*   Updated: 2024/11/15 06:03:11 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 06:27:13 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -395,7 +395,7 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 		"client_body_timeout", "client_max_body_size",
 		"disable_symlinks", "error_page", "etag", "if_modified_since", 
 		"root", "index", "autoindex", "autoindex_exact_size", "autoindex_format", "autoindex_localtime",
-		"cgi", "add_handler", "action", "limit_except", NULL
+		"cgi", "add_handler", "action", "cgi_timeout", NULL
 	};
 	void (Parse::*process)(std::string &); 
 	process = NULL;
@@ -453,6 +453,7 @@ bool	Parse::processInfoBlock( const std::string &directive ) {
 			para_limit = 2;
 			break ;
 		case 15:
+			process = &Parse::processCgiTimeout;
 			break ;
 		default:
 			return (false);
@@ -835,25 +836,9 @@ void	Parse::processAction( std::string &token ) {
 	ptr->addCgiMapping(parsing_buffer, token);
 }
 
-// void	Parse::processAccessLog( std::string &token ) {
-// 	(void)token;
-// 	// if (no_para == 1)
-// 	// 	;
-// 	// else if (no_para == 2)
-// 	// 	;
-// 	// else
-// 	// 	;
-// }
-
-// void	Parse::processErrorLog( std::string &token ) {
-// 	(void)token;
-// 	// if (no_para == 1)
-// 	// 	;
-// 	// else if (no_para == 2)
-// 	// 	;
-// 	// else
-// 	// 	;
-// }
+void	Parse::processCgiTimeout( std::string &token ) {
+	ptr->setCgiTimeout(processTimeParameter(token, directive_ptr));	
+}
 
 void	Parse::processListenAddress( std::string &token ) {
 	std::string	addr;
