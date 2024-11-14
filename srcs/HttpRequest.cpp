@@ -6,7 +6,7 @@
 /*   By: jngerng <jngerng@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 16:16:03 by joshua            #+#    #+#             */
-/*   Updated: 2024/11/14 21:57:26 by jngerng          ###   ########.fr       */
+/*   Updated: 2024/11/15 02:31:33 by jngerng          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ bool	HttpRequest::validateUrl( void ) {
 	if (uri[0] != '/') {
 		return (false);
 	}
+	std::cerr << "req uri " << uri << "\n";
 	if (!(EmbeddedVariable::checkUrl(uri))) {
 		return (false);
 	}
